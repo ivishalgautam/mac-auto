@@ -27,14 +27,14 @@ const constants = {
     validation: {},
     message: {
       // HTTP Status code messages
-      HTTP_STATUS_CODE_201: "Created",
-      HTTP_STATUS_CODE_400: "Bad Request.",
-      HTTP_STATUS_CODE_301: "Redirect to other url",
-      HTTP_STATUS_CODE_401: "Unauthorized.",
-      HTTP_STATUS_CODE_403: "Forbidden.",
-      HTTP_STATUS_CODE_404: "The specified resource was not found.",
-      HTTP_STATUS_CODE_409: "Resource already exists",
-      HTTP_STATUS_CODE_500: "Internal Server Error.",
+      201: "Created",
+      400: "Bad Request.",
+      301: "Redirect to other url",
+      401: "Unauthorized.",
+      403: "Forbidden.",
+      404: "The specified resource was not found.",
+      409: "Resource already exists",
+      500: "Internal Server Error.",
       INVALID_LOGIN: "Invalid Login",
       EMAIL_MISSING: "Email Missing",
       PAYMENT_ACCOUNT_ID_MISSING: "Payment Account Id Missing",
@@ -44,6 +44,7 @@ const constants = {
   models: {
     USER_TABLE: "users",
     OTP_TABLE: "otps",
+    VEHICLE_TABLE: "vehicles",
   },
   bcrypt: {
     SALT_ROUNDS: 10,
