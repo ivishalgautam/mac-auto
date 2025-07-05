@@ -7,36 +7,36 @@ export function useTableFilters() {
     "q",
     searchParams.q
       .withOptions({ shallow: false, throttleMs: 1000 })
-      .withDefault("")
+      .withDefault(""),
   );
 
   const [page, setPage] = useQueryState(
     "page",
-    searchParams.page.withDefault(1)
+    searchParams.page.withDefault(1),
   );
-  const [roleFilter, setRoleFilter] = useQueryState(
-    "role",
-    searchParams.role.withDefault("")
+  const [categoryFilter, setCategoryFilter] = useQueryState(
+    "category",
+    searchParams.category.withDefault(""),
   );
 
   const resetFilters = useCallback(() => {
     setSearchQuery(null);
-    setRoleFilter(null);
+    setCategoryFilter(null);
 
     setPage(1);
-  }, [setSearchQuery, setRoleFilter, setPage]);
+  }, [setSearchQuery, setCategoryFilter, setPage]);
 
   const isAnyFilterActive = useMemo(() => {
-    return !!searchQuery || !!roleFilter;
-  }, [searchQuery, roleFilter]);
+    return !!searchQuery || !!categoryFilter;
+  }, [searchQuery, categoryFilter]);
 
   return {
     searchQuery,
     setSearchQuery,
     page,
     setPage,
-    roleFilter,
-    setRoleFilter,
+    categoryFilter,
+    setCategoryFilter,
     resetFilters,
     isAnyFilterActive,
   };

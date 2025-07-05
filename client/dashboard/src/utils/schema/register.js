@@ -17,7 +17,9 @@ export const userFormSchema = z
     mobile_number: z
       .string({ required_error: "Mobile number is required." })
       .min(1, { message: "Mobile number is required." }),
-    first_name: z.string().optional(),
+    first_name: z
+      .string({ required_error: "First Name is required." })
+      .min(1, { message: "First Name is required." }),
     last_name: z.string().optional(),
     password: z.string().min(8, "Password must be at least 8 characters"),
     confirm_password: z

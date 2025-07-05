@@ -22,7 +22,7 @@ export default function Layout({ children }) {
                 <SidebarTrigger className="-ml-1" />
               </div>
             </header>
-            <div className="px-4">{children}</div>
+            <div className="px-4 py-2">{children}</div>
           </SidebarInset>
         </SidebarProvider>
       </AuthProvider>

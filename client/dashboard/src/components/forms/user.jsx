@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { userFormSchema, userUpdateSchema } from "@/utils/schema/register";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AlertCircle, Eye, EyeOff, LoaderCircle } from "lucide-react";
+import { AlertCircle, Eye, EyeOff, LoaderCircleIcon } from "lucide-react";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import PhoneSelect from "../ui/phone-input";
@@ -119,7 +119,7 @@ export default function UserForm({ id, type }) {
 
         {/* First Name */}
         <div className="space-y-2">
-          <Label htmlFor="first_name">First Name</Label>
+          <Label htmlFor="first_name">First Name *</Label>
           <Input
             id="first_name"
             placeholder="Enter your first name"
@@ -259,7 +259,11 @@ export default function UserForm({ id, type }) {
           className={"w-full sm:w-auto"}
         >
           {isFormPending && (
-            <LoaderCircle className="mr-2 size-4 animate-spin" />
+            <LoaderCircleIcon
+              className="-ms-1 animate-spin"
+              size={16}
+              aria-hidden="true"
+            />
           )}
           Submit
         </Button>

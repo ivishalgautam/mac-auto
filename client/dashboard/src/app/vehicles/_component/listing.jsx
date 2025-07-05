@@ -1,0 +1,55 @@
+"use client";
+
+import ErrorMessage from "@/components/ui/error";
+import { DataTable } from "@/components/ui/table/data-table";
+import { DataTableSkeleton } from "@/components/ui/table/data-table-skeleton";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { columns } from "../columns";
+import {
+  useDeleteVehicle,
+  useGetVehicles,
+  useUpdateVehicle,
+} from "@/mutations/vehicle-mutation";
+import { DeleteDialog } from "./delete-dialog";
+
+export default function Listing() {
+  const [isModal, setIsModal] = useState(false);
+  const [id, setId] = useState("");
+  const searchParams = useSearchParams();
+  const searchParamsStr = searchParams.toString();
+  const router = useRouter();
+
+  const openModal = () => setIsModal(true);
+  const closeModal = () => setIsModal(false);
+
+  const { data, isLoading, isError, error } = useGetVehicles(searchParamsStr);
+  const deleteMutation = useDeleteVehicle(id, closeModal);
+  const updateMutation = useUpdateVehicle(id);
+  useEffect(() => {
+    if (!searchParamsStr) {
+      const params = new URLSearchParams();
+      params.set("page", 1);
+      params.set("limit", 10);
+      router.replace(`?${params.toString()}`);
+    }
+  }, [searchParamsStr, router]);
+
+  if (isLoading) return <DataTableSkeleton columnCount={6} rowCount={10} />;
+  if (isError) return <ErrorMessage error={error} />;
+
+  return (
+    <div className="border-input w-full rounded-lg">
+      <DataTable
+        columns={columns(updateMutation, setId, openModal)}
+        data={data?.vehicles ?? []}
+        totalItems={data?.total}
+      />
+      <DeleteDialog
+        deleteMutation={deleteMutation}
+        isOpen={isModal}
+        setIsOpen={setIsModal}
+      />
+    </div>
+  );
+}

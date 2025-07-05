@@ -14,4 +14,5 @@ export const endpoints = {
     preSignedUrls: "/upload/presigned-urls",
   },
   users: { getAll: "/users" },
+  vehicles: { getAll: "/vehicles" },
 };

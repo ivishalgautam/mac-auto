@@ -21,9 +21,11 @@ import Link from "next/link";
 import { useAuth } from "@/providers/auth-provider";
 import { Skeleton } from "./ui/skeleton";
 import { sidebarData } from "@/data/routes";
+import { usePathname } from "next/navigation";
 
 export function NavMain({ items }) {
   const { isUserLoading } = useAuth();
+  const pathname = usePathname();
   return (
     <SidebarGroup>
       <SidebarGroupLabel>Platform</SidebarGroupLabel>
@@ -42,7 +44,10 @@ export function NavMain({ items }) {
                 <SidebarMenuItem>
                   <CollapsibleTrigger asChild>
                     <Link href={item.url}>
-                      <SidebarMenuButton tooltip={item.title}>
+                      <SidebarMenuButton
+                        tooltip={item.title}
+                        isActive={pathname === item.url}
+                      >
                         {item.icon && <item.icon />}
                         <span>{item.title}</span>
                         {item.items.length > 0 && (
@@ -51,19 +56,24 @@ export function NavMain({ items }) {
                       </SidebarMenuButton>
                     </Link>
                   </CollapsibleTrigger>
-                  <CollapsibleContent>
-                    <SidebarMenuSub>
-                      {item.items?.map((subItem) => (
-                        <SidebarMenuSubItem key={subItem.title}>
-                          <SidebarMenuSubButton asChild>
-                            <Link href={subItem.url}>
-                              <span>{subItem.title}</span>
-                            </Link>
-                          </SidebarMenuSubButton>
-                        </SidebarMenuSubItem>
-                      ))}
-                    </SidebarMenuSub>
-                  </CollapsibleContent>
+                  {item.items?.length > 0 && (
+                    <CollapsibleContent>
+                      <SidebarMenuSub>
+                        {item.items?.map((subItem) => (
+                          <SidebarMenuSubItem key={subItem.title}>
+                            <SidebarMenuSubButton
+                              asChild
+                              isActive={pathname.includes(subItem.url)}
+                            >
+                              <Link href={subItem.url}>
+                                <span>{subItem.title}</span>
+                              </Link>
+                            </SidebarMenuSubButton>
+                          </SidebarMenuSubItem>
+                        ))}
+                      </SidebarMenuSub>
+                    </CollapsibleContent>
+                  )}
                 </SidebarMenuItem>
               </Collapsible>
             ))}

@@ -8,7 +8,10 @@ export default function ErrorMessage({ error }) {
       <ShieldAlert className="h-4 w-4" />
       <AlertTitle>Error</AlertTitle>
       <AlertDescription>
-        {error?.message ?? "Something went wrong!"}
+        {error?.response?.data?.message ??
+          error?.message ??
+          error ??
+          "Something went wrong!"}
         {/* <pre>{JSON.stringify(error?.message, null, 2)}</pre> */}
       </AlertDescription>
     </Alert>
