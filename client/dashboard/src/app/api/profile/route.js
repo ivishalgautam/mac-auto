@@ -26,7 +26,7 @@ export async function GET(request) {
     if (!newTokenData) {
       cookieStore.delete("token");
       cookieStore.delete("refresh_token");
-      return NextResponse.redirect(new URL("/login", request.url));
+      return NextResponse.redirect(new URL("/", request.url));
     }
     token = newTokenData.token;
     cookieStore.set("token", token, {
