@@ -1,7 +1,7 @@
 import config from "../config/index.js";
 import { Sequelize } from "sequelize";
 import migration from "./index.js";
-
+console.log({ config });
 export const sequelize = new Sequelize(
   config.PG_DATABASE_NAME,
   config.PG_USERNAME,
