@@ -34,7 +34,7 @@ export async function GET(request) {
       expires: new Date(newTokenData.expires),
       httpOnly: true,
       sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
+      secure: process.env.NEXT_PUBLIC_NODE_ENV === "production",
     });
   }
 

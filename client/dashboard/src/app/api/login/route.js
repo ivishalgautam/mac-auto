@@ -22,7 +22,7 @@ export async function POST(request) {
         expires: new Date(json.expire_time),
         httpOnly: true,
         sameSite: "lax",
-        secure: process.env.NODE_ENV === "production",
+        secure: process.env.NEXT_PUBLIC_NODE_ENV === "production",
       });
 
       cookieStore.set("refresh_token", json.refresh_token, {
@@ -30,7 +30,7 @@ export async function POST(request) {
         expires: new Date(json.refresh_expire_time),
         httpOnly: true,
         sameSite: "lax",
-        secure: process.env.NODE_ENV === "production",
+        secure: process.env.NEXT_PUBLIC_NODE_ENV === "production",
       });
     }
     // Return the same response as the external backend.

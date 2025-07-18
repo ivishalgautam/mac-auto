@@ -25,7 +25,7 @@ export async function POST(Request) {
       expires: new Date(json.expire_time),
       httpOnly: true,
       sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
+      secure: process.env.NEXT_PUBLIC_NODE_ENV === "production",
     });
     return NextResponse.json(json, { status: response.status });
   } catch (error) {
