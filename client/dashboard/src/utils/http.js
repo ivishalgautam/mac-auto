@@ -1,6 +1,6 @@
 import { handleLogout } from "@/providers/auth-provider";
 import axios from "axios";
-const API_ROOT = process.env.NEXT_PUBLIC_MAC_API_URL;
+const API_ROOT = process.env.NEXT_PUBLIC_API_URL;
 
 const http = (headerType = "json", baseURL = API_ROOT) => {
   // Create the axios instance

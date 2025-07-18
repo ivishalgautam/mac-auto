@@ -2,7 +2,7 @@ import { endpoints } from "@/utils/endpoints";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
-const API_URL = process.env.NEXT_PUBLIC_MAC_API_URL;
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 // This route acts as a middleware between you and your backend server
 export async function POST(request) {

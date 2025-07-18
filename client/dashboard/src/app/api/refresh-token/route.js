@@ -3,7 +3,7 @@ import axios from "axios";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
-const API_URL = process.env.NEXT_PUBLIC_MAC_API_URL;
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export async function POST(Request) {
   const cookieStore = await cookies();

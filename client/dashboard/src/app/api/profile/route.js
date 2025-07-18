@@ -4,7 +4,7 @@ import axios from "axios";
 import { cookies, headers } from "next/headers";
 import { NextResponse } from "next/server";
 
-const API_URL = process.env.NEXT_PUBLIC_MAC_API_URL;
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export async function GET(request) {
   const cookieStore = await cookies();
