@@ -67,7 +67,11 @@ const constants = {
     max_rate_limit: 1000,
     time_window: "1 minute",
   },
-  allowedOrigins: ["http://localhost:3000", "http://localhost:4000"],
+  allowedOrigins: [
+    "http://localhost:3000",
+    "http://localhost:4000",
+    "https://dashboard.brandingwaale.com",
+  ],
 };
 
 export default constants;
