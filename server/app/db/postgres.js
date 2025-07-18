@@ -3,7 +3,7 @@ import { Sequelize } from "sequelize";
 import migration from "./index.js";
 
 export const sequelize = new Sequelize(
-  config.MAC_PG_DATABASE_NAME,
+  config.PG_DATABASE_NAME,
   config.PG_USERNAME,
   config.PG_PASSWORD,
   {
