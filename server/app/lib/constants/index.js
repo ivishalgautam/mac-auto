@@ -71,6 +71,7 @@ const constants = {
     "http://localhost:3000",
     "http://localhost:4000",
     "https://dashboard.brandingwaale.com",
+    "https://mac.brandingwaale.com",
     "https://ev-riksha.vercel.app/",
   ],
 };
