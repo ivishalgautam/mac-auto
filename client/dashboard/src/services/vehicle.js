@@ -2,11 +2,11 @@ const { endpoints } = require("@/utils/endpoints");
 const { default: http } = require("@/utils/http");
 
 const create = async (data) => {
-  return await http().post(endpoints.vehicles.getAll, data);
+  return await http().post(endpoints.vehicles.getAll, data, true);
 };
 
 const update = async (id, data) => {
-  return await http().put(`${endpoints.vehicles.getAll}/${id}`, data);
+  return await http().put(`${endpoints.vehicles.getAll}/${id}`, data, true);
 };
 
 const deleteById = async (id) => {
@@ -25,12 +25,23 @@ const get = async (searchParams = "") => {
   return data;
 };
 
+const createVehicleInventory = async (id, data) => {
+  return await http().post(`${endpoints.inventories.getAll}/${id}`, data);
+};
+
+const getVehicleInventory = async (id) => {
+  const { data } = await http().get(`${endpoints.inventories.getAll}/${id}`);
+  return data;
+};
+
 const vehicle = {
   create: create,
   update: update,
   deleteById: deleteById,
   getById: getById,
   get: get,
+  createVehicleInventory: createVehicleInventory,
+  getVehicleInventory: getVehicleInventory,
 };
 
 export default vehicle;

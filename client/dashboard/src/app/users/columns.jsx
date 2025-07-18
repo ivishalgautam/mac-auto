@@ -8,7 +8,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Switch } from "@/components/ui/switch";
-import { Small } from "@/components/ui/typography";
+import { Muted, Small } from "@/components/ui/typography";
 import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 
 import { Badge } from "@/components/ui/badge";
@@ -23,7 +23,14 @@ export const columns = (updateMutation, setUserId, openModal) => [
     header: "FULLNAME",
     cell: ({ row }) => {
       const fullname = row.getValue("fullname");
-      return <div className="capitalize">{fullname}</div>;
+      const role = row.original.role;
+      const location = row.original.location;
+      return (
+        <div className="capitalize">
+          {fullname}
+          {role === "dealer" && <Muted>{location}</Muted>}
+        </div>
+      );
     },
   },
   {

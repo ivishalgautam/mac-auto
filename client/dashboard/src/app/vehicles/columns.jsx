@@ -13,12 +13,11 @@ import { Button } from "@/components/ui/button";
 import moment from "moment";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
 
 export const columns = (updateMutation, setId, openModal) => [
   {
     accessorKey: "title",
-    header: "TITLE",
+    header: "Title",
     cell: ({ row }) => {
       const title = row.getValue("title");
       return <div className="capitalize">{title}</div>;
@@ -33,22 +32,83 @@ export const columns = (updateMutation, setId, openModal) => [
     },
   },
   {
-    accessorKey: "colors",
-    header: "COLORS",
+    accessorKey: "color",
+    header: "COLOR",
     cell: ({ row }) => {
-      const colors = row.getValue("colors");
+      const color = row.getValue("color");
       return (
         <div className="flex gap-1">
-          {colors.map((color) => (
-            <Badge variant="outline" key={color.value}>
-              <span
-                className="size-3 rounded-full"
-                style={{ backgroundColor: color.value }}
-              ></span>
-              <span>{color.label}</span>
-            </Badge>
-          ))}
+          <span
+            className="size-6 rounded-full"
+            style={{ backgroundColor: color }}
+          ></span>
         </div>
+      );
+    },
+  },
+  {
+    accessorKey: "active_quantity",
+    header: "Active Qty.",
+    cell: ({ row }) => {
+      const id = row.original.id;
+      const quantity = row.getValue("active_quantity");
+      return (
+        <Badge>
+          <Link
+            href={`/vehicles/${id}/inventory?page=1&limit=10&status=active`}
+          >
+            {quantity}
+          </Link>
+        </Badge>
+      );
+    },
+  },
+  {
+    accessorKey: "sold_quantity",
+    header: "Sold Qty.",
+    cell: ({ row }) => {
+      const id = row.original.id;
+      const quantity = row.getValue("sold_quantity");
+      return (
+        <Badge variant={"outline"}>
+          <Link href={`/vehicles/${id}/inventory?page=1&limit=10&status=sold`}>
+            {quantity}
+          </Link>
+        </Badge>
+      );
+    },
+  },
+  {
+    accessorKey: "inactive_quantity",
+    header: "Inactive Qty.",
+    cell: ({ row }) => {
+      const id = row.original.id;
+      const quantity = row.getValue("inactive_quantity");
+      return (
+        <Badge variant={"secondary"}>
+          <Link
+            href={`/vehicles/${id}/inventory?page=1&limit=10&status=inactive`}
+          >
+            {quantity}
+          </Link>
+        </Badge>
+      );
+    },
+  },
+  {
+    accessorKey: "scrapped_quantity",
+    header: "Scrapped Qty.",
+    cell: ({ row }) => {
+      const id = row.original.id;
+      const quantity = row.getValue("scrapped_quantity");
+      return (
+        <Badge variant={"destructive"}>
+          <Link
+            href={`/vehicles/${id}/inventory?page=1&limit=10&status=scrapped`}
+          >
+            {quantity}
+          </Link>
+        </Badge>
       );
     },
   },
@@ -108,10 +168,34 @@ export const columns = (updateMutation, setId, openModal) => [
               <Link href={`/vehicles/${id}/edit`}>Edit</Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
+            <DropdownMenuItem>
+              <Link href={`/vehicles/${id}/inventory?page=1&limit=10`}>
+                Inventory
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={() => {
                 setId(id);
-                openModal();
+                openModal("inventory");
+              }}
+            >
+              Add inventory
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onClick={() => {
+                setId(id);
+                openModal("dealer-order");
+              }}
+            >
+              Create order
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onClick={() => {
+                setId(id);
+                openModal("vehicle");
               }}
             >
               Delete

@@ -47,14 +47,14 @@ export function DataTable({
 
   const [currentPage, setCurrentPage] = useQueryState(
     "page",
-    parseAsInteger.withOptions({ shallow: false }).withDefault(1)
+    parseAsInteger.withOptions({ shallow: false }).withDefault(1),
   );
 
   const [pageSize, setPageSize] = useQueryState(
     "limit",
     parseAsInteger
       .withOptions({ shallow: false, history: "push" })
-      .withDefault(10)
+      .withDefault(10),
   );
 
   const paginationState = {
@@ -106,7 +106,7 @@ export function DataTable({
                       ? null
                       : flexRender(
                           header.column.columnDef.header,
-                          header.getContext()
+                          header.getContext(),
                         )}
                   </TableHead>
                 ))}
@@ -129,7 +129,7 @@ export function DataTable({
                     >
                       {flexRender(
                         cell.column.columnDef.cell,
-                        cell.getContext()
+                        cell.getContext(),
                       )}
                     </TableCell>
                   ))}
@@ -152,14 +152,14 @@ export function DataTable({
 
       <div className="flex flex-col items-center justify-end gap-2 space-x-2 py-4 sm:flex-row">
         <div className="flex w-full items-center justify-between">
-          <div className="flex-1 text-sm text-muted-foreground">
+          <div className="text-muted-foreground flex-1 text-sm">
             {totalItems > 0 ? (
               <>
                 Showing{" "}
                 {paginationState.pageIndex * paginationState.pageSize + 1} to{" "}
                 {Math.min(
                   (paginationState.pageIndex + 1) * paginationState.pageSize,
-                  totalItems
+                  totalItems,
                 )}{" "}
                 of {totalItems} entries
               </>
@@ -170,7 +170,7 @@ export function DataTable({
 
           <div className="flex flex-col items-center gap-4 sm:flex-row sm:gap-6 lg:gap-8">
             <div className="flex items-center space-x-2">
-              <p className="whitespace-nowrap text-sm font-medium">
+              <p className="text-sm font-medium whitespace-nowrap">
                 Rows per page
               </p>
               <Select

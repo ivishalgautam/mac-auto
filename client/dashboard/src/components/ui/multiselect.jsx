@@ -27,7 +27,6 @@ export function useDebounce(value, delay) {
 }
 
 function transToGroupOption(options, groupBy) {
-  console.log({ options, groupBy });
   if (options.length === 0) {
     return {};
   }

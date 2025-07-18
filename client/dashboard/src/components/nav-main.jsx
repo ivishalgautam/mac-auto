@@ -1,7 +1,6 @@
 "use client";
 
 import { ChevronRight } from "lucide-react";
-
 import {
   Collapsible,
   CollapsibleContent,
@@ -46,7 +45,7 @@ export function NavMain({ items }) {
                     <Link href={item.url}>
                       <SidebarMenuButton
                         tooltip={item.title}
-                        isActive={pathname === item.url}
+                        isActive={pathname === item.url.split("?").shift()}
                       >
                         {item.icon && <item.icon />}
                         <span>{item.title}</span>

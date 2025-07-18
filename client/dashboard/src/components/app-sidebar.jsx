@@ -11,6 +11,7 @@ import { useAuth } from "@/providers/auth-provider";
 import { useMemo } from "react";
 import { NavUser } from "./nav-user";
 import { Skeleton } from "./ui/skeleton";
+import Image from "next/image";
 
 export function AppSidebar({ ...props }) {
   const { user, isUserLoading } = useAuth();
@@ -21,7 +22,7 @@ export function AppSidebar({ ...props }) {
         return {
           ...item,
           items: item.items.filter(
-            (item) => item.roles.includes(user?.role) && item.isVisible
+            (item) => item.roles.includes(user?.role) && item.isVisible,
           ),
         };
       });
@@ -29,12 +30,22 @@ export function AppSidebar({ ...props }) {
 
   return (
     <Sidebar variant="sidebar" collapsible="icon" {...props}>
+      <div className="max-h-16 max-w-full p-2">
+        <Image
+          src="/logo.png"
+          width={150}
+          height={50}
+          alt="Mac auto"
+          className="mx-auto"
+          loading="lazy"
+        />
+      </div>
       <SidebarContent>
         <NavMain items={filteredRoutes} />
       </SidebarContent>
       <SidebarFooter>
         {isUserLoading ? (
-          <Skeleton className={"bg-white/5 h-12"} />
+          <Skeleton className={"h-12 bg-white/5"} />
         ) : (
           <NavUser user={user} />
         )}

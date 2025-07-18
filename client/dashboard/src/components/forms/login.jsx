@@ -4,7 +4,7 @@ import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
 import { AtSign, KeyRound, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
@@ -19,12 +19,19 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { toast } from "sonner";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
 
 // Form validation schema
 const loginSchema = z.object({
   username: z.string().min(1, "Username is required"),
   password: z.string().min(6, "Password must be at least 6 characters"),
-  // rememberMe: z.boolean().optional(),
+  role: z.enum(["admin", "dealer"]),
 });
 
 // API login function
@@ -42,12 +49,13 @@ export default function LoginForm() {
     register,
     handleSubmit,
     formState: { errors },
+    control,
   } = useForm({
     resolver: zodResolver(loginSchema),
     defaultValues: {
       username: "",
       password: "",
-      rememberMe: false,
+      role: "",
     },
   });
 
@@ -61,29 +69,54 @@ export default function LoginForm() {
       toast.error(
         error?.response?.data?.message ??
           error?.message ??
-          "Login failed. Please check your credentials."
+          "Login failed. Please check your credentials.",
       );
     },
   });
 
   const onSubmit = (data) => {
-    loginMutation.mutate({ ...data, role: "admin" });
+    loginMutation.mutate(data);
   };
 
   return (
     <Card className="">
       <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl font-bold text-center">Login</CardTitle>
+        <CardTitle className="text-center text-2xl font-bold">Login</CardTitle>
         <CardDescription className="text-center">
           Enter your credentials to access your account
         </CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          {/* role */}
+          <div className="space-y-2">
+            <Controller
+              name="role"
+              control={control}
+              render={({ field }) => (
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Role" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="admin">Admin</SelectItem>
+                    <SelectItem value="dealer">Dealer</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
+            />
+            {errors.role && (
+              <p className="text-destructive text-sm">{errors.role.message}</p>
+            )}
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="username">Username</Label>
             <div className="relative">
-              <AtSign className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
+              <AtSign className="text-muted-foreground absolute top-2.5 left-3 h-5 w-5" />
               <Input
                 id="username"
                 placeholder="johndoe"
@@ -92,7 +125,7 @@ export default function LoginForm() {
               />
             </div>
             {errors.username && (
-              <p className="text-sm text-destructive">
+              <p className="text-destructive text-sm">
                 {errors.username.message}
               </p>
             )}
@@ -109,7 +142,7 @@ export default function LoginForm() {
                 </Link> */}
             </div>
             <div className="relative">
-              <KeyRound className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
+              <KeyRound className="text-muted-foreground absolute top-2.5 left-3 h-5 w-5" />
               <Input
                 id="password"
                 type="password"
@@ -119,7 +152,7 @@ export default function LoginForm() {
               />
             </div>
             {errors.password && (
-              <p className="text-sm text-destructive">
+              <p className="text-destructive text-sm">
                 {errors.password.message}
               </p>
             )}

@@ -18,22 +18,6 @@ export const useGetUserProfile = (id) => {
   });
 };
 
-export const useGetUserCompanyProfile = (id) => {
-  return useQuery({
-    queryKey: ["user-company-profile", id],
-    queryFn: () => user.getUserCompanyProfile(id),
-    enabled: !!id,
-  });
-};
-
-export const useGetUserContacts = (id) => {
-  return useQuery({
-    queryKey: ["user-key-contact", id],
-    queryFn: () => user.getUserContacts(id),
-    enabled: !!id,
-  });
-};
-
 export const useGetUser = (id) => {
   return useQuery({
     queryKey: ["users", id],
@@ -60,7 +44,7 @@ export const useCreateUser = (handleSuccess) => {
   });
 };
 
-export const useUpdateUser = (id) => {
+export const useUpdateUser = (id, handleSuccess = null) => {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -68,6 +52,7 @@ export const useUpdateUser = (id) => {
     onSuccess: () => {
       toast("User updated successfully.");
       queryClient.invalidateQueries(["users"]);
+      typeof handleSuccess === "function" && handleSuccess();
     },
     onError: (error) => {
       console.error("Mutation Error:", error);

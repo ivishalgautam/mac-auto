@@ -74,3 +74,31 @@ export const useDeleteVehicle = (id, handleSuccess) => {
     },
   });
 };
+
+// inventory
+export const useGetVehicleInventory = (id) => {
+  return useQuery({
+    queryKey: ["vehicles-inventory", id],
+    queryFn: () => vehicle.getVehicleInventory(id),
+    enabled: !!id,
+  });
+};
+
+export const useCreateVehicleInventory = (id, handleSuccess) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data) => vehicle.createVehicleInventory(id, data),
+    onSuccess: () => {
+      toast("Quantity updated successfully.");
+      queryClient.invalidateQueries(["vehicles"]);
+      typeof handleSuccess === "function" && handleSuccess();
+    },
+    onError: (error) => {
+      console.error("Mutation Error:", error);
+      toast.error(
+        error?.response?.data?.message ?? error?.message ?? "An error occurred",
+      );
+    },
+  });
+};

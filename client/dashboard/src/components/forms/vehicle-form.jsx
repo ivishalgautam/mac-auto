@@ -3,7 +3,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AlertCircle, LoaderCircleIcon, Plus, Trash } from "lucide-react";
+import {
+  AlertCircle,
+  LoaderCircleIcon,
+  Plus,
+  Trash,
+  XIcon,
+} from "lucide-react";
 import {
   Controller,
   FormProvider,
@@ -11,7 +17,6 @@ import {
   useForm,
   useFormContext,
 } from "react-hook-form";
-import { toast } from "sonner";
 import {
   Select,
   SelectContent,
@@ -25,26 +30,43 @@ import { getFormErrors } from "@/lib/get-form-errors";
 import { useEffect } from "react";
 import Loader from "../loader";
 import ErrorMessage from "../ui/error";
-import { vehicleSchema } from "@/utils/schema/vehicle.schema";
+import {
+  vehicleSchema,
+  vehicleUpdateSchema,
+} from "@/utils/schema/vehicle.schema";
 import {
   useCreateVehicle,
   useGetVehicle,
   useUpdateVehicle,
 } from "@/mutations/vehicle-mutation";
 import { Textarea } from "../ui/textarea";
-import ColorsSelect from "../colors-select";
 import { useRouter } from "next/navigation";
 import { colors } from "@/data";
-import MultipleSelector from "../ui/multiselect";
+import useFetchVehicles from "@/hooks/use-fetch-vehicles";
+import FileUpload from "@/components/file-uploader";
+import { useState } from "react";
+import Image from "next/image";
+import config from "@/config";
+import { Skeleton } from "../ui/skeleton";
+import FileUploaderServer from "@/features/file-uploader-server";
+import Features from "./vehicle/feature";
+import EMICalculator from "./vehicle/emi-calculator";
+import Specifications from "./vehicle/specifications";
+import { useCallback } from "react";
 
 const defaultValues = {
+  carousel: [],
   category: "",
   title: "",
   description: "",
   slug: "",
   vehicle_id: null,
   is_variant: false,
-  colors: [],
+  color: "",
+  quantity: "",
+  variants: [],
+  features: [{ heading: "", image: null }],
+  specifications: [{ tab_name: "", specs: [{ label: "", value: "" }] }],
   pricing: [
     {
       id: "",
@@ -70,22 +92,45 @@ const defaultValues = {
 
 export default function VehicleForm({ id, type }) {
   const router = useRouter();
+  const [files, setFiles] = useState({
+    carousel: [],
+    gallery: [],
+  });
+  const [fileUrls, setFileUrls] = useState({
+    carousel_urls: [],
+    gallery_urls: [],
+  });
   const methods = useForm({
-    resolver: zodResolver(vehicleSchema),
+    resolver: zodResolver(
+      type === "create" ? vehicleSchema : vehicleUpdateSchema,
+    ),
     defaultValues,
   });
+
   const {
     register,
     handleSubmit,
     formState: { errors, isDirty },
     control,
     reset,
+    watch,
+    setError,
+    setValue,
   } = methods;
+  const vehicleId = watch("vehicle_id");
+  const quantity = watch("quantity");
   const {
     fields: pricingFields,
     append: appendPricing,
     remove: removePricing,
   } = useFieldArray({ control, name: "pricing" });
+
+  const {
+    data: formattedVehicles,
+    isLoading: isFormattedVehiclesLoading,
+    isError: isFormattedVehiclesError,
+    error: formattedVehiclesError,
+  } = useFetchVehicles();
 
   const createMutation = useCreateVehicle(() => {
     reset();
@@ -96,11 +141,51 @@ export default function VehicleForm({ id, type }) {
     router.push("/vehicles?page=1&limit=10");
   });
   const { data, isLoading, isError, error } = useGetVehicle(id);
-
   const onSubmit = (data) => {
+    if (!fileUrls?.carousel_urls?.length && !files.carousel.length) {
+      return setError("carousel", {
+        type: "manual",
+        message: "Atleat 1 carousel is required*",
+      });
+    }
+    if (!fileUrls?.gallery_urls?.length && !files.gallery.length) {
+      return setError("gallery", {
+        type: "manual",
+        message: "Atleat 1 gallery is required*",
+      });
+    }
+
+    const formData = new FormData();
+    files.carousel?.forEach((file, key) => {
+      formData.append("carousel", file);
+    });
+    files.gallery?.forEach((file, key) => {
+      formData.append("gallery", file);
+    });
+
+    Object.entries(data).forEach(([key, value]) => {
+      typeof value === "object"
+        ? formData.append(key, JSON.stringify(value))
+        : formData.append(key, value);
+    });
+
+    data.features?.forEach((item, index) => {
+      if (item.heading) {
+        formData.append(`features[${index}][heading]`, item.heading);
+      }
+      if (item.image && typeof item.image === "object") {
+        formData.append(`features[${index}][image]`, item.image);
+      }
+    });
+
+    if (type === "edit") {
+      formData.append("carousel_urls", JSON.stringify(fileUrls.carousel_urls));
+      formData.append("gallery_urls", JSON.stringify(fileUrls.gallery_urls));
+    }
+
     type === "create"
-      ? createMutation.mutate(data)
-      : updateMutation.mutate(data);
+      ? createMutation.mutate(formData)
+      : updateMutation.mutate(formData);
   };
 
   const formErrors = getFormErrors(errors);
@@ -111,18 +196,169 @@ export default function VehicleForm({ id, type }) {
 
   useEffect(() => {
     if (type === "edit" && data) {
-      console.log({ data });
+      setFileUrls((prev) => ({
+        ...prev,
+        gallery_urls: data.gallery,
+        carousel_urls: data.carousel,
+      }));
       reset({ ...data });
     }
   }, [data, type, reset]);
 
+  useEffect(() => {
+    if (quantity > 0) {
+      const chassisNumbers = Array.from({ length: quantity }, (_, i) => ({
+        number: "",
+      }));
+      setValue("chassis_numbers", chassisNumbers);
+    }
+  }, [quantity, setValue]);
+
+  const handleCarouselChange = useCallback((data) => {
+    setFiles((prev) => ({ ...prev, carousel: data }));
+  }, []);
+  const handleGalleryChange = useCallback((data) => {
+    setFiles((prev) => ({ ...prev, gallery: data }));
+  }, []);
+
   if (type === "edit" && isLoading) return <Loader />;
   if (type === "edit" && isError) return <ErrorMessage error={error} />;
-
   return (
     <FormProvider {...methods}>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-3 gap-4">
+          {/* images */}
+          <div className="col-span-full space-y-4">
+            <Label>Carousel</Label>
+            <FileUpload
+              onFileChange={handleCarouselChange}
+              inputName={"carousel"}
+              className={cn({ "border-red-500": errors.carousel })}
+              initialFiles={[]}
+              multiple={true}
+            />
+
+            <div className="grid grid-cols-[repeat(auto-fill,minmax(100px,1fr))] gap-4">
+              {fileUrls.carousel_urls?.map((src, index) => (
+                <div
+                  className="bg-accent relative aspect-square w-24 rounded-md"
+                  key={index}
+                >
+                  <Image
+                    src={`${config.file_base}/${src}`}
+                    width={200}
+                    height={200}
+                    className="size-full rounded-[inherit] object-cover"
+                    alt={`carousel-${index}`}
+                  />
+                  <Button
+                    onClick={() =>
+                      setFileUrls((prev) => ({
+                        ...prev,
+                        carousel_urls: prev.carousel_urls.filter(
+                          (i) => i !== src,
+                        ),
+                      }))
+                    }
+                    size="icon"
+                    className="border-background focus-visible:border-background absolute -top-2 -right-2 size-6 rounded-full border-2 shadow-none"
+                    aria-label="Remove image"
+                    type="button"
+                  >
+                    <XIcon className="size-3.5" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* gallery */}
+          <div className="col-span-full space-y-4">
+            <Label>Gallery</Label>
+            <FileUpload
+              onFileChange={handleGalleryChange}
+              inputName={"gallery"}
+              className={cn({ "border-red-500": errors.gallery })}
+              initialFiles={[]}
+              multiple={true}
+            />
+
+            <div className="grid grid-cols-[repeat(auto-fill,minmax(100px,1fr))] gap-4">
+              {fileUrls.gallery_urls?.map((src, index) => (
+                <div
+                  className="bg-accent relative aspect-square w-24 rounded-md"
+                  key={index}
+                >
+                  <Image
+                    src={`${config.file_base}/${src}`}
+                    width={200}
+                    height={200}
+                    className="size-full rounded-[inherit] object-cover"
+                    alt={`gallery-${index}`}
+                  />
+                  <Button
+                    onClick={() =>
+                      setFileUrls((prev) => ({
+                        ...prev,
+                        gallery_urls: prev.gallery_urls.filter(
+                          (i) => i !== src,
+                        ),
+                      }))
+                    }
+                    size="icon"
+                    className="border-background focus-visible:border-background absolute -top-2 -right-2 size-6 rounded-full border-2 shadow-none"
+                    aria-label="Remove image"
+                    type="button"
+                  >
+                    <XIcon className="size-3.5" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* vehicle id */}
+          <div className="space-y-2">
+            <Label htmlFor="vehicle_id">Vehicle</Label>
+            {isFormattedVehiclesLoading ? (
+              <Skeleton className={"h-9 w-full"} />
+            ) : isFormattedVehiclesError ? (
+              <ErrorMessage error={formattedVehiclesError} />
+            ) : (
+              <Controller
+                control={control}
+                name="vehicle_id"
+                render={({ field }) => (
+                  <Select
+                    key={field.value}
+                    onValueChange={field.onChange}
+                    value={field.value ?? ""}
+                    defaultValue={field.value ?? ""}
+                  >
+                    <SelectTrigger
+                      className={cn("w-full", {
+                        "border-red-500": errors.vehicle_id,
+                      })}
+                    >
+                      <SelectValue placeholder="Select a vehicle" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {formattedVehicles.map((vehicle) => (
+                        <SelectItem
+                          key={vehicle.value}
+                          value={vehicle.value}
+                          className={"capitalize"}
+                        >
+                          {vehicle.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+            )}
+          </div>
+
           {/* category */}
           <div className="space-y-2">
             <Label htmlFor="category">Category *</Label>
@@ -134,6 +370,7 @@ export default function VehicleForm({ id, type }) {
                   key={field.value}
                   onValueChange={field.onChange}
                   value={field.value}
+                  defaultValue={field.value}
                 >
                   <SelectTrigger
                     className={cn("w-full", {
@@ -163,8 +400,56 @@ export default function VehicleForm({ id, type }) {
             />
           </div>
 
-          {/* description */}
+          {/* color */}
           <div className="space-y-2">
+            <Label>Color</Label>
+            <Controller
+              name={`color`}
+              render={({ field }) => (
+                <Select
+                  onValueChange={field.onChange}
+                  value={field.value}
+                  defaultValue={field.value}
+                  key={field.value}
+                >
+                  <SelectTrigger
+                    className={cn("w-full", {
+                      "border-red-500": errors?.color,
+                    })}
+                  >
+                    <SelectValue placeholder="Select color" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {colors.map((color) => (
+                      <SelectItem
+                        key={color.value}
+                        value={color.value}
+                        className={"capitalize"}
+                      >
+                        {color.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            />
+          </div>
+
+          {/* quantity */}
+          {type === "create" && (
+            <div className="space-y-2">
+              <Label>Quantity</Label>
+              <Input
+                type="number"
+                placeholder="Enter quantity"
+                {...register(`quantity`, { valueAsNumber: true })}
+                className={cn({ "border-red-500": errors.quantity })}
+              />
+            </div>
+          )}
+
+          {/* description */}
+          <div className="col-span-full space-y-2">
             <Label htmlFor="description">Description</Label>
             <Textarea
               id="description"
@@ -175,44 +460,52 @@ export default function VehicleForm({ id, type }) {
           </div>
         </div>
 
-        {/* colors */}
-        <div className="space-y-2">
-          <h3 className="text-lg font-semibold">Colors</h3>
-          <Controller
-            control={control}
-            name="colors"
-            render={({ field }) => (
-              <MultipleSelector
-                onChange={field.onChange}
-                commandProps={{ label: "Select colors" }}
-                value={field.value}
-                defaultOptions={colors}
-                placeholder="Select colors"
-                hideClearAllButton={false}
-                hidePlaceholderWhenSelected={false}
-                emptyIndicator={
-                  <p className="text-center text-sm">No results found</p>
-                }
-                className={cn({ "border-red-500": errors.colors })}
-              />
-            )}
-          />
-        </div>
+        {/* chassis numbers */}
+        {type === "create" && quantity > 0 && (
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold">Chassis Numbers</h3>
+            <div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-4">
+              {Array.from({ length: quantity }, (_, index) => (
+                <div key={index} className="space-y-2">
+                  <Label>Chassis #{index + 1}</Label>
+                  <Input
+                    type="text"
+                    {...register(`chassis_numbers.${index}.number`)}
+                    placeholder={`Enter chassis number ${index + 1}`}
+                    className={cn({
+                      "border-red-500":
+                        errors?.chassis_numbers?.[index]?.number,
+                    })}
+                  />
+                  {/* {errors?.chassis_numbers?.[index]?.number && (
+                      <p className="text-sm text-red-500">
+                        {errors.chassis_numbers[index].number.message}
+                      </p>
+                    )} */}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* pricing */}
         <div className="space-y-4">
           <h3 className="text-lg font-semibold">Pricing</h3>
-          {pricingFields.map((field, index) => (
-            <PricingItem
-              key={index}
-              index={index}
-              removePricing={removePricing}
-            />
-          ))}
+          <div className="border-input space-y-2 rounded-md border p-4">
+            {pricingFields.map((field, index) => (
+              <PricingItem
+                key={index}
+                index={index}
+                removePricing={removePricing}
+                showStateDeleteButton={pricingFields.length > 1}
+              />
+            ))}
+          </div>
 
           <Button
             type="button"
             size="sm"
+            variant={"outline"}
             onClick={() =>
               appendPricing({
                 id: "",
@@ -230,174 +523,19 @@ export default function VehicleForm({ id, type }) {
         {/* emi calculator */}
         <div className="space-y-4">
           <h3 className="text-lg font-semibold">EMI Calculator</h3>
+          <EMICalculator />
+        </div>
 
-          <div className="grid grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <Label>Default Down Payment</Label>
-              <Input
-                type="number"
-                {...register("emi_calculator.default_values.down_payment", {
-                  valueAsNumber: true,
-                })}
-                placeholder="Enter default down payment"
-                className={cn({
-                  "border-red-500":
-                    errors?.emi_calculator?.default_values?.down_payment,
-                })}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Default Loan Tenure</Label>
-              <Input
-                type="number"
-                {...register("emi_calculator.default_values.loan_tenure", {
-                  valueAsNumber: true,
-                })}
-                placeholder="Enter default loan tenure"
-                className={cn({
-                  "border-red-500":
-                    errors?.emi_calculator?.default_values?.loan_tenure,
-                })}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Default Interest Rate</Label>
-              <Input
-                type="number"
-                step="0.01"
-                {...register("emi_calculator.default_values.interest_rate", {
-                  valueAsNumber: true,
-                })}
-                placeholder="Enter default interest rate"
-                className={cn({
-                  "border-red-500":
-                    errors?.emi_calculator?.default_values?.interest_rate,
-                })}
-              />
-            </div>
-          </div>
+        {/* Features */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold">Features</h3>
+          <Features />
+        </div>
 
-          <div className="grid grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <Label>Down Payment Min</Label>
-              <Input
-                type="number"
-                {...register("emi_calculator.ranges.down_payment.min", {
-                  valueAsNumber: true,
-                })}
-                placeholder="Enter min. down payment"
-                className={cn({
-                  "border-red-500":
-                    errors?.emi_calculator?.ranges?.down_payment?.min,
-                })}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Down Payment Step</Label>
-              <Input
-                type="number"
-                {...register("emi_calculator.ranges.down_payment.step", {
-                  valueAsNumber: true,
-                })}
-                placeholder="Enter down payment step"
-                className={cn({
-                  "border-red-500":
-                    errors?.emi_calculator?.ranges.down_payment?.step,
-                })}
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <Label>Tenure Min</Label>
-              <Input
-                type="number"
-                {...register("emi_calculator.ranges.loan_tenure.min", {
-                  valueAsNumber: true,
-                })}
-                placeholder="Enter min. tenure"
-                className={cn({
-                  "border-red-500":
-                    errors?.emi_calculator?.ranges?.loan_tenure?.min,
-                })}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Tenure Max</Label>
-              <Input
-                type="number"
-                {...register("emi_calculator.ranges.loan_tenure.max", {
-                  valueAsNumber: true,
-                })}
-                placeholder="Enter max. tenure"
-                className={cn({
-                  "border-red-500":
-                    errors?.emi_calculator?.ranges?.loan_tenure?.max,
-                })}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Tenure Step</Label>
-              <Input
-                type="number"
-                {...register("emi_calculator.ranges.loan_tenure.step", {
-                  valueAsNumber: true,
-                })}
-                placeholder="Enter tenure step"
-                className={cn({
-                  "border-red-500":
-                    errors?.emi_calculator?.ranges?.loan_tenure?.step,
-                })}
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <Label>Interest Min</Label>
-              <Input
-                type="number"
-                {...register("emi_calculator.ranges.interest_rate.min", {
-                  valueAsNumber: true,
-                })}
-                placeholder="Enter min. interest"
-                className={cn({
-                  "border-red-500":
-                    errors?.emi_calculator?.ranges?.interest_rate?.min,
-                })}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Interest Max</Label>
-              <Input
-                type="number"
-                {...register("emi_calculator.ranges.interest_rate.max", {
-                  valueAsNumber: true,
-                })}
-                placeholder="Enter max. interest"
-                className={cn({
-                  "border-red-500":
-                    errors?.emi_calculator?.ranges?.interest_rate?.max,
-                })}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Interest Step</Label>
-              <Input
-                type="number"
-                step="0.01"
-                {...register("emi_calculator.ranges.interest_rate.step", {
-                  valueAsNumber: true,
-                })}
-                placeholder="Enter interest step"
-                className={cn({
-                  "border-red-500":
-                    errors?.emi_calculator?.ranges?.interest_rate?.step,
-                })}
-              />
-            </div>
-          </div>
+        {/* specification */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold">Specification</h3>
+          <Specifications />
         </div>
 
         {/* errors print */}
@@ -436,7 +574,7 @@ export default function VehicleForm({ id, type }) {
   );
 }
 
-function PricingItem({ index, removePricing }) {
+function PricingItem({ index, removePricing, showStateDeleteButton }) {
   const {
     register,
     control,
@@ -449,7 +587,7 @@ function PricingItem({ index, removePricing }) {
   } = useFieldArray({ control, name: `pricing.${index}.cities` });
 
   return (
-    <div className="space-y-2 rounded-md border p-4">
+    <div className="border-input space-y-2 rounded-md border p-4">
       <div className="grid grid-cols-3 gap-4">
         <Input
           placeholder="State Name"
@@ -512,21 +650,24 @@ function PricingItem({ index, removePricing }) {
           size="sm"
           onClick={() => appendCity({ id: "", name: "", price_modifier: "" })}
           className="mt-2"
+          variant={"outline"}
         >
           <Plus className="h-4 w-4" /> Add City
         </Button>
       </div>
 
-      <div className="pt-2 text-right">
-        <Button
-          variant="destructive"
-          type="button"
-          size="icon"
-          onClick={() => removePricing(index)}
-        >
-          <Trash className="h-4 w-4" />
-        </Button>
-      </div>
+      {showStateDeleteButton && (
+        <div className="pt-2 text-right">
+          <Button
+            variant="destructive"
+            type="button"
+            size="icon"
+            onClick={() => removePricing(index)}
+          >
+            <Trash className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

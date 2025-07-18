@@ -26,7 +26,10 @@ export default async function VehiclesPage({ searchParams }) {
           title="Vehicles"
           description="Manage Vehicles (Create, Update, Delete)."
         />
-        <Link href="/vehicles/create" className={buttonVariants({})}>
+        <Link
+          href="/vehicles/create"
+          className={buttonVariants({ size: "sm" })}
+        >
           <Plus size="15" /> Add Vehicle
         </Link>
       </div>

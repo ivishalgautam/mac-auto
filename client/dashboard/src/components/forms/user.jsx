@@ -24,6 +24,7 @@ import { getFormErrors } from "@/lib/get-form-errors";
 import { useEffect } from "react";
 import Loader from "../loader";
 import ErrorMessage from "../ui/error";
+import { useRouter } from "next/navigation";
 
 export default function UserForm({ id, type }) {
   const [showPassword, setShowPassword] = useState(false);
@@ -50,10 +51,15 @@ export default function UserForm({ id, type }) {
       role: "",
     },
   });
+  const router = useRouter();
+
+  const role = watch("role");
   const createMutation = useCreateUser(() => {
     toast("Successfully registered.");
   });
-  const updateMutation = useUpdateUser(id);
+  const updateMutation = useUpdateUser(id, function () {
+    router.back();
+  });
   const { data, isLoading, isError, error } = useGetUser(id);
 
   const onSubmit = (data) => {
@@ -77,6 +83,7 @@ export default function UserForm({ id, type }) {
         mobile_number: data.mobile_number || "",
         role: data.role || "",
         username: data.username || "",
+        location: data.location || "",
       });
     }
   }, [data, type, reset]);
@@ -116,6 +123,19 @@ export default function UserForm({ id, type }) {
             }}
           />
         </div>
+
+        {/* location */}
+        {role === "dealer" && (
+          <div className="col-span-full space-y-2">
+            <Label htmlFor="location">Location *</Label>
+            <Input
+              id="location"
+              placeholder="Enter Dealer Location"
+              {...register("location")}
+              className={cn({ "border-red-500": errors.location })}
+            />
+          </div>
+        )}
 
         {/* First Name */}
         <div className="space-y-2">

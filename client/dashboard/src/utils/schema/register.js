@@ -18,13 +18,14 @@ export const userFormSchema = z
       .string({ required_error: "Mobile number is required." })
       .min(1, { message: "Mobile number is required." }),
     first_name: z
-      .string({ required_error: "First Name is required." })
-      .min(1, { message: "First Name is required." }),
+      .string({ required_error: "First Name is required!" })
+      .min(1, { message: "First Name is required!" }),
     last_name: z.string().optional(),
     password: z.string().min(8, "Password must be at least 8 characters"),
     confirm_password: z
       .string()
       .min(8, "Confirm Password must be at least 8 characters"),
+    location: z.string().optional(),
   })
   .refine((data) => isValidPhoneNumber(data.mobile_number), {
     path: ["mobile_number"],
@@ -33,6 +34,19 @@ export const userFormSchema = z
   .refine((data) => data.password === data.confirm_password, {
     path: ["confirm_password"],
     message: "Passwords do not match",
+  })
+  .superRefine((data, ctx) => {
+    console.log({ data });
+    if (
+      data.role === "dealer" &&
+      (!data.location || data.location.trim() === "")
+    ) {
+      ctx.addIssue({
+        path: ["location"],
+        code: z.ZodIssueCode.custom,
+        message: "Location is required for dealers",
+      });
+    }
   });
 
 export const userUpdateSchema = z
@@ -51,12 +65,27 @@ export const userUpdateSchema = z
     mobile_number: z
       .string({ required_error: "Mobile number is required." })
       .min(1, { message: "Mobile number is required." }),
-    first_name: z.string().optional(),
+    first_name: z
+      .string({ required_error: "First Name is required!" })
+      .min(1, { message: "First Name is required!" }),
     last_name: z.string().optional(),
+    location: z.string().optional(),
   })
   .refine((data) => isValidPhoneNumber(data.mobile_number), {
     path: ["mobile_number"],
     message: "Invalid phone number",
+  })
+  .superRefine((data, ctx) => {
+    if (
+      data.role === "dealer" &&
+      (!data.location || data.location.trim() === "")
+    ) {
+      ctx.addIssue({
+        path: ["location"],
+        code: z.ZodIssueCode.custom,
+        message: "Location is required for dealers",
+      });
+    }
   });
 
 export const otpSchema = z.object({
