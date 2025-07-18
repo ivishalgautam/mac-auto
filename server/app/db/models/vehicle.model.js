@@ -1,5 +1,4 @@
 "use strict";
-import moment from "moment";
 import constants from "../../lib/constants/index.js";
 import { DataTypes, Deferrable, QueryTypes } from "sequelize";
 
@@ -13,6 +12,16 @@ const init = async (sequelize) => {
         type: DataTypes.UUID,
         primaryKey: true,
         defaultValue: DataTypes.UUIDV4,
+      },
+      vehicle_id: {
+        type: DataTypes.UUID,
+        allowNull: true,
+        references: {
+          model: constants.models.VEHICLE_TABLE,
+          key: "id",
+          deferrable: Deferrable.INITIALLY_IMMEDIATE,
+        },
+        onDelete: "CASCADE",
       },
       category: {
         type: DataTypes.ENUM(["passenger", "cargo", "garbage"]),
@@ -34,9 +43,23 @@ const init = async (sequelize) => {
           msg: "Vehicle exist with this name!",
         },
       },
-      colors: {
+      color: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      is_variant: {
+        type: DataTypes.BOOLEAN,
+        defaulValue: false,
+      },
+      features: {
+        // [{ heading: "", image: 0 }]
         type: DataTypes.JSONB,
-        defaultValue: [],
+        allowNull: false,
+      },
+      specifications: {
+        // [{ tab_name: "", specs: [{ label:"", value:"" }] }]
+        type: DataTypes.JSONB,
+        allowNull: false,
       },
       pricing: {
         // [{ id: "", name: "", base_price: 0, cities: [{ id: "", name: "", price_modifier: 0 }] }]
@@ -44,9 +67,21 @@ const init = async (sequelize) => {
         allowNull: false,
       },
       emi_calculator: {
-        // { defaultValues: {downPayment: 20000,loanTenure: 24,interestRate: 11.0} ranges: {downPayment: {min: 10000,step: 1000} loanTenure: {min: 12,max: 48,step: 12} interestRate: {min: 7.0,max: 14.0,step: 0.5}} financingCompanies: [{id: "company-1",name: "Urban Finance Co.", interestRate: 10.0,color: "#3B82F6"}]}
+        // { defaultValues: {down_payment: 20000,loan_tenure: 24,interest_rate: 11.0} ranges: {down_payment: {min: 10000,step: 1000} loan_tenure: {min: 12,max: 48,step: 12} interest_rate: {min: 7.0,max: 14.0,step: 0.5}} financing_companies: [{id: "company-1",name: "Urban Finance Co.", interest_rate: 10.0,color: "#3B82F6"}]}
         type: DataTypes.JSONB,
         allowNull: false,
+      },
+      carousel: {
+        type: DataTypes.JSONB,
+        allowNull: false,
+      },
+      gallery: {
+        type: DataTypes.JSONB,
+        allowNull: false,
+        defaultValue: [],
+      },
+      video_link: {
+        type: DataTypes.TEXT,
       },
     },
     {
@@ -73,14 +108,21 @@ const create = async (req, transaction) => {
 
   const data = await VehicleModel.create(
     {
+      vehicle_id: req.body.vehicle_id,
       category: req.body.category,
       title: req.body.title,
+      chassis_no: req.body.chassis_no,
       description: req.body.description,
+      features: req.body.features,
+      specifications: req.body.specifications,
       slug: req.body.slug,
       is_variant: req.body.is_variant,
-      colors: req.body.colors,
+      color: req.body.color,
       pricing: req.body.pricing,
       emi_calculator: req.body.emi_calculator,
+      carousel: req.body.carousel,
+      gallery: req.body.gallery,
+      video_link: req.body.video_link,
     },
     options
   );
@@ -88,31 +130,38 @@ const create = async (req, transaction) => {
   return data.dataValues;
 };
 
-const update = async (req, id) => {
+const update = async (req, id, transaction) => {
+  const options = {
+    where: { id: req.params?.id || id },
+    returning: true,
+    raw: true,
+  };
+  if (transaction) options.transaction = transaction;
+
   return await VehicleModel.update(
     {
+      vehicle_id: req.body.vehicle_id,
       category: req.body.category,
       title: req.body.title,
+      chassis_no: req.body.chassis_no,
       description: req.body.description,
+      features: req.body.features,
+      specifications: req.body.specifications,
       slug: req.body.slug,
-      is_variant: req.body.is_variant,
-      colors: req.body.colors,
+      color: req.body.color,
       pricing: req.body.pricing,
       emi_calculator: req.body.emi_calculator,
+      carousel: req.body.carousel,
+      gallery: req.body.gallery,
+      video_link: req.body.video_link,
     },
-    {
-      where: { id: req.params?.id || id },
-      returning: true,
-      raw: true,
-    }
+    options
   );
 };
 
 const getById = async (req, id) => {
   return await VehicleModel.findOne({
-    where: {
-      id: req?.params?.id || id,
-    },
+    where: { id: req?.params?.id || id },
     order: [["created_at", "DESC"]],
     limit: 1,
     raw: true,
@@ -120,15 +169,45 @@ const getById = async (req, id) => {
   });
 };
 
+const getBySlug = async (req, slug) => {
+  let query = `
+  SELECT
+      vh.*,
+      COALESCE(JSON_AGG(
+        JSON_BUILD_OBJECT('color', vhvr.color)
+      ) FILTER (WHERE vhvr.id IS NOT NULL), '[]') as colors
+    FROM ${constants.models.VEHICLE_TABLE} vh
+    LEFT JOIN ${constants.models.VEHICLE_TABLE} vhvr ON vhvr.vehicle_id = vh.id
+    WHERE vh.slug = :slug
+    GROUP BY vh.id
+  `;
+
+  return await VehicleModel.sequelize.query(query, {
+    replacements: { slug: req?.params?.slug || slug },
+    type: QueryTypes.SELECT,
+    raw: true,
+    plain: true,
+  });
+};
+
 const get = async (req) => {
-  const whereConditions = [];
+  const whereConditions = ["vh.is_variant IS false"];
   const queryParams = {};
   const q = req.query.q ? req.query.q : null;
+  const type = req?.query?.type ?? null;
   const category = req.query.category ? req.query.category.split(".") : null;
 
   if (q) {
-    whereConditions.push(`(vh.title ILIKE :query)`);
+    whereConditions.push(
+      `(vh.title ILIKE :query OR invnt.chassis_no ILIKE :query)`
+    );
     queryParams.query = `%${q}%`;
+  }
+
+  if (type === "main") {
+    whereConditions.push(`(vh.is_variant IS false)`);
+  } else if (type === "variant") {
+    whereConditions.push(`(vh.is_variant IS true)`);
   }
 
   if (category?.length) {
@@ -147,17 +226,31 @@ const get = async (req) => {
 
   const query = `
   SELECT 
-      vh.*
+      vh.id, vh.title, vh.description, vh.category, vh.slug, vh.color, vh.carousel,
+      (vh.pricing->0->>'base_price')::numeric AS starting_from,
+      COALESCE(JSON_AGG(
+        JSON_BUILD_OBJECT(
+          'color', vhvr.color
+        )
+      ) FILTER (WHERE vhvr.id IS NOT NULL), '[]') as colors,
+       vh.created_at,
+      COUNT(DISTINCT CASE WHEN invnt.status = 'active' THEN invnt.id END) as active_quantity,
+      COUNT(DISTINCT CASE WHEN invnt.status = 'inactive' THEN invnt.id END) as inactive_quantity,
+      COUNT(DISTINCT CASE WHEN invnt.status = 'sold' THEN invnt.id END) as sold_quantity,
+      COUNT(DISTINCT CASE WHEN invnt.status = 'scrapped' THEN invnt.id END) as scrapped_quantity
     FROM ${constants.models.VEHICLE_TABLE} vh
+    LEFT JOIN ${constants.models.INVENTORY_TABLE} invnt ON invnt.vehicle_id = vh.id
+    LEFT JOIN ${constants.models.VEHICLE_TABLE} vhvr ON vhvr.vehicle_id = vh.id
     ${whereClause}
+    GROUP BY vh.id
     ORDER BY vh.created_at DESC
     LIMIT :limit OFFSET :offset
   `;
 
   const countQuery = `
-  SELECT 
-      COUNT(vh.id) OVER()::integer as total
+  SELECT COUNT(DISTINCT vh.id)::integer as total
     FROM ${constants.models.VEHICLE_TABLE} vh
+    LEFT JOIN ${constants.models.INVENTORY_TABLE} invnt ON invnt.status = 'active' AND invnt.vehicle_id = vh.id
     ${whereClause}
   `;
 
@@ -174,7 +267,10 @@ const get = async (req) => {
     plain: true,
   });
 
-  return { vehicles, total: count?.total ?? 0 };
+  return {
+    vehicles,
+    total: count?.total ?? 0,
+  };
 };
 
 const deleteByMobileNumber = async (mobile_number) => {
@@ -183,9 +279,12 @@ const deleteByMobileNumber = async (mobile_number) => {
   });
 };
 
-const deleteById = async (req, id) => {
+const deleteById = async (req, id, transaction) => {
+  const options = {};
+  if (transaction) options.transaction = transaction;
   return await VehicleModel.destroy({
     where: { id: req.params?.id || id },
+    options,
   });
 };
 
@@ -195,6 +294,7 @@ export default {
   update: update,
   get: get,
   getById: getById,
+  getBySlug: getBySlug,
   deleteByMobileNumber: deleteByMobileNumber,
   deleteById: deleteById,
 };

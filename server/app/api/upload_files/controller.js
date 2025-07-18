@@ -120,13 +120,8 @@ const deleteFile = async (req, res) => {
       });
     }
 
-    const currentFilePath = fileURLToPath(import.meta.url);
-    const currentDirPath = dirname(currentFilePath);
-    const publicPath = path.join(
-      currentDirPath,
-      "../../..",
-      req.query.file_path
-    );
+    const publicPath = path.join(process.cwd(), req.query.file_path);
+    console.log({ publicPath });
     if (fs.existsSync(publicPath)) {
       fs.unlinkSync(publicPath);
       res.send({ message: "File deleted" });

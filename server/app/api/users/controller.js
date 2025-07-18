@@ -3,10 +3,12 @@
 import table from "../../db/models.js";
 import { sequelize } from "../../db/postgres.js";
 import hash from "../../lib/encryption/index.js";
+import { userSchema } from "../../validation-schema/user.schema.js";
 
 const create = async (req, res) => {
   const transaction = await sequelize.transaction();
   try {
+    const validateData = userSchema.parse(req.body);
     const record = await table.UserModel.getByUsername(req);
     if (record) {
       return res.code(409).send({
@@ -16,6 +18,16 @@ const create = async (req, res) => {
     }
 
     const user = await table.UserModel.create(req, transaction);
+    if (validateData.role === "dealer") {
+      await table.DealerModel.create(
+        {
+          user_id: user.id,
+          location: validateData.location,
+        },
+        transaction
+      );
+    }
+
     await transaction.commit();
 
     res.send(user);
@@ -32,7 +44,17 @@ const update = async (req, res) => {
     if (!record) {
       return res.code(404).send({ message: "User not exists" });
     }
-    await table.UserModel.update(req, 0, transaction);
+    const user = await table.UserModel.update(req, 0, transaction);
+    if (user.role === "dealer") {
+      console.log({ user });
+      const location = req.body.location;
+      const data = await table.DealerModel.updateByUser(
+        { body: { location } },
+        user.id
+      );
+      console.log({ data });
+    }
+
     await transaction.commit();
     return res.send({ status: true, message: "User updated successfully!" });
   } catch (error) {

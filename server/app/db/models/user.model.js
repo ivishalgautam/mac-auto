@@ -149,8 +149,10 @@ const get = async (req) => {
   const query = `
   SELECT 
     usr.id, CONCAT(usr.first_name, ' ', usr.last_name) as fullname, usr.username, 
-    usr.mobile_number, usr.email, usr.role, usr.is_active, usr.created_at
+    usr.mobile_number, usr.email, usr.role, usr.is_active, usr.created_at,
+    dlr.location
   FROM ${constants.models.USER_TABLE} usr
+  LEFT JOIN ${constants.models.DEALER_TABLE} dlr ON usr.role = 'dealer' AND dlr.user_id = usr.id
   ${whereClause}
   ORDER BY usr.created_at DESC
   LIMIT :limit OFFSET :offset
@@ -161,7 +163,6 @@ const get = async (req) => {
     COUNT(usr.id) OVER()::integer as total
   FROM ${constants.models.USER_TABLE} usr
   ${whereClause}
-  LIMIT :limit OFFSET :offset
   `;
 
   const users = await UserModel.sequelize.query(query, {
@@ -171,7 +172,7 @@ const get = async (req) => {
   });
 
   const count = await UserModel.sequelize.query(countQuery, {
-    replacements: { ...queryParams, limit, offset },
+    replacements: { ...queryParams },
     type: QueryTypes.SELECT,
     raw: true,
   });
@@ -182,8 +183,10 @@ const get = async (req) => {
 const getById = async (req, user_id) => {
   let query = `
   SELECT
-      usr.id, usr.username, usr.first_name, usr.last_name, usr.email, usr.blocked, usr.role, usr.mobile_number, usr.is_verified, usr.image_url
+      usr.id, usr.username, usr.first_name, usr.last_name, usr.email, usr.blocked, usr.role, usr.mobile_number, usr.is_verified, usr.image_url,
+      dlr.location
     FROM ${constants.models.USER_TABLE} usr
+    LEFT JOIN ${constants.models.DEALER_TABLE} dlr ON usr.role = 'dealer' AND dlr.user_id = usr.id
     WHERE usr.id = :user_id
   `;
   const data = await UserModel.sequelize.query(query, {
@@ -234,18 +237,8 @@ const update = async (req, id, transaction = null) => {
     where: {
       id: req.params?.id || id,
     },
-    returning: [
-      "id",
-      "username",
-      "email",
-      "first_name",
-      "last_name",
-      "blocked",
-      "role",
-      "mobile_number",
-      "is_verified",
-      "image_url",
-    ],
+    returning: true,
+    raw: true,
     plain: true,
     transaction,
   };
@@ -254,7 +247,7 @@ const update = async (req, id, transaction = null) => {
     options.transaction = transaction;
   }
 
-  return await UserModel.update(
+  const [, rows] = await UserModel.update(
     {
       email: req.body?.email,
       first_name: req.body?.first_name,
@@ -267,6 +260,8 @@ const update = async (req, id, transaction = null) => {
     },
     options
   );
+
+  return rows;
 };
 
 const updatePassword = async (req, user_id) => {

@@ -33,7 +33,6 @@ export const saveFile = async (file) => {
 };
 
 export const deleteFile = async (filePath) => {
-  console.log({ filePath });
   const fullPath = path.resolve(filePath);
 
   try {
