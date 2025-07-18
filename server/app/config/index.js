@@ -9,8 +9,8 @@ const config = {
   port: parseInt(3002 || process.env.PORT, 10),
   // postgres creds
   MAC_PG_DATABASE_NAME: process.env.MAC_PG_DATABASE_NAME,
-  MAC_PG_USERNAME: process.env.MAC_PG_USERNAME,
-  MAC_PG_PASSWORD: process.env.MAC_PG_PASSWORD,
+  PG_USERNAME: process.env.PG_USERNAME,
+  PG_PASSWORD: process.env.PG_PASSWORD,
   pg_host: process.env.PG_HOST,
   pg_dialect: process.env.DB_DIALECT,
 

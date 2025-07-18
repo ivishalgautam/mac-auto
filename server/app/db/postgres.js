@@ -4,8 +4,8 @@ import migration from "./index.js";
 
 export const sequelize = new Sequelize(
   config.MAC_PG_DATABASE_NAME,
-  config.MAC_PG_USERNAME,
-  config.MAC_PG_PASSWORD,
+  config.PG_USERNAME,
+  config.PG_PASSWORD,
   {
     host: config.pg_host,
     dialect: config.pg_dialect,
