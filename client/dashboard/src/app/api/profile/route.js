@@ -4,7 +4,7 @@ import axios from "axios";
 import { cookies, headers } from "next/headers";
 import { NextResponse } from "next/server";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+const API_URL = process.env.NEXT_PUBLIC_MAC_API_URL;
 
 export async function GET(request) {
   const cookieStore = await cookies();
@@ -14,7 +14,7 @@ export async function GET(request) {
     if (!refresh_token) {
       return NextResponse.json(
         { message: "No user logged in" },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -52,7 +52,7 @@ export async function GET(request) {
     console.log(error.response.data);
     return NextResponse.json(
       { message: error?.response?.data?.message ?? "Something went wrong" },
-      { status: error.status }
+      { status: error.status },
     );
   }
 }
