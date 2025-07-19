@@ -51,6 +51,10 @@ const init = async (sequelize) => {
         type: DataTypes.BOOLEAN,
         defaulValue: false,
       },
+      base_price: {
+        type: DataTypes.DECIMAL(10, 2),
+        allowNull: true,
+      },
       features: {
         // [{ heading: "", image: 0 }]
         type: DataTypes.JSONB,
@@ -108,6 +112,7 @@ const create = async (req, transaction) => {
 
   const data = await VehicleModel.create(
     {
+      base_price: req.body.base_price,
       vehicle_id: req.body.vehicle_id,
       category: req.body.category,
       title: req.body.title,
