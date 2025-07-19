@@ -254,7 +254,7 @@ const get = async (req) => {
     LEFT JOIN ${constants.models.VEHICLE_TABLE} vhvr ON vhvr.vehicle_id = vh.id
     ${whereClause}
     GROUP BY vh.id
-    ORDER BY vh.created_at DESC
+    ORDER BY vh.updated_at DESC
     LIMIT :limit OFFSET :offset
   `;
 
