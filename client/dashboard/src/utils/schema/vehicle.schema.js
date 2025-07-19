@@ -83,7 +83,8 @@ export const vehicleSchema = z.object({
     .min(1, { message: "Color is required!" }),
   quantity: z.number().default(0),
   features: z.array(featureItemSchema).optional(),
-  pricing: z.array(pricingItemSchema).nonempty(),
+  // pricing: z.array(pricingItemSchema).nonempty(),
+  base_price: z.number().min(1, { message: "Base price is reuqired*" }),
   chassis_numbers: z.array(
     z.object({
       number: z
@@ -119,7 +120,8 @@ export const vehicleUpdateSchema = z.object({
     .min(1, { message: "Color is required!" }),
   quantity: z.number().default(0),
   features: z.array(featureItemSchema).optional(),
-  pricing: z.array(pricingItemSchema).nonempty(),
+  base_price: z.number().min(1, { message: "Base price is reuqired*" }),
+  // pricing: z.array(pricingItemSchema).nonempty(),
   emi_calculator: emiCalculatorSchema,
   specifications: z.array(specificationSchema).nonempty(),
 

@@ -8,6 +8,11 @@ const nextConfig = {
         port: "3001",
       },
       {
+        protocol: "http",
+        hostname: "localhost",
+        port: "3002",
+      },
+      {
         protocol: "https",
         hostname: "macapi.brandingwaale.com",
         port: "",

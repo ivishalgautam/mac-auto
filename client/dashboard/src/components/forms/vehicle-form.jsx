@@ -53,6 +53,7 @@ import Features from "./vehicle/feature";
 import EMICalculator from "./vehicle/emi-calculator";
 import Specifications from "./vehicle/specifications";
 import { useCallback } from "react";
+import { stateCityData } from "@/data/state-city-data";
 
 const defaultValues = {
   carousel: [],
@@ -67,14 +68,26 @@ const defaultValues = {
   variants: [],
   features: [{ heading: "", image: null }],
   specifications: [{ tab_name: "", specs: [{ label: "", value: "" }] }],
-  pricing: [
-    {
-      id: "",
-      name: "",
-      base_price: "",
-      cities: [],
-    },
-  ],
+  base_price: "",
+  // pricing: [
+  //   ...stateCityData.map((state, idx, arr) => {
+  //     return {
+  //       name: state.state,
+  //       base_price: "",
+  //       cities: arr
+  //         .filter((item) => {
+  //           return item.state === state.state;
+  //         })
+  //         .map((item) => ({ name: item.city, price_modifier: 0 })),
+  //     };
+  //   }),
+  //   // {
+  //   //   id: "",
+  //   //   name: "",
+  //   //   base_price: "",
+  //   //   cities: [],
+  //   // },
+  // ],
   emi_calculator: {
     default_values: {
       down_payment: "",
@@ -435,6 +448,17 @@ export default function VehicleForm({ id, type }) {
             />
           </div>
 
+          {/* base price */}
+          <div className="space-y-2">
+            <Label>Base Price *</Label>
+            <Input
+              type="number"
+              placeholder="Enter Base Price"
+              {...register(`base_price`, { valueAsNumber: true })}
+              className={cn({ "border-red-500": errors.base_price })}
+            />
+          </div>
+
           {/* quantity */}
           {type === "create" && (
             <div className="space-y-2">
@@ -489,7 +513,7 @@ export default function VehicleForm({ id, type }) {
         )}
 
         {/* pricing */}
-        <div className="space-y-4">
+        {/* <div className="space-y-4">
           <h3 className="text-lg font-semibold">Pricing</h3>
           <div className="border-input space-y-2 rounded-md border p-4">
             {pricingFields.map((field, index) => (
@@ -518,7 +542,7 @@ export default function VehicleForm({ id, type }) {
           >
             <Plus className="h-4 w-4" /> Add State
           </Button>
-        </div>
+        </div> */}
 
         {/* emi calculator */}
         <div className="space-y-4">
