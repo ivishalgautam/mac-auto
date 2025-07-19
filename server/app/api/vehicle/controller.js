@@ -102,8 +102,8 @@ const update = async (req, res) => {
     // ! remove this after adding all vehicles
     req.body.pricing = stateCityData.map((state, idx, arr) => {
       return {
-        name: parseInt(req.body.base_price, 10),
-        base_price: validateData.base_price,
+        name: state.state.toLowerCase(),
+        base_price: parseInt(req.body.base_price),
         cities: arr
           .filter((item) => {
             return item.state.toLowerCase() === state.state.toLowerCase();
