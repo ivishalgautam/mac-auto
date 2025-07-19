@@ -250,6 +250,7 @@ export default function VehicleForm({ id, type }) {
               className={cn({ "border-red-500": errors.carousel })}
               initialFiles={[]}
               multiple={true}
+              maxFiles={50}
             />
 
             <div className="grid grid-cols-[repeat(auto-fill,minmax(100px,1fr))] gap-4">
@@ -295,6 +296,7 @@ export default function VehicleForm({ id, type }) {
               className={cn({ "border-red-500": errors.gallery })}
               initialFiles={[]}
               multiple={true}
+              maxFiles={50}
             />
 
             <div className="grid grid-cols-[repeat(auto-fill,minmax(100px,1fr))] gap-4">
