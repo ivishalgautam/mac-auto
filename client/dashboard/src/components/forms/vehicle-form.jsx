@@ -48,12 +48,10 @@ import { useState } from "react";
 import Image from "next/image";
 import config from "@/config";
 import { Skeleton } from "../ui/skeleton";
-import FileUploaderServer from "@/features/file-uploader-server";
 import Features from "./vehicle/feature";
 import EMICalculator from "./vehicle/emi-calculator";
 import Specifications from "./vehicle/specifications";
 import { useCallback } from "react";
-import { stateCityData } from "@/data/state-city-data";
 
 const defaultValues = {
   carousel: [],
@@ -214,7 +212,10 @@ export default function VehicleForm({ id, type }) {
         gallery_urls: data.gallery,
         carousel_urls: data.carousel,
       }));
-      reset({ ...data });
+      reset({
+        ...data,
+        base_price: data?.base_price ?? data?.pricing?.[0].base_price ?? 0,
+      });
     }
   }, [data, type, reset]);
 
