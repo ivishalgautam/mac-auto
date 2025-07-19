@@ -47,6 +47,10 @@ const init = async (sequelize) => {
         type: DataTypes.STRING,
         allowNull: false,
       },
+      video_link: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
       is_variant: {
         type: DataTypes.BOOLEAN,
         defaulValue: false,
@@ -115,6 +119,7 @@ const create = async (req, transaction) => {
       base_price: req.body.base_price,
       vehicle_id: req.body.vehicle_id,
       category: req.body.category,
+      video_link: req.body.video_link,
       title: req.body.title,
       chassis_no: req.body.chassis_no,
       description: req.body.description,
@@ -150,6 +155,7 @@ const update = async (req, id, transaction) => {
       title: req.body.title,
       chassis_no: req.body.chassis_no,
       description: req.body.description,
+      video_link: req.body.video_link,
       features: req.body.features,
       specifications: req.body.specifications,
       slug: req.body.slug,
