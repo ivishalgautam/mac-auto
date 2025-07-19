@@ -67,6 +67,7 @@ const defaultValues = {
   features: [{ heading: "", image: null }],
   specifications: [{ tab_name: "", specs: [{ label: "", value: "" }] }],
   base_price: "",
+  video_link: "",
   // pricing: [
   //   ...stateCityData.map((state, idx, arr) => {
   //     return {
@@ -483,6 +484,17 @@ export default function VehicleForm({ id, type }) {
               {...register("description")}
               className={cn({ "border-red-500": errors.description })}
               placeholder="Enter description"
+            />
+          </div>
+
+          {/* video_link */}
+          <div className="col-span-full space-y-2">
+            <Label htmlFor="video_link">Video link</Label>
+            <Input
+              id="video_link"
+              {...register("video_link")}
+              className={cn({ "border-red-500": errors.video_link })}
+              placeholder="Enter Video link"
             />
           </div>
         </div>

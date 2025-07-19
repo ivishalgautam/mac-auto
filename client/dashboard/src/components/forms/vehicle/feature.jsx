@@ -38,7 +38,7 @@ export default function Features() {
         variant={"outline"}
         control={control}
       >
-        <Plus className="h-4 w-4" /> Add Gallery Item
+        <Plus className="h-4 w-4" /> Add feature Item
       </Button>
     </div>
   );
