@@ -7,7 +7,7 @@ import { sequelize } from "../../db/postgres.js";
 import colorNamer from "color-namer";
 import { getItemsToDelete } from "../../helpers/filter.js";
 import { cleanupFiles } from "../../helpers/cleanup-files.js";
-import { stateCityData } from "../../data/state-city-data.js";
+import { stateCityData, uniqueStates } from "../../data/state-city-data.js";
 
 const status = constants.http.status;
 const responseMessage = constants.error.message;
@@ -23,14 +23,12 @@ const create = async (req, res) => {
     });
 
     // ! remove this after adding all vehicles
-    req.body.pricing = stateCityData.map((state, idx, arr) => {
+    req.body.pricing = uniqueStates.map((stateName) => {
       return {
-        name: state.state.toLowerCase(),
+        name: stateName,
         base_price: validateData.base_price,
-        cities: arr
-          .filter((item) => {
-            return item.state.toLowerCase() === state.state.toLowerCase();
-          })
+        cities: stateCityData
+          .filter((item) => item.state.toLowerCase() === stateName)
           .map((item) => ({
             name: item.city.toLowerCase(),
             price_modifier: 0,
@@ -100,14 +98,12 @@ const update = async (req, res) => {
     }
 
     // ! remove this after adding all vehicles
-    req.body.pricing = stateCityData.map((state, idx, arr) => {
+    req.body.pricing = uniqueStates.map((stateName) => {
       return {
-        name: state.state.toLowerCase(),
+        name: stateName,
         base_price: parseInt(req.body.base_price),
-        cities: arr
-          .filter((item) => {
-            return item.state.toLowerCase() === state.state.toLowerCase();
-          })
+        cities: stateCityData
+          .filter((item) => item.state.toLowerCase() === stateName)
           .map((item) => ({
             name: item.city.toLowerCase(),
             price_modifier: 0,

@@ -1178,3 +1178,7 @@ export const stateCityData = [
     Akasha: "Yes",
   },
 ];
+
+export const uniqueStates = [
+  ...new Set(stateCityData.map((item) => item.state.toLowerCase())),
+];
