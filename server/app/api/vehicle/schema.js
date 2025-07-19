@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { coerce, z } from "zod";
 
 // Zod schema for VehicleModel
 export const vehicleSchema = z.object({
@@ -20,20 +20,21 @@ export const vehicleSchema = z.object({
         .min(1, { message: "required*" }),
     })
   ),
-  pricing: z
-    .array(
-      z.object({
-        name: z.string(),
-        base_price: z.number(),
-        cities: z.array(
-          z.object({
-            name: z.string(),
-            price_modifier: z.number(),
-          })
-        ),
-      })
-    )
-    .nonempty("Pricing is required"),
+  base_price: z.coerce.number().min(1, { message: "Base price is reuqired*" }),
+  // pricing: z
+  //   .array(
+  //     z.object({
+  //       name: z.string(),
+  //       base_price: z.number(),
+  //       cities: z.array(
+  //         z.object({
+  //           name: z.string(),
+  //           price_modifier: z.number(),
+  //         })
+  //       ),
+  //     })
+  //   )
+  //   .nonempty("Pricing is required"),
 
   // emi_calculator: z.object({
   //   default_values: z.object({
@@ -79,20 +80,21 @@ export const vehicleUpdateSchema = z.object({
     .string({ required_error: "Color is required!" })
     .min(1, { message: "Color is required!" }),
   quantity: z.coerce.number().default(0),
-  pricing: z
-    .array(
-      z.object({
-        name: z.string(),
-        base_price: z.number(),
-        cities: z.array(
-          z.object({
-            name: z.string(),
-            price_modifier: z.number(),
-          })
-        ),
-      })
-    )
-    .nonempty("Pricing is required"),
+  base_price: z.coerce.number().min(1, { message: "Base price is reuqired*" }),
+  // pricing: z
+  //   .array(
+  //     z.object({
+  //       name: z.string(),
+  //       base_price: z.number(),
+  //       cities: z.array(
+  //         z.object({
+  //           name: z.string(),
+  //           price_modifier: z.number(),
+  //         })
+  //       ),
+  //     })
+  //   )
+  //   .nonempty("Pricing is required"),
 
   // emi_calculator: z.object({
   //   default_values: z.object({
