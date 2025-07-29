@@ -27,6 +27,22 @@ const init = async (sequelize) => {
         allowNull: false,
         unique: { args: true, msg: "Chassis no. exist" },
       },
+      motor_no: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      battery_no: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      controller_no: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      charger_no: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
       status: {
         type: DataTypes.ENUM("active", "inactive", "sold", "scrapped"),
         allowNull: false,
@@ -49,6 +65,18 @@ const init = async (sequelize) => {
         {
           fields: ["status"],
         },
+        {
+          fields: ["motor_no"],
+        },
+        {
+          fields: ["battery_no"],
+        },
+        {
+          fields: ["controller_no"],
+        },
+        {
+          fields: ["charger_no"],
+        },
       ],
     }
   );
@@ -56,14 +84,18 @@ const init = async (sequelize) => {
   await InventoryModel.sync({ alter: true });
 };
 
-const create = async ({ vehicle_id, chassis_no }, transaction) => {
+const create = async (req, transaction) => {
   const options = {};
   if (transaction) options.transaction = transaction;
 
   const data = await InventoryModel.create(
     {
-      vehicle_id: vehicle_id,
-      chassis_no: chassis_no,
+      vehicle_id: req.body.vehicle_id,
+      chassis_no: req.body.chassis_no,
+      motor_no: req.body.motor_no,
+      battery_no: req.body.battery_no,
+      controller_no: req.body.controller_no,
+      charger_no: req.body.charger_no,
     },
     options
   );
@@ -94,6 +126,23 @@ const bulkUpdateStatus = async (ids = [], status, transaction) => {
 
   const options = {
     where: { id: { [Op.in]: ids } },
+    returning: true,
+  };
+  if (transaction) options.transaction = transaction;
+
+  const [, updatedRecords] = await InventoryModel.update(
+    { status: status },
+    options
+  );
+
+  return updatedRecords;
+};
+
+const bulkUpdateStatusByChassisNos = async (nos = [], status, transaction) => {
+  if (!nos.length) return [];
+
+  const options = {
+    where: { chassis_no: { [Op.in]: nos } },
     returning: true,
   };
   if (transaction) options.transaction = transaction;
@@ -178,6 +227,13 @@ const getById = async (req, id) => {
   });
 };
 
+const getByChassis = async (chassis_no) => {
+  return await InventoryModel.findOne({
+    where: { chassis_no: chassis_no },
+    raw: true,
+  });
+};
+
 const deleteById = async (id) => {
   return await InventoryModel.destroy({
     where: { id: id },
@@ -189,9 +245,11 @@ export default {
   create: create,
   update: update,
   bulkUpdateStatus: bulkUpdateStatus,
+  bulkUpdateStatusByChassisNos: bulkUpdateStatusByChassisNos,
   getByVehicleId: getByVehicleId,
   deleteById: deleteById,
   bulkCreate: bulkCreate,
   getById: getById,
+  getByChassis: getByChassis,
   getActiveInventoryIds: getActiveInventoryIds,
 };

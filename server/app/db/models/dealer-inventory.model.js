@@ -140,14 +140,14 @@ const get = async (req) => {
   const queryParams = {};
 
   if (role === "dealer") {
-    whereConditions.push("dlrusr.id = :user_id");
+    whereConditions.push("dlr.user_id = :user_id");
     queryParams.user_id = id;
   }
 
   const q = req.query.q ? req.query.q : null;
 
   if (q) {
-    whereConditions.push(`(vhc.title ILIKE :query)`);
+    whereConditions.push(`(vh.title ILIKE :query)`);
     queryParams.query = `%${q}%`;
   }
 
@@ -162,24 +162,33 @@ const get = async (req) => {
 
   const query = `
   SELECT 
-      dlrinv.*,
-      vhc.title, vhc.category, vhc.color
-    FROM ${constants.models.DEALER_INVENTORY_TABLE} dlrinv
-    LEFT JOIN ${constants.models.VEHICLE_TABLE} vhc ON vhc.id = dlrinv.vehicle_id
-    LEFT JOIN ${constants.models.DEALER_TABLE} dlr ON dlr.id = dlrinv.dealer_id
-    LEFT JOIN ${constants.models.USER_TABLE} dlrusr ON dlrusr.id = dlr.user_id
+      vh.id, vh.title, vh.description, vh.category, vh.slug, vh.color, vh.carousel,
+      (vh.pricing->0->>'base_price')::numeric AS starting_from,
+      COALESCE(JSON_AGG(
+        JSON_BUILD_OBJECT(
+          'color', vh.color
+        )
+      ) FILTER (WHERE vh.id IS NOT NULL), '[]') as colors,
+      vh.created_at,
+      COUNT(DISTINCT CASE WHEN dlrinvn.status = 'active' THEN dlrinvn.id END) as active_quantity,
+      COUNT(DISTINCT CASE WHEN dlrinvn.status = 'inactive' THEN dlrinvn.id END) as inactive_quantity,
+      COUNT(DISTINCT CASE WHEN dlrinvn.status = 'sold' THEN dlrinvn.id END) as sold_quantity,
+      COUNT(DISTINCT CASE WHEN dlrinvn.status = 'scrapped' THEN dlrinvn.id END) as scrapped_quantity
+    FROM ${constants.models.DEALER_INVENTORY_TABLE} dlrinvn
+    LEFT JOIN ${constants.models.VEHICLE_TABLE} vh ON dlrinvn.vehicle_id = vh.id
+    LEFT JOIN ${constants.models.DEALER_TABLE} dlr ON dlr.id = dlrinvn.dealer_id
     ${whereClause}
-    ORDER BY dlrinv.created_at DESC
+    GROUP BY vh.id
+    ORDER BY vh.updated_at DESC
     LIMIT :limit OFFSET :offset
   `;
 
   const countQuery = `
   SELECT 
-      COUNT(dlrinv.id) OVER()::integer as total
-    FROM ${constants.models.DEALER_INVENTORY_TABLE} dlrinv
-    LEFT JOIN ${constants.models.VEHICLE_TABLE} vhc ON vhc.id = dlrinv.vehicle_id
-    LEFT JOIN ${constants.models.DEALER_TABLE} dlr ON dlr.id = dlrinv.dealer_id
-    LEFT JOIN ${constants.models.USER_TABLE} dlrusr ON dlrusr.id = dlr.user_id
+      COUNT(dlrinvn.id) OVER()::integer as total
+    FROM ${constants.models.DEALER_INVENTORY_TABLE} dlrinvn
+    LEFT JOIN ${constants.models.VEHICLE_TABLE} vh ON dlrinvn.vehicle_id = vh.id
+    LEFT JOIN ${constants.models.DEALER_TABLE} dlr ON dlr.id = dlrinvn.dealer_id
     ${whereClause}
   `;
 
@@ -199,12 +208,59 @@ const get = async (req) => {
   return { inventory, total: count?.total ?? 0 };
 };
 
-const getByVehicleId = async (vehicle_id) => {
-  return await DealerInventoryModel.findOne({
-    where: { vehicle_id: vehicle_id },
-    order: [["created_at", "DESC"]],
+const getByVehicleId = async (req, vehicle_id) => {
+  const whereConditions = ["invnt.vehicle_id = :vehicle_id"];
+  const queryParams = { vehicle_id: vehicle_id };
+  const q = req.query.q ? req.query.q : null;
+  const status = req.query?.status?.split(".") ?? null;
+
+  if (q) {
+    whereConditions.push(`(invnt.chassis_no ILIKE :query)`);
+    queryParams.query = `%${q}%`;
+  }
+
+  if (status && status.length) {
+    whereConditions.push(`invnt.status = ANY(:status)`);
+    queryParams.status = `{${status.join(",")}}`;
+  }
+
+  const page = req.query.page ? Number(req.query.page) : 1;
+  const limit = req.query.limit ? Number(req.query.limit) : null;
+  const offset = (page - 1) * limit;
+
+  const whereClause = `WHERE ${whereConditions.join(" AND ")}`;
+
+  let query = `
+  SELECT
+      *
+    FROM ${constants.models.DEALER_INVENTORY_TABLE} invnt
+    ${whereClause}
+    ORDER BY invnt.created_at DESC
+    LIMIT :limit OFFSET :offset
+  `;
+
+  let countQuery = `
+  SELECT
+      COUNT(invnt.id) OVER()::INTEGER as total
+    FROM ${constants.models.DEALER_INVENTORY_TABLE} invnt
+    ${whereClause}
+    ORDER BY invnt.created_at DESC
+  `;
+
+  const data = await DealerInventoryModel.sequelize.query(query, {
+    replacements: { ...queryParams, limit, offset },
+    type: QueryTypes.SELECT,
     raw: true,
   });
+
+  const count = await DealerInventoryModel.sequelize.query(countQuery, {
+    replacements: queryParams,
+    type: QueryTypes.SELECT,
+    raw: true,
+    plain: true,
+  });
+
+  return { inventory: data, total: count?.total ?? 0 };
 };
 
 const getByVehicleAndDealer = async (vehicle_id, dealer_id) => {

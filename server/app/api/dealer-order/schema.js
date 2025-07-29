@@ -9,5 +9,5 @@ export const dealerOrderSchema = z.object({
     .string({ required_error: "Vehicle ID is required" })
     .uuid()
     .min(1, { message: "Vehicle ID is required" }),
-  chassis_numbers: z.array(z.string().uuid()),
+  chassis_numbers: z.array(z.string()),
 });

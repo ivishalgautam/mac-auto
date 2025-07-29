@@ -349,6 +349,13 @@ const getByUserIds = async (user_ids) => {
   });
 };
 
+const getModel = () => {
+  if (!UserModel) {
+    throw new Error("UserModel has not been initialized. Call init() first.");
+  }
+  return UserModel;
+};
+
 export default {
   init: init,
   create: create,
@@ -366,4 +373,5 @@ export default {
   isMobileNumberExist: isMobileNumberExist,
   isEmailExist: isEmailExist,
   isUsernameExist: isUsernameExist,
+  getModel: getModel,
 };

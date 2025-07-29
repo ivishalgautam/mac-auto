@@ -27,6 +27,9 @@ const create = async (req, res) => {
         transaction
       );
     }
+    if (validateData.role === "customer") {
+      await table.CustomerModel.create(user.id, transaction);
+    }
 
     await transaction.commit();
 
@@ -45,14 +48,13 @@ const update = async (req, res) => {
       return res.code(404).send({ message: "User not exists" });
     }
     const user = await table.UserModel.update(req, 0, transaction);
+
     if (user.role === "dealer") {
-      console.log({ user });
       const location = req.body.location;
       const data = await table.DealerModel.updateByUser(
         { body: { location } },
         user.id
       );
-      console.log({ data });
     }
 
     await transaction.commit();

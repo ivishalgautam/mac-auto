@@ -181,6 +181,13 @@ const deleteById = async (id) => {
   });
 };
 
+const getModel = () => {
+  if (!DealerModel) {
+    throw new Error("DealerModel has not been initialized. Call init() first.");
+  }
+  return DealerModel;
+};
+
 export default {
   init: init,
   create: create,
@@ -192,4 +199,5 @@ export default {
   deleteById: deleteById,
   updateLocation: updateLocation,
   get: get,
+  getModel: getModel,
 };

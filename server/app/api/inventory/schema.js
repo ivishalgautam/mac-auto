@@ -9,6 +9,22 @@ export const inventorySchema = z.object({
       number: z
         .string({ required_error: "required*" })
         .min(1, { message: "required*" }),
+      motor_no: z
+        .string()
+        .optional()
+        .or(z.literal("").transform(() => undefined)),
+      battery_no: z
+        .string()
+        .optional()
+        .or(z.literal("").transform(() => undefined)),
+      controller_no: z
+        .string()
+        .optional()
+        .or(z.literal("").transform(() => undefined)),
+      charger_no: z
+        .string()
+        .optional()
+        .or(z.literal("").transform(() => undefined)),
     })
   ),
 });

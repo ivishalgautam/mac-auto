@@ -4,7 +4,6 @@ import table from "../../db/models.js";
 import constants from "../../lib/constants/index.js";
 import { vehicleSchema, vehicleUpdateSchema } from "./schema.js";
 import { sequelize } from "../../db/postgres.js";
-import colorNamer from "color-namer";
 import { getItemsToDelete } from "../../helpers/filter.js";
 import { cleanupFiles } from "../../helpers/cleanup-files.js";
 import { stateCityData, uniqueStates } from "../../data/state-city-data.js";

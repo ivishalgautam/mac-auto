@@ -54,6 +54,10 @@ const constants = {
     CHASSIS_TABLE: "chassis_numbers",
     FINANCER_TABLE: "financers",
     DEALER_ORDER_TABLE: "dealer_orders",
+    PDI_CHECK_TABLE: "pdi_checks",
+    VEHICLE_ENQUIRY_TABLE: "vehicle_enquiries",
+    CUSTOMER_TABLE: "customers",
+    CUSTOMER_DEALERS_TABLE: "customer_dealers",
   },
   bcrypt: {
     SALT_ROUNDS: 10,

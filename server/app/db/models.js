@@ -9,6 +9,10 @@ import dealerInventoryModel from "./models/dealer-inventory.model.js";
 import inventoryModel from "./models/inventory.model.js";
 import financerModel from "./models/financer.model.js";
 import dealerOrderModel from "./models/dealer-order.model.js";
+import pdiCheckModel from "./models/pdi-check.model.js";
+import vehicleEnquiryModel from "./models/vehicle-enquiry.model.js";
+import customerModel from "./models/customer.model.js";
+import customerDealersModel from "./models/customer-dealers.model.js";
 
 export default {
   UserModel: userModel,
@@ -22,4 +26,8 @@ export default {
   // DealerInventoryHistoryModel: dealerInventoryHistoryModel,
   FinancerModel: financerModel,
   DealerOrderModel: dealerOrderModel,
+  PDICheckModel: pdiCheckModel,
+  VehicleEnquiryModel: vehicleEnquiryModel,
+  CustomerModel: customerModel,
+  CustomerDealersModel: customerDealersModel,
 };
