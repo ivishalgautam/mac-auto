@@ -129,7 +129,7 @@ export const columns = (updateMutation, setUserId, openModal) => [
             <DropdownMenuItem
               onClick={() => {
                 setUserId(id);
-                openModal();
+                openModal("delete");
               }}
             >
               Delete

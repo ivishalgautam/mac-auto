@@ -6,22 +6,31 @@ import { DataTableSkeleton } from "@/components/ui/table/data-table-skeleton";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { columns } from "../columns";
-import { useUpdateVehicle } from "@/mutations/vehicle-mutation";
-import { useGetDealerOrders } from "@/mutations/dealer-order-mutation";
+import {
+  useDeleteDealerOrder,
+  useGetDealerOrders,
+  useUpdateDealerOrder,
+} from "@/mutations/dealer-order-mutation";
+import { useAuth } from "@/providers/auth-provider";
+import { DeleteDialog } from "./dialog/delete-dialog";
 
 export default function Listing() {
+  const { user } = useAuth();
   const [isModal, setIsModal] = useState(false);
   const [id, setId] = useState("");
   const searchParams = useSearchParams();
   const searchParamsStr = searchParams.toString();
   const router = useRouter();
 
-  const openModal = (type) => setIsModal(true);
+  const openModal = () => setIsModal(true);
   const closeModal = () => setIsModal(false);
 
   const { data, isLoading, isError, error } =
     useGetDealerOrders(searchParamsStr);
-  const updateMutation = useUpdateVehicle(id);
+  const updateMutation = useUpdateDealerOrder(id);
+  const deleteMutation = useDeleteDealerOrder(id, closeModal);
+
+  const handleNavigate = (link) => router.push(link);
 
   useEffect(() => {
     if (!searchParamsStr) {
@@ -38,9 +47,20 @@ export default function Listing() {
   return (
     <div className="border-input w-full rounded-lg">
       <DataTable
-        columns={columns()}
+        columns={columns(
+          setId,
+          updateMutation,
+          user,
+          handleNavigate,
+          setIsModal,
+        )}
         data={data?.orders ?? []}
         totalItems={data?.total}
+      />
+      <DeleteDialog
+        isOpen={isModal}
+        setIsOpen={setIsModal}
+        deleteMutation={deleteMutation}
       />
     </div>
   );

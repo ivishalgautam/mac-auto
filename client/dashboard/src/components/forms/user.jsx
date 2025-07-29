@@ -54,9 +54,7 @@ export default function UserForm({ id, type }) {
   const router = useRouter();
 
   const role = watch("role");
-  const createMutation = useCreateUser(() => {
-    toast("Successfully registered.");
-  });
+  const createMutation = useCreateUser();
   const updateMutation = useUpdateUser(id, function () {
     router.back();
   });

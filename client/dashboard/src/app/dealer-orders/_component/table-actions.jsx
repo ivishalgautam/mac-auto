@@ -4,6 +4,13 @@ import { DataTableSearch } from "@/components/ui/table/data-table-search";
 import { useTableFilters } from "./use-table-filters";
 import { DataTableFilterBox } from "@/components/ui/table/data-table-filter-box";
 
+export const statusOptions = [
+  { label: "In Process", value: "in process" },
+  { label: "Dispatch", value: "dispatch" },
+  { label: "Canceled", value: "canceled" },
+  { label: "Delivered", value: "delivered" },
+];
+
 export default function TableActions() {
   const {
     resetFilters,
@@ -23,7 +30,7 @@ export default function TableActions() {
         setSearchQuery={setSearchQuery}
         setPage={setPage}
       />
-      <DataTableFilterBox
+      {/* <DataTableFilterBox
         filterKey="category"
         title="Category"
         options={[
@@ -33,7 +40,7 @@ export default function TableActions() {
         ]}
         setFilterValue={setCategoryFilter}
         filterValue={categoryFilter}
-      />
+      /> */}
       <DataTableResetFilter
         isFilterActive={isAnyFilterActive}
         onReset={resetFilters}

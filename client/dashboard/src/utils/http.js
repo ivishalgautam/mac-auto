@@ -53,7 +53,6 @@ const http = (headerType = "json", baseURL = API_ROOT) => {
       config.headers = { "Content-Type": "multipart/form-data" };
     }
     return client.post(path, payload, config).then((response) => {
-      console.log({ response });
       return response.data;
     });
   }

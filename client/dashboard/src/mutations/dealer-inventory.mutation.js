@@ -28,3 +28,15 @@ export const useGetDealerInventory = (searchParams = "page=1") => {
     enabled: !!searchParams,
   });
 };
+
+export const useGetDealerInventoryByVehicleId = (
+  vehicleId,
+  searchParams = "page=1",
+) => {
+  return useQuery({
+    queryKey: ["delaer-inventory", vehicleId, searchParams],
+    queryFn: () =>
+      dealer.getDealerInventoryByVehicleId(vehicleId, searchParams),
+    enabled: !!vehicleId,
+  });
+};

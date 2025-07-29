@@ -16,11 +16,15 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import useGetDealers from "@/hooks/use-get-dealers";
 import { cn } from "@/lib/utils";
-import dealer from "@/services/dealer";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { useState } from "react";
 
-export default function DealerSelect({ onChange, className = "", value }) {
+export default function DealerSelect({
+  onChange,
+  className = "",
+  value,
+  dealerId = null,
+}) {
   const [open, setOpen] = useState(false);
   const { data, isLoading, isError, error } = useGetDealers();
   if (isError) return <ErrorMessage error={error} />;

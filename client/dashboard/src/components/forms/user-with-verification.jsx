@@ -128,7 +128,6 @@ export default function UserWithVerificationForm() {
       otp: data.otp,
       request_id: getOtpFormValues().request_id,
     };
-    console.log({ payload });
     verifyOtpMutation.mutate(payload);
   };
 
@@ -203,7 +202,7 @@ export default function UserWithVerificationForm() {
                 variant="link"
                 onClick={handleResendOtp}
                 disabled={resendTimer > 0 || registerMutation.isPending}
-                className="h-auto p-0 text-primary"
+                className="text-primary h-auto p-0"
               >
                 {registerMutation.isPending ? (
                   <>
@@ -235,12 +234,12 @@ export default function UserWithVerificationForm() {
   return (
     <div className="mx-auto w-full space-y-8">
       <div>
-        <h2 className="mt-6 text-center text-2xl font-extrabold text-secondary">
+        <h2 className="text-secondary mt-6 text-center text-2xl font-extrabold">
           User Registration
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600">
           {"Already have an account? "}
-          <Link href={`/login`} className={"font-medium text-primary"}>
+          <Link href={`/login`} className={"text-primary font-medium"}>
             Login
           </Link>
         </p>
@@ -342,7 +341,7 @@ export default function UserWithVerificationForm() {
               <button
                 type="button"
                 onClick={() => setShowPassword((prev) => !prev)}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-600"
+                className="absolute top-1/2 right-2 -translate-y-1/2 text-gray-600"
               >
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
@@ -368,7 +367,7 @@ export default function UserWithVerificationForm() {
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword((prev) => !prev)}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-600"
+                className="absolute top-1/2 right-2 -translate-y-1/2 text-gray-600"
               >
                 {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
@@ -399,7 +398,7 @@ export default function UserWithVerificationForm() {
             <Separator className="w-full" />
           </div>
           <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-gray-50 px-2 text-muted-foreground">
+            <span className="text-muted-foreground bg-gray-50 px-2">
               Or continue with
             </span>
           </div>

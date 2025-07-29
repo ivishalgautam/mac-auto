@@ -36,7 +36,6 @@ export const userFormSchema = z
     message: "Passwords do not match",
   })
   .superRefine((data, ctx) => {
-    console.log({ data });
     if (
       data.role === "dealer" &&
       (!data.location || data.location.trim() === "")

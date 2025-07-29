@@ -14,6 +14,8 @@ export function DealerOrderCreateDialog({
   setIsOpen,
   createMutation,
   vehicleId,
+  dealerId,
+  maxSelect = null,
 }) {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -26,7 +28,12 @@ export function DealerOrderCreateDialog({
             account and remove your data from our servers.
           </DialogDescription>
           <div>
-            <OrderForm createMutation={createMutation} vehicleId={vehicleId} />
+            <OrderForm
+              createMutation={createMutation}
+              vehicleId={vehicleId}
+              dealerId={dealerId}
+              maxSelect={maxSelect}
+            />
           </div>
         </DialogHeader>
       </DialogContent>

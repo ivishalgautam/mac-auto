@@ -13,7 +13,7 @@ export const dealerInventorySchema = z.object({
   chassis_numbers: z
     .array(
       z.object({
-        value: z.string().uuid(),
+        value: z.string(),
         label: z.string(),
       }),
     )

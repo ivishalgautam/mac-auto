@@ -1,6 +1,5 @@
 import ErrorMessage from "@/components/ui/error";
 import { useGetInventoryByVehicleId } from "@/mutations/inventory.mutation";
-import { useFormContext } from "react-hook-form";
 import { useMemo } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import MultipleSelector from "@/components/ui/multiselect";
@@ -10,6 +9,7 @@ export default function ChassisSelect({
   value,
   onChange,
   className,
+  ...props
 }) {
   const { data, isLoading, isError, error } = useGetInventoryByVehicleId(
     vehicleId,
@@ -17,9 +17,9 @@ export default function ChassisSelect({
   );
   const formattedNumbers = useMemo(() => {
     return (
-      data?.inventory?.map(({ id: value, chassis_no: label }) => ({
-        value,
-        label,
+      data?.inventory?.map(({ chassis_no }) => ({
+        value: chassis_no,
+        label: chassis_no,
       })) ?? []
     );
   }, [data]);
@@ -42,6 +42,7 @@ export default function ChassisSelect({
       emptyIndicator={<p className="text-center text-sm">No results found</p>}
       onChange={onChange}
       className={className}
+      {...props}
     />
   );
 }

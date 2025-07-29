@@ -14,10 +14,10 @@ import moment from "moment";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 
-export const columns = (createMutation) => [
+export const columns = (updateMutation, setId, openModal) => [
   {
     accessorKey: "title",
-    header: "TITLE",
+    header: "Title",
     cell: ({ row }) => {
       const title = row.getValue("title");
       return <div className="capitalize">{title}</div>;
@@ -47,8 +47,72 @@ export const columns = (createMutation) => [
     },
   },
   {
-    accessorKey: "quantity",
-    header: "QUANTITY",
+    accessorKey: "active_quantity",
+    header: "Active Qty.",
+    cell: ({ row }) => {
+      const id = row.original.id;
+      const quantity = row.getValue("active_quantity");
+      return (
+        <Badge>
+          <Link
+            href={`/dealer-inventory/${id}/inventory?page=1&limit=10&status=active`}
+          >
+            {quantity}
+          </Link>
+        </Badge>
+      );
+    },
+  },
+  {
+    accessorKey: "sold_quantity",
+    header: "Sold Qty.",
+    cell: ({ row }) => {
+      const id = row.original.id;
+      const quantity = row.getValue("sold_quantity");
+      return (
+        <Badge variant={"outline"}>
+          <Link
+            href={`/dealer-inventory/${id}/inventory?page=1&limit=10&status=sold`}
+          >
+            {quantity}
+          </Link>
+        </Badge>
+      );
+    },
+  },
+  {
+    accessorKey: "inactive_quantity",
+    header: "Inactive Qty.",
+    cell: ({ row }) => {
+      const id = row.original.id;
+      const quantity = row.getValue("inactive_quantity");
+      return (
+        <Badge variant={"secondary"}>
+          <Link
+            href={`/dealer-inventory/${id}/inventory?page=1&limit=10&status=inactive`}
+          >
+            {quantity}
+          </Link>
+        </Badge>
+      );
+    },
+  },
+  {
+    accessorKey: "scrapped_quantity",
+    header: "Scrapped Qty.",
+    cell: ({ row }) => {
+      const id = row.original.id;
+      const quantity = row.getValue("scrapped_quantity");
+      return (
+        <Badge variant={"destructive"}>
+          <Link
+            href={`/dealer-inventory/${id}/inventory?page=1&limit=10&status=scrapped`}
+          >
+            {quantity}
+          </Link>
+        </Badge>
+      );
+    },
   },
   // {
   //   accessorKey: "is_active",
@@ -106,22 +170,28 @@ export const columns = (createMutation) => [
               <Link href={`/vehicles/${id}/edit`}>Edit</Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
+            <DropdownMenuItem>
+              <Link href={`/dealer-inventory/${id}/inventory?page=1&limit=10`}>
+                Inventory
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={() => {
                 setId(id);
                 openModal("inventory");
               }}
             >
-              Update inventory
+              Add inventory
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={() => {
                 setId(id);
-                openModal("dealer-inventory");
+                openModal("dealer-order");
               }}
             >
-              Assign dealer
+              Create order
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem

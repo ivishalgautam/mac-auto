@@ -9,14 +9,7 @@ import { cn } from "@/lib/utils";
 import { Alert, AlertDescription } from "../ui/alert";
 import { getFormErrors } from "@/lib/get-form-errors";
 import { useEffect } from "react";
-import Loader from "../loader";
 import { inventorySchema } from "@/utils/schema/vehicle.schema";
-import { useRouter } from "next/navigation";
-import {
-  useGetVehicle,
-  useGetVehicleInventory,
-} from "@/mutations/vehicle-mutation";
-import ErrorMessage from "../ui/error";
 import { ScrollArea } from "../ui/scroll-area";
 
 const defaultValues = {
@@ -77,19 +70,59 @@ export default function InventoryForm({ createMutation }) {
           <ScrollArea className="h-96">
             <div className="space-y-4">
               <h3 className="text-lg font-semibold">Chassis Numbers</h3>
-              <div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-4">
+              <div className="space-y-4">
                 {Array.from({ length: quantity }, (_, index) => (
-                  <div key={index} className="space-y-2">
-                    <Label>Chassis #{index + 1}</Label>
-                    <Input
-                      type="text"
-                      {...register(`chassis_numbers.${index}.number`)}
-                      placeholder={`Enter chassis number ${index + 1}`}
-                      className={cn({
-                        "border-red-500":
-                          errors?.chassis_numbers?.[index]?.number,
-                      })}
-                    />
+                  <div
+                    key={index}
+                    className="border-input grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-2 rounded-lg border p-4"
+                  >
+                    <div className="space-y-2">
+                      <Label>Chassis #{index + 1}</Label>
+                      <Input
+                        type="text"
+                        {...register(`chassis_numbers.${index}.number`)}
+                        placeholder={`Enter chassis number ${index + 1}`}
+                        className={cn({
+                          "border-red-500":
+                            errors?.chassis_numbers?.[index]?.number,
+                        })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Motor No.</Label>
+                      <Input
+                        type="text"
+                        {...register(`chassis_numbers.${index}.motor_no`)}
+                        placeholder="Enter motor number"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Battery No.</Label>
+                      <Input
+                        type="text"
+                        {...register(`chassis_numbers.${index}.battery_no`)}
+                        placeholder="Enter battery number"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Controller No.</Label>
+                      <Input
+                        type="text"
+                        {...register(`chassis_numbers.${index}.controller_no`)}
+                        placeholder="Enter controller number"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Charger No.</Label>
+                      <Input
+                        type="text"
+                        {...register(`chassis_numbers.${index}.charger_no`)}
+                        placeholder="Enter charger number"
+                      />
+                    </div>
                   </div>
                 ))}
               </div>

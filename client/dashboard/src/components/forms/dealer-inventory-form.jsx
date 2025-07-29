@@ -10,12 +10,18 @@ import { getFormErrors } from "@/lib/get-form-errors";
 import DealerSelect from "@/features/dealer-select";
 import { dealerInventorySchema } from "@/utils/schema/dealer-inventory.schema";
 import ChassisSelect from "@/features/chassis-select";
+import { toast } from "sonner";
 
-export default function OrderForm({ createMutation, vehicleId }) {
+export default function OrderForm({
+  createMutation,
+  vehicleId,
+  dealerId = null,
+  maxSelect = null,
+}) {
   const methods = useForm({
     resolver: zodResolver(dealerInventorySchema),
     defaultValues: {
-      dealer_id: "",
+      dealer_id: dealerId ?? "",
       vehicle_id: vehicleId,
       chassis_numbers: [],
     },
@@ -69,6 +75,16 @@ export default function OrderForm({ createMutation, vehicleId }) {
                     field.onChange(data);
                   }}
                   className={cn({ "border-red-500": errors.chassis_numbers })}
+                  {...(maxSelect
+                    ? {
+                        maxSelected: maxSelect,
+                        onMaxSelected: (maxLimit) => {
+                          toast.warning(
+                            `You have reached max selected: ${maxLimit}`,
+                          );
+                        },
+                      }
+                    : {})}
                 />
               )}
             />

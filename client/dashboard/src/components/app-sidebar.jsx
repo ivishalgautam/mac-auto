@@ -30,7 +30,7 @@ export function AppSidebar({ ...props }) {
 
   return (
     <Sidebar variant="sidebar" collapsible="icon" {...props}>
-      <div className="max-h-16 max-w-full p-2">
+      <div className="max-h-16 p-2">
         <Image
           src="/logo.png"
           width={150}

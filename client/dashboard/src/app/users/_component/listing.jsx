@@ -1,15 +1,4 @@
 "use client";
-
-import {
-  AlertDialog,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
 import ErrorMessage from "@/components/ui/error";
 import { DataTable } from "@/components/ui/table/data-table";
 import { DataTableSkeleton } from "@/components/ui/table/data-table-skeleton";
@@ -21,21 +10,31 @@ import {
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { columns } from "../columns";
+import { UserDeleteDialog } from "./delete-dialog";
 
 export default function UserListing() {
-  const [isModal, setIsModal] = useState(false);
+  const [isDeleteModal, setIsDeleteModal] = useState(false);
+  const [isAssignDealerModal, setIsAssignDealerModal] = useState(false);
   const [userId, setUserId] = useState("");
   const searchParams = useSearchParams();
   const searchParamsStr = searchParams.toString();
   const router = useRouter();
 
-  const openModal = () => setIsModal(true);
-  const closeModal = () => setIsModal(false);
+  const openModal = (type) => {
+    if (type === "delete") {
+      setIsDeleteModal(true);
+    }
+  };
+  const closeModal = (type) => {
+    if (type === "delete") {
+      setIsDeleteModal(false);
+    }
+  };
 
-  const { data, isLoading, isFetching, isError, error } =
-    useGetUsers(searchParamsStr);
-  const deleteMutation = useDeleteUser(userId, closeModal);
+  const { data, isLoading, isError, error } = useGetUsers(searchParamsStr);
+  const deleteMutation = useDeleteUser(userId, () => closeModal("delete"));
   const updateMutation = useUpdateUser(userId);
+
   useEffect(() => {
     if (!searchParamsStr) {
       const params = new URLSearchParams();
@@ -57,34 +56,9 @@ export default function UserListing() {
       />
       <UserDeleteDialog
         deleteMutation={deleteMutation}
-        isOpen={isModal}
-        setIsOpen={setIsModal}
+        isOpen={isDeleteModal}
+        setIsOpen={setIsDeleteModal}
       />
     </div>
-  );
-}
-
-export function UserDeleteDialog({ isOpen, setIsOpen, deleteMutation }) {
-  return (
-    <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-          <AlertDialogDescription>
-            This action cannot be undone. This will permanently deleted.
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <Button
-            variant="destructive"
-            onClick={deleteMutation.mutate}
-            disabled={deleteMutation.isPending}
-          >
-            Delete
-          </Button>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
   );
 }

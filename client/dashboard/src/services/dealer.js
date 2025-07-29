@@ -12,9 +12,17 @@ const get = async (searchParams = "") => {
   return data;
 };
 
+const getDealerInventoryByVehicleId = async (vehicleId, searchParams = "") => {
+  const { data } = await http().get(
+    `${endpoints.dealers.inventory}/by-vehicle/${vehicleId}?${searchParams}`,
+  );
+  return data;
+};
+
 const dealer = {
   createInventory: createInventory,
   get: get,
+  getDealerInventoryByVehicleId: getDealerInventoryByVehicleId,
 };
 
 export default dealer;

@@ -15,7 +15,10 @@ export const endpoints = {
     preSignedUrls: "/upload/presigned-urls",
   },
   users: { getAll: "/users" },
+  customers: { getAll: "/customers" },
+  dealerCustomers: { getAll: "/dealer-customers" },
   vehicles: { getAll: "/vehicles" },
+  pdiChecks: { getAll: "/pdi-checks" },
   dealers: { getAll: "/dealers", inventory: "/dealers/inventory" },
   inventories: {
     getAll: "/inventories",
@@ -23,6 +26,7 @@ export const endpoints = {
   },
   enquiries: { getAll: "/enquiries" },
   queries: { getAll: "/queries" },
+  vehicleEnquiries: { getAll: "/vehicle-enquiries" },
   financers: { getAll: "/financers" },
   orders: { getAll: "/orders", dealers: "/dealer-orders" },
 };

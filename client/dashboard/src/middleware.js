@@ -2,23 +2,23 @@ import { NextResponse } from "next/server";
 import { sidebarData } from "./data/routes";
 
 const filteredRoutes = sidebarData.flatMap((item) =>
-  item.items.length ? [item.url, ...item.items.map(({ url }) => url)] : item.url
+  item.items.length
+    ? [item.url, ...item.items.map(({ url }) => url)]
+    : item.url,
 );
 const filteredDynamicRoutes = sidebarData
   .flatMap((item) =>
     item.items.length
       ? [item.url, ...item.items.map(({ url }) => url)]
-      : [item.url]
+      : [item.url],
   )
   .filter((url) => url.includes(":"));
 
 const AUTH_ROUTES = ["/", "/register"];
 const PRIVATE_ROUTES = [...new Set(filteredRoutes)];
 const DYNAMIC_PRIVATE_ROUTES = filteredDynamicRoutes.map((url) =>
-  url.replace(/:\w+/g, "*")
+  url.replace(/:\w+/g, "*"),
 );
-
-console.log({ DYNAMIC_PRIVATE_ROUTES });
 
 export default async function middleware(req) {
   const token = req.cookies.get("refresh_token")?.value;

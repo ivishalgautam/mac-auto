@@ -65,7 +65,83 @@ const defaultValues = {
   quantity: "",
   variants: [],
   features: [{ heading: "", image: null }],
-  specifications: [{ tab_name: "", specs: [{ label: "", value: "" }] }],
+  // specifications: [{ tab_name: "", specs: [{ label: "", value: "" }] }],
+  specifications: [
+    {
+      tab_name: "Vehicle Overview",
+      specs: [
+        { label: "Model Name", value: "Mac Roar (Garbage Collection Variant)" },
+        {
+          label: "Body Type",
+          value: "Closed Dustbin Compartment with Top Lid (Metal/FRP)",
+        },
+        { label: "Dustbin Capacity", value: "500–600 Litres" },
+        { label: "Chassis Material", value: "Stainless Steel / Mild Steel" },
+        { label: "Payload Capacity", value: "500–550 Kg" },
+        { label: "Top Speed", value: "25 Kmph (Govt Compliant)" },
+        { label: "Range / Charge", value: "70–90 Km" },
+        {
+          label: "Charging Time",
+          value: "4–5 Hours (Li-ion), 8–10 Hours (Lead Acid)",
+        },
+        {
+          label: "Additional Features",
+          value: "Leak-proof body, foot pedal for lid operation",
+        },
+      ],
+    },
+    {
+      tab_name: "Battery & Powertrain",
+      specs: [
+        { label: "Battery Type", value: "Lithium-Ion / Lead Acid (Optional)" },
+        {
+          label: "Battery Capacity",
+          value: "48V 105Ah (Li-ion) / 48V 135Ah (Lead Acid – Eastman)",
+        },
+        { label: "Motor Power", value: "1000W – High Torque BLDC Motor" },
+        { label: "Controller", value: "48V, 24 Tube, Autolek" },
+      ],
+    },
+    {
+      tab_name: "Performance & Safety",
+      specs: [
+        {
+          label: "Braking System",
+          value: "Mechanical Drum Brake (Front & Rear)",
+        },
+        { label: "Tyres", value: "3.75-12 Solid Grip Tyres" },
+        {
+          label: "Suspension",
+          value: "Telescopic Hydraulic (Front), Heavy Duty Leaf Spring (Rear)",
+        },
+      ],
+    },
+    {
+      tab_name: "Accessories",
+      specs: [
+        {
+          label: "Standard Accessories",
+          value:
+            "Reverse Buzzer, First Aid Kit, Fire Extinguisher, Rain Curtain, Jack, Spare Wheel, Tool Kit",
+        },
+        { label: "Optional Accessory", value: "GPS Tracker" },
+      ],
+    },
+    {
+      tab_name: "Warranty",
+      specs: [
+        {
+          label: "Battery",
+          value: "3 Years (Li-ion) / 12 Months (Lead Acid)",
+        },
+        {
+          label: "Motor & Controller",
+          value: "12 Months",
+        },
+      ],
+    },
+  ],
+
   base_price: "",
   video_link: "",
   // pricing: [
