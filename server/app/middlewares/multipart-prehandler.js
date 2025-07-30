@@ -1,5 +1,5 @@
-import { cleanupFiles } from "../../helpers/cleanup-files.js";
-import { saveFile } from "../../utils/file.js";
+import { cleanupFiles } from "../helpers/cleanup-files.js";
+import { saveFile } from "../utils/file.js";
 
 // Helper to convert `items[0][heading]` into nested object
 function assignNestedKey(obj, key, value) {

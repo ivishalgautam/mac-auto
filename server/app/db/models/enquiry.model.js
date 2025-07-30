@@ -26,6 +26,16 @@ const init = async (sequelize) => {
         },
         onDelete: "CASCADE",
       },
+      dealer_id: {
+        type: DataTypes.UUID,
+        allowNull: true,
+        references: {
+          model: constants.models.DEALER_TABLE,
+          key: "id",
+          deferrable: Deferrable.INITIALLY_IMMEDIATE,
+        },
+        onDelete: "CASCADE",
+      },
       quantity: {
         type: DataTypes.INTEGER,
         allowNull: false,
@@ -50,16 +60,33 @@ const init = async (sequelize) => {
         type: DataTypes.STRING,
         allowNull: false,
       },
+      location: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      status: {
+        type: DataTypes.ENUM([
+          "pending",
+          "in process",
+          "converted",
+          "dealer assigned",
+        ]),
+        defaultValue: "pending",
+      },
     },
     {
       createdAt: "created_at",
       updatedAt: "updated_at",
       indexes: [
+        { fields: ["dealer_id"] },
+        { fields: ["vehicle_id"] },
         { fields: ["quantity"] },
         { fields: ["message"] },
         { fields: ["name"] },
         { fields: ["email"] },
         { fields: ["phone"] },
+        { fields: ["location"] },
+        { fields: ["status"] },
       ],
     }
   );
@@ -69,18 +96,25 @@ const init = async (sequelize) => {
 
 const create = async (req) => {
   return await EnquiryModel.create({
+    dealer_id: req.body.dealer_id,
     vehicle_id: req.body.vehicle_id,
     quantity: req.body.quantity,
     message: req.body.message,
     name: req.body.name,
     email: req.body.email,
     phone: req.body.phone,
+    location: req.body.location,
   });
 };
 
 const get = async (req) => {
   let whereConditions = [];
   const queryParams = {};
+  const { role, id } = req.user_data;
+  if (role === "dealer") {
+    whereConditions.push(`dlr.user_id = :userId`);
+    queryParams.userId = id;
+  }
 
   const q = req.query.q ? req.query.q : null;
   if (q) {
@@ -102,6 +136,7 @@ const get = async (req) => {
         COUNT(enq.id) OVER()::integer as total
       FROM ${constants.models.ENQUIRY_TABLE} enq
       LEFT JOIN ${constants.models.VEHICLE_TABLE} vh ON vh.id = enq.vehicle_id
+      LEFT JOIN ${constants.models.DEALER_TABLE} dlr ON dlr.id = enq.dealer_id
       ${whereClause}
       `;
 
@@ -110,6 +145,7 @@ const get = async (req) => {
         enq.*, vh.title as vehicle_name
       FROM ${constants.models.ENQUIRY_TABLE} enq
       LEFT JOIN ${constants.models.VEHICLE_TABLE} vh ON vh.id = enq.vehicle_id
+      LEFT JOIN ${constants.models.DEALER_TABLE} dlr ON dlr.id = enq.dealer_id
       ${whereClause}
       ORDER BY enq.created_at DESC
       LIMIT :limit OFFSET :offset
@@ -132,10 +168,21 @@ const get = async (req) => {
 
 const getById = async (req, id) => {
   return await EnquiryModel.findOne({
-    where: {
-      id: req.params.id || id,
-    },
+    where: { id: req.params?.id || id },
+    raw: true,
   });
+};
+
+const update = async (req, id, transaction) => {
+  const options = {
+    where: { id: req.params?.id || id },
+  };
+  if (transaction) options.transaction = transaction;
+
+  return await EnquiryModel.update(
+    { status: req.body.status, dealer_id: req.body.dealer_id },
+    options
+  );
 };
 
 const deleteById = async (req, id) => {
@@ -147,6 +194,7 @@ const deleteById = async (req, id) => {
 export default {
   init: init,
   create: create,
+  update: update,
   get: get,
   getById: getById,
   deleteById: deleteById,

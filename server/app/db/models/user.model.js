@@ -20,7 +20,10 @@ const init = async (sequelize) => {
       username: {
         type: DataTypes.STRING,
         allowNull: false,
-        unique: true,
+        unique: {
+          args: true,
+          msg: "Username already in use.",
+        },
       },
       email: {
         type: DataTypes.STRING,

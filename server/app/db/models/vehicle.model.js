@@ -88,6 +88,16 @@ const init = async (sequelize) => {
         allowNull: false,
         defaultValue: [],
       },
+      marketing_material: {
+        type: DataTypes.JSONB,
+        allowNull: false,
+        defaultValue: [],
+      },
+      brochure: {
+        type: DataTypes.JSONB,
+        allowNull: false,
+        defaultValue: [],
+      },
       video_link: {
         type: DataTypes.TEXT,
       },
@@ -132,6 +142,8 @@ const create = async (req, transaction) => {
       emi_calculator: req.body.emi_calculator,
       carousel: req.body.carousel,
       gallery: req.body.gallery,
+      marketing_material: req.body.marketing_material,
+      brochure: req.body.brochure,
       video_link: req.body.video_link,
     },
     options
@@ -164,6 +176,8 @@ const update = async (req, id, transaction) => {
       emi_calculator: req.body.emi_calculator,
       carousel: req.body.carousel,
       gallery: req.body.gallery,
+      marketing_material: req.body.marketing_material,
+      brochure: req.body.brochure,
       video_link: req.body.video_link,
     },
     options
@@ -237,7 +251,7 @@ const get = async (req) => {
 
   const query = `
   SELECT 
-      vh.id, vh.title, vh.description, vh.category, vh.slug, vh.color, vh.carousel,
+      vh.id, vh.title, vh.description, vh.category, vh.slug, vh.color, vh.carousel, vh.marketing_material, vh.brochure,
       (vh.pricing->0->>'base_price')::numeric AS starting_from,
       COALESCE(JSON_AGG(
         JSON_BUILD_OBJECT(

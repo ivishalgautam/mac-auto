@@ -96,6 +96,27 @@ const update = async (req, res) => {
       );
     }
 
+    const existingMarketingMaterial = record.marketing_material;
+    const updatedMarketingMaterial = req.body.marketing_material_urls;
+    if (updatedMarketingMaterial) {
+      req.body.marketing_material = [
+        ...(req.body?.marketing_material ?? []),
+        ...updatedMarketingMaterial,
+      ];
+      documentsToDelete.push(
+        ...getItemsToDelete(existingMarketingMaterial, updatedMarketingMaterial)
+      );
+    }
+
+    const existingBrochure = record.brochure;
+    const updatedBrochure = req.body.brochure_urls;
+    if (updatedBrochure) {
+      req.body.brochure = [...(req.body?.brochure ?? []), ...updatedBrochure];
+      documentsToDelete.push(
+        ...getItemsToDelete(existingBrochure, updatedBrochure)
+      );
+    }
+
     // ! remove this after adding all vehicles
     req.body.pricing = uniqueStates.map((stateName) => {
       return {
@@ -141,6 +162,8 @@ const deleteById = async (req, res) => {
     const filesToDelete = [
       ...(record?.carousel ?? []),
       ...(record?.gallery ?? []),
+      ...(record?.marketing_material ?? []),
+      ...(record?.brochure ?? []),
     ];
 
     record.features?.forEach((item) => {

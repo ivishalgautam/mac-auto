@@ -1,6 +1,5 @@
 import jwtVerify from "../../helpers/auth.js";
 import userRoutes from "../../api/users/routes.js";
-import bannerRoutes from "../../api/banner/routes.js";
 import vehicleRoutes from "../../api/vehicle/routes.js";
 import inventoryRoutes from "../../api/inventory/routes.js";
 import queryRoutes from "../../api/query/routes.js";
@@ -21,7 +20,6 @@ export default async function routes(fastify, options) {
 
   // routes
   fastify.register(userRoutes, { prefix: "users" });
-  fastify.register(bannerRoutes, { prefix: "banners" });
   fastify.register(vehicleRoutes, { prefix: "vehicles" });
   fastify.register(inventoryRoutes, { prefix: "inventories" });
   fastify.register(queryRoutes, { prefix: "queries" });

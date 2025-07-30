@@ -23,7 +23,6 @@ export default {
   EnquiryModel: enquiryModel,
   DealerModel: dealerModel,
   DealerInventoryModel: dealerInventoryModel,
-  // DealerInventoryHistoryModel: dealerInventoryHistoryModel,
   FinancerModel: financerModel,
   DealerOrderModel: dealerOrderModel,
   PDICheckModel: pdiCheckModel,

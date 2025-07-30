@@ -1,6 +1,6 @@
 "use strict";
 
-import { multipartPreHandler } from "../middlewares/multipart-prehandler.js";
+import { multipartPreHandler } from "../../middlewares/multipart-prehandler.js";
 import controller from "./controller.js";
 
 export default async function routes(fastify, opts) {
@@ -29,6 +29,8 @@ export default async function routes(fastify, opts) {
           "emi_calculator",
           "carousel_urls",
           "gallery_urls",
+          "marketing_material_urls",
+          "brochure_urls",
           "features",
           "specifications",
         ]),
