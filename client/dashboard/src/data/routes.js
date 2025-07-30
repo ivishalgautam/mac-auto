@@ -141,7 +141,7 @@ export const sidebarData = [
     title: "Enquiries",
     url: "/enquiries?page=1&limit=10",
     icon: ScrollText,
-    roles: [ROLES.ADMIN],
+    roles: [ROLES.ADMIN, ROLES.DEALER],
     isVisible: true,
     items: [],
   },

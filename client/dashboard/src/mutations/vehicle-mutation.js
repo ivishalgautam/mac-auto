@@ -10,6 +10,19 @@ export const useGetVehicles = (searchParams = "page=1") => {
   });
 };
 
+export function useGetFormattedVehicles() {
+  return useQuery({
+    queryKey: ["vehciles"],
+    queryFn: () => vehicle.get(""),
+    select: ({ vehicles = [] }) => {
+      return vehicles.map((vehicle) => ({
+        value: vehicle.id,
+        label: vehicle.title,
+      }));
+    },
+  });
+}
+
 export const useGetVehicle = (id) => {
   return useQuery({
     queryKey: ["vehicles", id],

@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   AlertCircle,
+  ExternalLink,
   LoaderCircleIcon,
   Plus,
   Trash,
@@ -65,83 +66,7 @@ const defaultValues = {
   quantity: "",
   variants: [],
   features: [{ heading: "", image: null }],
-  // specifications: [{ tab_name: "", specs: [{ label: "", value: "" }] }],
-  specifications: [
-    {
-      tab_name: "Vehicle Overview",
-      specs: [
-        { label: "Model Name", value: "Mac Roar (Garbage Collection Variant)" },
-        {
-          label: "Body Type",
-          value: "Closed Dustbin Compartment with Top Lid (Metal/FRP)",
-        },
-        { label: "Dustbin Capacity", value: "500–600 Litres" },
-        { label: "Chassis Material", value: "Stainless Steel / Mild Steel" },
-        { label: "Payload Capacity", value: "500–550 Kg" },
-        { label: "Top Speed", value: "25 Kmph (Govt Compliant)" },
-        { label: "Range / Charge", value: "70–90 Km" },
-        {
-          label: "Charging Time",
-          value: "4–5 Hours (Li-ion), 8–10 Hours (Lead Acid)",
-        },
-        {
-          label: "Additional Features",
-          value: "Leak-proof body, foot pedal for lid operation",
-        },
-      ],
-    },
-    {
-      tab_name: "Battery & Powertrain",
-      specs: [
-        { label: "Battery Type", value: "Lithium-Ion / Lead Acid (Optional)" },
-        {
-          label: "Battery Capacity",
-          value: "48V 105Ah (Li-ion) / 48V 135Ah (Lead Acid – Eastman)",
-        },
-        { label: "Motor Power", value: "1000W – High Torque BLDC Motor" },
-        { label: "Controller", value: "48V, 24 Tube, Autolek" },
-      ],
-    },
-    {
-      tab_name: "Performance & Safety",
-      specs: [
-        {
-          label: "Braking System",
-          value: "Mechanical Drum Brake (Front & Rear)",
-        },
-        { label: "Tyres", value: "3.75-12 Solid Grip Tyres" },
-        {
-          label: "Suspension",
-          value: "Telescopic Hydraulic (Front), Heavy Duty Leaf Spring (Rear)",
-        },
-      ],
-    },
-    {
-      tab_name: "Accessories",
-      specs: [
-        {
-          label: "Standard Accessories",
-          value:
-            "Reverse Buzzer, First Aid Kit, Fire Extinguisher, Rain Curtain, Jack, Spare Wheel, Tool Kit",
-        },
-        { label: "Optional Accessory", value: "GPS Tracker" },
-      ],
-    },
-    {
-      tab_name: "Warranty",
-      specs: [
-        {
-          label: "Battery",
-          value: "3 Years (Li-ion) / 12 Months (Lead Acid)",
-        },
-        {
-          label: "Motor & Controller",
-          value: "12 Months",
-        },
-      ],
-    },
-  ],
-
+  specifications: [{ tab_name: "", specs: [{ label: "", value: "" }] }],
   base_price: "",
   video_link: "",
   // pricing: [
@@ -183,10 +108,14 @@ export default function VehicleForm({ id, type }) {
   const [files, setFiles] = useState({
     carousel: [],
     gallery: [],
+    marketing_material: [],
+    brochure: [],
   });
   const [fileUrls, setFileUrls] = useState({
     carousel_urls: [],
     gallery_urls: [],
+    marketing_material_urls: [],
+    brochure_urls: [],
   });
   const methods = useForm({
     resolver: zodResolver(
@@ -244,11 +173,17 @@ export default function VehicleForm({ id, type }) {
     }
 
     const formData = new FormData();
-    files.carousel?.forEach((file, key) => {
+    files.carousel?.forEach((file) => {
       formData.append("carousel", file);
     });
-    files.gallery?.forEach((file, key) => {
+    files.gallery?.forEach((file) => {
       formData.append("gallery", file);
+    });
+    files.marketing_material?.forEach((file) => {
+      formData.append("marketing_material", file);
+    });
+    files.brochure?.forEach((file) => {
+      formData.append("brochure", file);
     });
 
     Object.entries(data).forEach(([key, value]) => {
@@ -267,8 +202,9 @@ export default function VehicleForm({ id, type }) {
     });
 
     if (type === "edit") {
-      formData.append("carousel_urls", JSON.stringify(fileUrls.carousel_urls));
-      formData.append("gallery_urls", JSON.stringify(fileUrls.gallery_urls));
+      Object.entries(fileUrls).forEach(([key, value]) => {
+        formData.append(key, JSON.stringify(value));
+      });
     }
 
     type === "create"
@@ -288,6 +224,8 @@ export default function VehicleForm({ id, type }) {
         ...prev,
         gallery_urls: data.gallery,
         carousel_urls: data.carousel,
+        marketing_material_urls: data.marketing_material,
+        brochure_urls: data.brochure,
       }));
       reset({
         ...data,
@@ -395,6 +333,99 @@ export default function VehicleForm({ id, type }) {
                         ...prev,
                         gallery_urls: prev.gallery_urls.filter(
                           (i) => i !== src,
+                        ),
+                      }))
+                    }
+                    size="icon"
+                    className="border-background focus-visible:border-background absolute -top-2 -right-2 size-6 rounded-full border-2 shadow-none"
+                    aria-label="Remove image"
+                    type="button"
+                  >
+                    <XIcon className="size-3.5" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* marketing materials */}
+          <div className="col-span-full space-y-4">
+            <Label>Marketing Materials</Label>
+            <Input
+              type="file"
+              multiple
+              onChange={(e) =>
+                setFiles((prev) => ({
+                  ...prev,
+                  marketing_material: Array.from(e.target.files),
+                }))
+              }
+            />
+            <div className="flex flex-wrap items-center justify-start gap-2">
+              {fileUrls?.marketing_material_urls?.map((file, index) => (
+                <div
+                  key={index}
+                  className="hover:bg-muted/50 relative flex items-center justify-between rounded-lg border px-3 py-2 text-sm"
+                >
+                  <div className="flex min-w-0 flex-1 items-center gap-2">
+                    <a href={`${config.file_base}/${file}`} target="_blank">
+                      <ExternalLink className="h-4 w-4" />
+                    </a>
+                    <span className="truncate">{file.split("\\").pop()}</span>
+                  </div>
+                  <Button
+                    onClick={() =>
+                      setFileUrls((prev) => ({
+                        ...prev,
+                        marketing_material_urls:
+                          prev.marketing_material_urls.filter(
+                            (i) => i !== file,
+                          ),
+                      }))
+                    }
+                    size="icon"
+                    className="border-background focus-visible:border-background absolute -top-2 -right-2 size-6 rounded-full border-2 shadow-none"
+                    aria-label="Remove image"
+                    type="button"
+                  >
+                    <XIcon className="size-3.5" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Brochure */}
+          <div className="col-span-full space-y-4">
+            <Label>Brochure</Label>
+            <Input
+              type="file"
+              multiple
+              onChange={(e) =>
+                setFiles((prev) => ({
+                  ...prev,
+                  brochure: Array.from(e.target.files),
+                }))
+              }
+            />
+            <div className="flex flex-wrap items-center justify-start gap-2">
+              {fileUrls?.brochure_urls?.map((file, index) => (
+                <div
+                  key={index}
+                  className="hover:bg-muted/50 relative flex items-center justify-between rounded-lg border px-3 py-2 text-sm"
+                >
+                  <div className="flex min-w-0 flex-1 items-center gap-2">
+                    <a>
+                      <ExternalLink className="h-4 w-4" />
+                    </a>
+                    <span className="truncate">{file.split("\\").pop()}</span>
+                  </div>
+                  <Button
+                    onClick={() =>
+                      setFileUrls((prev) => ({
+                        ...prev,
+                        brochure_urls: prev.brochure_urls.filter(
+                          (i) => i !== file,
                         ),
                       }))
                     }

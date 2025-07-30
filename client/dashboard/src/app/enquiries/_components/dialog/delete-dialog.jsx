@@ -9,7 +9,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-export function DeleteDialog({ isOpen, setIsOpen, handleDelete }) {
+export function DeleteDialog({ isOpen, setIsOpen, mutation }) {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent>
@@ -26,7 +26,11 @@ export function DeleteDialog({ isOpen, setIsOpen, handleDelete }) {
               Close
             </Button>
           </DialogClose>
-          <Button variant="destructive" onClick={handleDelete}>
+          <Button
+            variant="destructive"
+            onClick={() => mutation.mutate({})}
+            disabled={mutation.isPending}
+          >
             Delete
           </Button>
         </DialogFooter>

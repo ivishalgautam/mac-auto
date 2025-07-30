@@ -21,8 +21,8 @@ export default function SidebarContext({ children }) {
           </div>
         </header>
         <div
-          className={cn("w-[calc(100vw-var(--sidebar-width))] px-4 py-2", {
-            "w-full": isMobile,
+          className={cn("w-[calc(99vw-var(--sidebar-width))] px-4 py-2", {
+            "w-full": typeof window !== "undefined" && isMobile,
           })}
         >
           {children}

@@ -14,6 +14,7 @@ export default function FileUpload({
   maxFiles = 10,
   multiple = true,
   maxSizeMB = 5,
+  accept = "image/svg+xml,image/png,image/jpeg,image/jpg,image/gif",
 }) {
   const maxSize = maxSizeMB * 1024 * 1024; // 5MB default
 
@@ -29,7 +30,7 @@ export default function FileUpload({
       getInputProps,
     },
   ] = useFileUpload({
-    accept: "image/svg+xml,image/png,image/jpeg,image/jpg,image/gif",
+    accept: accept,
     maxSize,
     multiple,
     maxFiles,

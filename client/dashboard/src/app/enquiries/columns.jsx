@@ -10,9 +10,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import moment from "moment";
-import { rupee } from "@/lib/Intl";
+import { DropdownMenuSeparator } from "@radix-ui/react-dropdown-menu";
+import { Badge } from "@/components/ui/badge";
 
-export const columns = (openModal, setId) => [
+export const columns = (openModal, setId, user) => [
   {
     accessorKey: "vehicle_name",
     header: "VEHICLE NAME",
@@ -34,8 +35,23 @@ export const columns = (openModal, setId) => [
     header: "PHONE",
   },
   {
+    accessorKey: "location",
+    header: "LOCATION",
+  },
+  {
     accessorKey: "message",
     header: "MESSAGE",
+  },
+  {
+    accessorKey: "status",
+    header: "Status",
+    cell: ({ row }) => {
+      return (
+        <Badge className={"capitalize"} variant={"outline"}>
+          {row.getValue("status")}
+        </Badge>
+      );
+    },
   },
   {
     accessorKey: "created_at",
@@ -72,6 +88,32 @@ export const columns = (openModal, setId) => [
             >
               Delete
             </DropdownMenuItem>
+            {user?.role === "dealer" && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={() => {
+                    setId(id);
+                    openModal("convert");
+                  }}
+                >
+                  Convert to customer
+                </DropdownMenuItem>
+              </>
+            )}
+            {user?.role === "admin" && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={() => {
+                    setId(id);
+                    openModal("inquiry-assign");
+                  }}
+                >
+                  Assign to dealer
+                </DropdownMenuItem>
+              </>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       );
