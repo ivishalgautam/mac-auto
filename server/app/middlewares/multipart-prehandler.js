@@ -29,10 +29,9 @@ export const multipartPreHandler = async (
 
         // Try parsing if explicitly needed
         if (checkForArrayElements.includes(part.fieldname)) {
-          try {
-            value = JSON.parse(value);
-          } catch (err) {}
+          value = JSON.parse(value);
         }
+        body[part.fieldname] = value;
       }
     }
 

@@ -118,7 +118,9 @@ const get = async (req) => {
 
   const q = req.query.q ? req.query.q : null;
   if (q) {
-    whereConditions.push(`(vh.title ILIKE :query)`);
+    whereConditions.push(
+      `(vh.title ILIKE :query OR dlr.location ILIKE :query OR usr.first_name ILIKE :query OR usr.last_name ILIKE :query))`
+    );
     queryParams.query = `%${q}%`;
   }
 
@@ -137,15 +139,21 @@ const get = async (req) => {
       FROM ${constants.models.ENQUIRY_TABLE} enq
       LEFT JOIN ${constants.models.VEHICLE_TABLE} vh ON vh.id = enq.vehicle_id
       LEFT JOIN ${constants.models.DEALER_TABLE} dlr ON dlr.id = enq.dealer_id
+      LEFT JOIN ${constants.models.USER_TABLE} usr ON usr.id = dlr.user_id
       ${whereClause}
       `;
 
   let query = `
       SELECT
-        enq.*, vh.title as vehicle_name
+        enq.*, vh.title as vehicle_name,
+        CASE 
+          WHEN dlr.id IS NULL THEN 'Not assigned'
+          ELSE CONCAT(usr.first_name, ' ', usr.last_name, ' (', dlr.location, ')')
+        END AS dealership
       FROM ${constants.models.ENQUIRY_TABLE} enq
       LEFT JOIN ${constants.models.VEHICLE_TABLE} vh ON vh.id = enq.vehicle_id
       LEFT JOIN ${constants.models.DEALER_TABLE} dlr ON dlr.id = enq.dealer_id
+      LEFT JOIN ${constants.models.USER_TABLE} usr ON usr.id = dlr.user_id
       ${whereClause}
       ORDER BY enq.created_at DESC
       LIMIT :limit OFFSET :offset

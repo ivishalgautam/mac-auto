@@ -14,6 +14,7 @@ import vehicleEnquiryModel from "./models/vehicle-enquiry.model.js";
 import customerModel from "./models/customer.model.js";
 import customerDealersModel from "./models/customer-dealers.model.js";
 import followupModel from "./models/followup.model.js";
+import schemeModel from "./models/scheme.model.js";
 
 export default {
   UserModel: userModel,
@@ -31,4 +32,5 @@ export default {
   CustomerModel: customerModel,
   CustomerDealersModel: customerDealersModel,
   FollowupModel: followupModel,
+  SchemeModel: schemeModel,
 };

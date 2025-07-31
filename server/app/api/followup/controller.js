@@ -24,7 +24,7 @@ const getById = async (req, res) => {
     const record = await table.FollowupModel.getById(req);
     if (!record) return res.code(404).send({ message: "Follow up not found!" });
 
-    res.send(record);
+    res.send({ status: true, data: record });
   } catch (error) {
     throw error;
   }

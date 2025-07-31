@@ -74,8 +74,16 @@ const get = async (req) => {
 
   const q = req.query.q ? req.query.q : null;
   if (q) {
-    whereConditions.push(`(vh.title ILIKE :query)`);
+    whereConditions.push(
+      `(flw.message ILIKE :query OR dlr.location ILIKE :query OR usr.first_name ILIKE :query OR usr.last_name ILIKE :query)`
+    );
     queryParams.query = `%${q}%`;
+  }
+
+  const enquiry = req.query.enquiry ? req.query.enquiry : null;
+  if (enquiry) {
+    whereConditions.push(`flw.enquiry_id = :enquiryId`);
+    queryParams.enquiryId = enquiry;
   }
 
   const page = req.query.page ? Number(req.query.page) : 1;
@@ -89,21 +97,27 @@ const get = async (req) => {
 
   let countQuery = `
     SELECT
-        COUNT(enq.id) OVER()::integer as total
-      FROM ${constants.models.ENQUIRY_TABLE} enq
-      LEFT JOIN ${constants.models.VEHICLE_TABLE} vh ON vh.id = enq.enquiry_id
+        COUNT(flw.id) OVER()::integer as total
+      FROM ${constants.models.FOLLOW_UP_TABLE} flw
+      LEFT JOIN ${constants.models.ENQUIRY_TABLE} enq ON enq.id = flw.enquiry_id
       LEFT JOIN ${constants.models.DEALER_TABLE} dlr ON dlr.id = enq.dealer_id
+      LEFT JOIN ${constants.models.USER_TABLE} usr ON usr.id = dlr.user_id
       ${whereClause}
       `;
 
   let query = `
       SELECT
-        enq.*, vh.title as vehicle_name
-      FROM ${constants.models.ENQUIRY_TABLE} enq
-      LEFT JOIN ${constants.models.VEHICLE_TABLE} vh ON vh.id = enq.enquiry_id
+        flw.*,
+        CASE 
+          WHEN dlr.id IS NULL THEN 'Not assigned'
+          ELSE CONCAT(usr.first_name, ' ', usr.last_name, ' (', dlr.location, ')')
+        END AS dealership
+      FROM ${constants.models.FOLLOW_UP_TABLE} flw
+      LEFT JOIN ${constants.models.ENQUIRY_TABLE} enq ON enq.id = flw.enquiry_id
       LEFT JOIN ${constants.models.DEALER_TABLE} dlr ON dlr.id = enq.dealer_id
+      LEFT JOIN ${constants.models.USER_TABLE} usr ON usr.id = dlr.user_id
       ${whereClause}
-      ORDER BY enq.created_at DESC
+      ORDER BY flw.created_at DESC
       LIMIT :limit OFFSET :offset
     `;
 
@@ -120,7 +134,7 @@ const get = async (req) => {
     plain: true,
   });
 
-  return { enquiries: data, total: count?.total ?? 0 };
+  return { followups: data, total: count?.total ?? 0 };
 };
 
 const getById = async (req, id) => {
