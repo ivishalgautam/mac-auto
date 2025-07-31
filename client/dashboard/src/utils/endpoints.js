@@ -25,6 +25,8 @@ export const endpoints = {
     getByVehicle: "/inventories/by-vehicle",
   },
   enquiries: { getAll: "/enquiries" },
+  followUps: { getAll: "/follow-ups" },
+  schemes: { getAll: "/schemes" },
   queries: { getAll: "/queries" },
   vehicleEnquiries: { getAll: "/vehicle-enquiries" },
   financers: { getAll: "/financers" },

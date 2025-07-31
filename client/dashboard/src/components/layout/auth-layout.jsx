@@ -9,7 +9,7 @@ export default function AuthLayout({ children, className }) {
       <Card className="overflow-hidden p-0">
         <CardContent className="grid p-0 md:grid-cols-2">
           {children}
-          <div className="bg-muted p-6 hidden md:block">
+          <div className="bg-muted hidden p-6 md:block">
             <Image
               src="/login.svg"
               alt="Image"

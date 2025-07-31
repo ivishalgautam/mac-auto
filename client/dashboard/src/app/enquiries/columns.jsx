@@ -1,6 +1,4 @@
 "use client";
-import { Button } from "../../components/ui/button";
-import { ArrowUpDown } from "lucide-react";
 import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 import {
   DropdownMenu,
@@ -12,6 +10,8 @@ import {
 import moment from "moment";
 import { DropdownMenuSeparator } from "@radix-ui/react-dropdown-menu";
 import { Badge } from "@/components/ui/badge";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 export const columns = (openModal, setId, user) => [
   {
@@ -41,6 +41,10 @@ export const columns = (openModal, setId, user) => [
   {
     accessorKey: "message",
     header: "MESSAGE",
+  },
+  user.role === "admin" && {
+    accessorKey: "dealership",
+    header: "DEALERSHIP",
   },
   {
     accessorKey: "status",
@@ -80,13 +84,11 @@ export const columns = (openModal, setId, user) => [
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem
-              onClick={() => {
-                setId(id);
-                openModal("delete");
-              }}
-            >
-              Delete
+            <DropdownMenuSeparator />
+            <DropdownMenuItem>
+              <Link href={`/enquiries/followups?page=1&limit=10&enquiry=${id}`}>
+                Follow ups
+              </Link>
             </DropdownMenuItem>
             {user?.role === "dealer" && (
               <>
@@ -114,6 +116,15 @@ export const columns = (openModal, setId, user) => [
                 </DropdownMenuItem>
               </>
             )}
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onClick={() => {
+                setId(id);
+                openModal("delete");
+              }}
+            >
+              Delete
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       );

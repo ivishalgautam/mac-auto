@@ -15,6 +15,7 @@ export default function FileUpload({
   multiple = true,
   maxSizeMB = 5,
   accept = "image/svg+xml,image/png,image/jpeg,image/jpg,image/gif",
+  grid = "",
 }) {
   const maxSize = maxSizeMB * 1024 * 1024; // 5MB default
 
@@ -87,7 +88,12 @@ export default function FileUpload({
               </Button>
             </div>
 
-            <div className="grid grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-4">
+            <div
+              className={cn(
+                "grid grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-4",
+                grid,
+              )}
+            >
               {files.map((file) => (
                 <div
                   key={file.id}

@@ -31,7 +31,7 @@ export default function RoleContext({ children }) {
     if (isUserLoading) return;
 
     if (!user) {
-      router.replace("/login");
+      router.replace("/");
       return;
     }
 

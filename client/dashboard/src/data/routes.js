@@ -1,9 +1,11 @@
 import { QuestionMarkCircledIcon } from "@radix-ui/react-icons";
 import {
   CarFront,
+  CirclePercent,
   Handshake,
   LayoutDashboard,
   ScrollText,
+  SwatchBook,
   User,
   Users,
 } from "lucide-react";
@@ -177,6 +179,22 @@ export const sidebarData = [
         isVisible: false,
       },
     ],
+  },
+  {
+    title: "Marketing materials",
+    url: "/marketing-materials",
+    icon: CirclePercent,
+    roles: [ROLES.ADMIN, ROLES.DEALER],
+    isVisible: true,
+    items: [],
+  },
+  {
+    title: "Schemes",
+    url: "/schemes?page=1&limit=10",
+    icon: SwatchBook,
+    roles: [ROLES.ADMIN, ROLES.DEALER],
+    isVisible: true,
+    items: [],
   },
   {
     title: "Queries",

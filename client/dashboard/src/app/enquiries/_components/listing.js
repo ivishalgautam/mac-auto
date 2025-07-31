@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { DataTable } from "@/components/ui/table/data-table";
 import { useRouter, useSearchParams } from "next/navigation";
 import { DataTableSkeleton } from "@/components/ui/table/data-table-skeleton";
-import { DeleteDialog } from "./dialog/delete-dialog";
+import { DeleteDialog } from "../followups/_components/delete-dialog";
 import { deleteEnquiry, fetchEnquiries } from "@/services/enquiry";
 import { CreateDialog } from "./dialog/create-dialog";
 import { Button } from "@/components/ui/button";

@@ -15,27 +15,24 @@ import {
 } from "@/components/ui/popover";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import { useGetFormattedVehicles } from "@/mutations/vehicle-mutation";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { useState } from "react";
 
-export default function VehicleSelect({
+const categories = [
+  { label: "Passenger", value: "passenger" },
+  { label: "Cargo", value: "cargo" },
+  { label: "Garbage", value: "garbage" },
+];
+export default function VehicleCategorySelect({
   onChange,
   className = "",
   value,
-  disabled,
-  searchParams,
 }) {
   const [open, setOpen] = useState(false);
-  const { data, isLoading, isError, error } =
-    useGetFormattedVehicles(searchParams);
 
-  if (isError) return <ErrorMessage error={error} />;
-  return isLoading ? (
-    <Skeleton className={"h-9 w-full"} />
-  ) : (
+  return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild className={className} disabled={disabled}>
+      <PopoverTrigger asChild className={className}>
         <Button
           variant="outline"
           role="combobox"
@@ -45,8 +42,8 @@ export default function VehicleSelect({
           )}
         >
           {value
-            ? data.find((vehicle) => vehicle.value === value)?.label
-            : "Select vehicle"}
+            ? categories.find((category) => category.value === value)?.label
+            : "Select category"}
           <ChevronsUpDown className="opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -55,23 +52,23 @@ export default function VehicleSelect({
         align="start"
       >
         <Command>
-          <CommandInput placeholder="Search vehicle..." className="h-9" />
+          <CommandInput placeholder="Search category..." className="h-9" />
           <CommandList>
-            <CommandEmpty>No vehicle found.</CommandEmpty>
+            <CommandEmpty>No category found.</CommandEmpty>
             <CommandGroup>
-              {data.map((vehicle) => (
+              {categories.map((category) => (
                 <CommandItem
-                  value={vehicle.value}
-                  key={vehicle.value}
+                  value={category.value}
+                  key={category.value}
                   onSelect={() => {
-                    onChange(vehicle.value);
+                    onChange(category.value);
                     setOpen(false);
                   }}
                 >
-                  {vehicle.label}
+                  {category.label}
                   <Check
                     className={cn("ml-auto opacity-0", {
-                      "opacity-100": vehicle.value === value,
+                      "opacity-100": category.value === value,
                     })}
                   />
                 </CommandItem>

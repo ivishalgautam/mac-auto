@@ -1,4 +1,4 @@
-import VehicleInquiryForm from "@/components/forms/vehicle-inquiry-form";
+import FollowUpForm from "@/components/forms/followup-form";
 import {
   Dialog,
   DialogContent,
@@ -6,21 +6,29 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { ScrollArea } from "@/components/ui/scroll-area";
 
-export function CreateDialog({ isOpen, setIsOpen }) {
+export function CreateFollowupDialog({
+  isOpen,
+  setIsOpen,
+  enquiryId,
+  id,
+  type,
+}) {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Assign dealer?</DialogTitle>
+          <DialogTitle>Follow Up</DialogTitle>
           <DialogDescription className={"sr-only"}>
-            Create Inquiry
+            Create Follow Up
           </DialogDescription>
           <div className="mt-2">
-            <ScrollArea className="h-96">
-              <VehicleInquiryForm onSuccess={() => setIsOpen(false)} />
-            </ScrollArea>
+            <FollowUpForm
+              enquiryId={enquiryId}
+              onSuccess={() => setIsOpen(false)}
+              id={id}
+              type={type}
+            />
           </div>
         </DialogHeader>
       </DialogContent>

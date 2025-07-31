@@ -10,10 +10,10 @@ export const useGetVehicles = (searchParams = "page=1") => {
   });
 };
 
-export function useGetFormattedVehicles() {
+export function useGetFormattedVehicles(searchParams = "") {
   return useQuery({
-    queryKey: ["vehciles"],
-    queryFn: () => vehicle.get(""),
+    queryKey: ["vehicles", searchParams],
+    queryFn: () => vehicle.get(searchParams),
     select: ({ vehicles = [] }) => {
       return vehicles.map((vehicle) => ({
         value: vehicle.id,
