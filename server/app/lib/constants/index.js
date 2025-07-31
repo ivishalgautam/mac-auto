@@ -58,6 +58,7 @@ const constants = {
     VEHICLE_ENQUIRY_TABLE: "vehicle_enquiries",
     CUSTOMER_TABLE: "customers",
     CUSTOMER_DEALERS_TABLE: "customer_dealers",
+    FOLLOW_UP_TABLE: "followups",
   },
   bcrypt: {
     SALT_ROUNDS: 10,

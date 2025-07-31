@@ -10,6 +10,7 @@ import dealerOrderRoutes from "../../api/dealer-order/routes.js";
 import pdiChecksRoutes from "../../api/pdi-check/routes.js";
 import vehicleEnquiryRoutes from "../../api/vehicle-enquiry/routes.js";
 import customerRoutes from "../../api/customer/routes.js";
+import followupRoutes from "../../api/followup/routes.js";
 
 export default async function routes(fastify, options) {
   // middlewares
@@ -30,4 +31,5 @@ export default async function routes(fastify, options) {
   fastify.register(pdiChecksRoutes, { prefix: "pdi-checks" });
   fastify.register(vehicleEnquiryRoutes, { prefix: "vehicle-enquiries" });
   fastify.register(customerRoutes, { prefix: "customers" });
+  fastify.register(followupRoutes, { prefix: "follow-ups" });
 }

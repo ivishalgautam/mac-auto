@@ -3,11 +3,11 @@ import constants from "../../lib/constants/index.js";
 import sequelizeFwk, { Deferrable, QueryTypes } from "sequelize";
 const { DataTypes } = sequelizeFwk;
 
-let EnquiryModel = null;
+let FollowupModel = null;
 
 const init = async (sequelize) => {
-  EnquiryModel = sequelize.define(
-    constants.models.ENQUIRY_TABLE,
+  FollowupModel = sequelize.define(
+    constants.models.FOLLOW_UP_TABLE,
     {
       id: {
         primaryKey: true,
@@ -16,11 +16,11 @@ const init = async (sequelize) => {
         defaultValue: DataTypes.UUIDV4,
         unique: true,
       },
-      vehicle_id: {
+      enquiry_id: {
         type: DataTypes.UUID,
         allowNull: false,
         references: {
-          model: constants.models.VEHICLE_TABLE,
+          model: constants.models.ENQUIRY_TABLE,
           key: "id",
           deferrable: Deferrable.INITIALLY_IMMEDIATE,
         },
@@ -36,42 +36,9 @@ const init = async (sequelize) => {
         },
         onDelete: "CASCADE",
       },
-      quantity: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        validate: {
-          max: 2147483647,
-          min: -2147483648,
-        },
-      },
       message: {
         type: DataTypes.TEXT,
         allowNull: false,
-      },
-      name: {
-        type: DataTypes.STRING,
-        allowNull: false,
-      },
-      email: {
-        type: DataTypes.STRING,
-        allowNull: false,
-      },
-      phone: {
-        type: DataTypes.STRING,
-        allowNull: false,
-      },
-      location: {
-        type: DataTypes.STRING,
-        allowNull: false,
-      },
-      status: {
-        type: DataTypes.ENUM([
-          "pending",
-          "in process",
-          "converted",
-          "dealer assigned",
-        ]),
-        defaultValue: "pending",
       },
     },
     {
@@ -79,31 +46,20 @@ const init = async (sequelize) => {
       updatedAt: "updated_at",
       indexes: [
         { fields: ["dealer_id"] },
-        { fields: ["vehicle_id"] },
-        { fields: ["quantity"] },
+        { fields: ["enquiry_id"] },
         { fields: ["message"] },
-        { fields: ["name"] },
-        { fields: ["email"] },
-        { fields: ["phone"] },
-        { fields: ["location"] },
-        { fields: ["status"] },
       ],
     }
   );
 
-  await EnquiryModel.sync({ alter: true });
+  await FollowupModel.sync({ alter: true });
 };
 
 const create = async (req) => {
-  return await EnquiryModel.create({
+  return await FollowupModel.create({
     dealer_id: req.body.dealer_id,
-    vehicle_id: req.body.vehicle_id,
-    quantity: req.body.quantity,
+    enquiry_id: req.body.enquiry_id,
     message: req.body.message,
-    name: req.body.name,
-    email: req.body.email,
-    phone: req.body.phone,
-    location: req.body.location,
   });
 };
 
@@ -135,7 +91,7 @@ const get = async (req) => {
     SELECT
         COUNT(enq.id) OVER()::integer as total
       FROM ${constants.models.ENQUIRY_TABLE} enq
-      LEFT JOIN ${constants.models.VEHICLE_TABLE} vh ON vh.id = enq.vehicle_id
+      LEFT JOIN ${constants.models.VEHICLE_TABLE} vh ON vh.id = enq.enquiry_id
       LEFT JOIN ${constants.models.DEALER_TABLE} dlr ON dlr.id = enq.dealer_id
       ${whereClause}
       `;
@@ -144,31 +100,31 @@ const get = async (req) => {
       SELECT
         enq.*, vh.title as vehicle_name
       FROM ${constants.models.ENQUIRY_TABLE} enq
-      LEFT JOIN ${constants.models.VEHICLE_TABLE} vh ON vh.id = enq.vehicle_id
+      LEFT JOIN ${constants.models.VEHICLE_TABLE} vh ON vh.id = enq.enquiry_id
       LEFT JOIN ${constants.models.DEALER_TABLE} dlr ON dlr.id = enq.dealer_id
       ${whereClause}
       ORDER BY enq.created_at DESC
       LIMIT :limit OFFSET :offset
     `;
 
-  const data = await EnquiryModel.sequelize.query(query, {
+  const data = await FollowupModel.sequelize.query(query, {
     replacements: { ...queryParams, limit, offset },
     type: QueryTypes.SELECT,
     raw: true,
   });
 
-  const count = await EnquiryModel.sequelize.query(countQuery, {
+  const count = await FollowupModel.sequelize.query(countQuery, {
     replacements: { ...queryParams },
     type: QueryTypes.SELECT,
     raw: true,
     plain: true,
   });
 
-  return { enquiries: data, total: count.total ?? 0 };
+  return { enquiries: data, total: count?.total ?? 0 };
 };
 
 const getById = async (req, id) => {
-  return await EnquiryModel.findOne({
+  return await FollowupModel.findOne({
     where: { id: req.params?.id || id },
     raw: true,
   });
@@ -180,14 +136,11 @@ const update = async (req, id, transaction) => {
   };
   if (transaction) options.transaction = transaction;
 
-  return await EnquiryModel.update(
-    { status: req.body.status, dealer_id: req.body.dealer_id },
-    options
-  );
+  return await FollowupModel.update({ message: req.body.message }, options);
 };
 
 const deleteById = async (req, id) => {
-  return await EnquiryModel.destroy({
+  return await FollowupModel.destroy({
     where: { id: req.params.id || id },
   });
 };

@@ -62,7 +62,7 @@ const deleteById = async (req, res) => {
 const get = async (req, res) => {
   try {
     const data = await table.EnquiryModel.get(req);
-    res.send({ status: true, data: data, total: data?.[0]?.total });
+    res.send({ status: true, data: data });
   } catch (error) {
     throw error;
   }

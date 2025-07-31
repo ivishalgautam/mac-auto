@@ -13,6 +13,7 @@ import pdiCheckModel from "./models/pdi-check.model.js";
 import vehicleEnquiryModel from "./models/vehicle-enquiry.model.js";
 import customerModel from "./models/customer.model.js";
 import customerDealersModel from "./models/customer-dealers.model.js";
+import followupModel from "./models/followup.model.js";
 
 export default {
   UserModel: userModel,
@@ -29,4 +30,5 @@ export default {
   VehicleEnquiryModel: vehicleEnquiryModel,
   CustomerModel: customerModel,
   CustomerDealersModel: customerDealersModel,
+  FollowupModel: followupModel,
 };
