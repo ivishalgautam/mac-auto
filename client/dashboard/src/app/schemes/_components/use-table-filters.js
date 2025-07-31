@@ -9,11 +9,14 @@ export function useTableFilters() {
       .withOptions({ shallow: false, throttleMs: 1000 })
       .withDefault(""),
   );
-  const [type, setType] = useQueryState(
-    "type",
-    searchParams.q
-      .withOptions({ shallow: false, throttleMs: 1000 })
-      .withDefault(""),
+  const [startDate, setStartDate] = useQueryState(
+    "start_date",
+    searchParams.start_date.withDefault(""),
+  );
+
+  const [endDate, setEndDate] = useQueryState(
+    "end_date",
+    searchParams.end_date.withDefault(""),
   );
 
   const [page, setPage] = useQueryState(
@@ -23,13 +26,15 @@ export function useTableFilters() {
 
   const resetFilters = useCallback(() => {
     setSearchQuery(null);
+    setStartDate(null);
+    setEndDate(null);
+
     setPage(1);
-    setType(null);
-  }, [setSearchQuery, setPage, setType]);
+  }, [setSearchQuery, setPage, setStartDate, setEndDate]);
 
   const isAnyFilterActive = useMemo(() => {
-    return !!searchQuery || !!type;
-  }, [searchQuery, type]);
+    return !!searchQuery || !!startDate;
+  }, [searchQuery, startDate]);
 
   return {
     searchQuery,
@@ -37,8 +42,10 @@ export function useTableFilters() {
     page,
     setPage,
     resetFilters,
-    type,
-    setType,
+    startDate,
+    setStartDate,
+    endDate,
+    setEndDate,
     isAnyFilterActive,
   };
 }

@@ -3,6 +3,7 @@ import { DataTableSearch } from "@/components/ui/table/data-table-search";
 import { useTableFilters } from "./use-table-filters";
 import { DataTableResetFilter } from "@/components/ui/table/data-table-reset-filter";
 import { DataTableFilterBox } from "@/components/ui/table/data-table-filter-box";
+import { DataTableDatePickerWithRange } from "@/components/ui/table/data-table-date-range-selector";
 
 export default function TableActions() {
   const {
@@ -11,8 +12,10 @@ export default function TableActions() {
     searchQuery,
     setPage,
     setSearchQuery,
-    type,
-    setType,
+    startDate,
+    setStartDate,
+    endDate,
+    setEndDate,
   } = useTableFilters();
 
   return (
@@ -33,6 +36,9 @@ export default function TableActions() {
         setFilterValue={setType}
         filterValue={type}
       /> */}
+      <DataTableDatePickerWithRange
+        {...{ startDate, setStartDate, endDate, setEndDate }}
+      />
       <DataTableResetFilter
         isFilterActive={isAnyFilterActive}
         onReset={resetFilters}
