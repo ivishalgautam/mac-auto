@@ -83,6 +83,20 @@ const get = async (req) => {
     queryParams.query = `%${q}%`;
   }
 
+  const startDate = req.query?.start_date || null;
+  const endDate = req.query?.end_date || null;
+  if (startDate && endDate) {
+    whereConditions.push(`scm.date BETWEEN :startDate AND :endDate`);
+    queryParams.startDate = startDate;
+    queryParams.endDate = endDate;
+  } else if (startDate) {
+    whereConditions.push(`scm.date >= :startDate`);
+    queryParams.startDate = startDate;
+  } else if (endDate) {
+    whereConditions.push(`scm.date <= :endDate`);
+    queryParams.endDate = endDate;
+  }
+
   const page = req.query.page ? Number(req.query.page) : 1;
   const limit = req.query.limit ? Number(req.query.limit) : null;
   const offset = (page - 1) * limit;
