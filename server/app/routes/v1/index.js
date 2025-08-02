@@ -14,6 +14,7 @@ import followupRoutes from "../../api/followup/routes.js";
 import schemeRoutes from "../../api/scheme/routes.js";
 import customerOrderRoutes from "../../api/customer-order/routes.js";
 import ticketRoutes from "../../api/ticket/routes.js";
+import reportRoutes from "../../api/report/routes.js";
 
 export default async function routes(fastify, options) {
   // middlewares
@@ -38,4 +39,5 @@ export default async function routes(fastify, options) {
   fastify.register(schemeRoutes, { prefix: "schemes" });
   fastify.register(customerOrderRoutes, { prefix: "customer-orders" });
   fastify.register(ticketRoutes, { prefix: "tickets" });
+  fastify.register(reportRoutes, { prefix: "reports" });
 }

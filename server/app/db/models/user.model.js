@@ -1,7 +1,7 @@
 "use strict";
 import constants from "../../lib/constants/index.js";
 import hash from "../../lib/encryption/index.js";
-import { DataTypes, QueryTypes } from "sequelize";
+import { DataTypes, QueryTypes, Sequelize } from "sequelize";
 import { Op } from "sequelize";
 import moment from "moment";
 
@@ -302,6 +302,7 @@ const countUser = async (last_30_days = false) => {
       },
     };
   }
+
   return await UserModel.findAll({
     where: where_query,
     attributes: [
@@ -359,6 +360,28 @@ const getModel = () => {
   return UserModel;
 };
 
+const getUserRoleBreakdown = async () => {
+  const result = await UserModel.findAll({
+    attributes: [
+      "role",
+      [Sequelize.fn("COUNT", Sequelize.col("role")), "count"],
+    ],
+    where: { role: { [Op.ne]: "admin" } },
+    group: ["role"],
+    raw: true,
+  });
+
+  return {
+    labels: result.map((r) => r.role),
+    datasets: [
+      {
+        label: "Users by Role",
+        data: result.map((r) => parseInt(r.count)),
+      },
+    ],
+  };
+};
+
 export default {
   init: init,
   create: create,
@@ -377,4 +400,5 @@ export default {
   isEmailExist: isEmailExist,
   isUsernameExist: isUsernameExist,
   getModel: getModel,
+  getUserRoleBreakdown: getUserRoleBreakdown,
 };

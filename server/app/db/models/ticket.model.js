@@ -160,6 +160,22 @@ const deleteById = async (req, id) => {
   });
 };
 
+const getTicketStatusBreakdown = async () => {
+  const result = await TicketModel.findAll({
+    attributes: [
+      "status",
+      [sequelizeFwk.fn("COUNT", sequelizeFwk.col("status")), "count"],
+    ],
+    group: ["status"],
+    raw: true,
+  });
+
+  return result.map((r) => ({
+    status: r.status,
+    value: parseInt(r.count),
+  }));
+};
+
 export default {
   init: init,
   create: create,
@@ -167,4 +183,5 @@ export default {
   get: get,
   getById: getById,
   deleteById: deleteById,
+  getTicketStatusBreakdown: getTicketStatusBreakdown,
 };

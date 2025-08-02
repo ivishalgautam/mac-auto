@@ -1,7 +1,8 @@
 "use strict";
 import constants from "../../lib/constants/index.js";
-import sequelizeFwk, { Deferrable, QueryTypes } from "sequelize";
+import sequelizeFwk, { Deferrable, Op, QueryTypes } from "sequelize";
 const { DataTypes } = sequelizeFwk;
+import { format, subDays, eachDayOfInterval } from "date-fns";
 
 let EnquiryModel = null;
 
@@ -200,6 +201,74 @@ const deleteById = async (req, id) => {
   });
 };
 
+const getEnquiriesOverTime = async (days = 7) => {
+  // Query last `n` days of enquiry data grouped by date
+  const result = await EnquiryModel.findAll({
+    attributes: [
+      [sequelizeFwk.fn("DATE", sequelizeFwk.col("created_at")), "date"],
+      [sequelizeFwk.fn("COUNT", "*"), "count"],
+    ],
+    where: {
+      created_at: {
+        [Op.gte]: sequelizeFwk.literal(
+          `CURRENT_DATE - INTERVAL '${days} days'`
+        ),
+      },
+    },
+    group: [sequelizeFwk.fn("DATE", sequelizeFwk.col("created_at"))],
+    order: [[sequelizeFwk.fn("DATE", sequelizeFwk.col("created_at")), "ASC"]],
+    raw: true,
+  });
+
+  // Map results to a dictionary for fast lookup
+  const countByDate = Object.fromEntries(
+    result.map((r) => [format(new Date(r.date), "yyyy-MM-dd"), Number(r.count)])
+  );
+
+  // Generate past `days` date range
+  const dateRange = eachDayOfInterval({
+    start: subDays(new Date(), days - 1),
+    end: new Date(),
+  });
+
+  // Create full graph-ready array
+  const labels = dateRange.map((d) => format(d, "yyyy-MM-dd"));
+  const data = labels.map((date) => countByDate[date] ?? 0);
+
+  return {
+    labels,
+    datasets: [
+      {
+        label: "Enquiries",
+        data,
+      },
+    ],
+  };
+};
+
+const getLatestEnquiries = async (limit = 10) => {
+  const query = `
+      SELECT 
+        eq.*,
+        vh.title AS vehicle_title,
+        CASE 
+          WHEN dlr.id IS NULL THEN 'Not assigned'
+          ELSE CONCAT(usr.first_name, ' ', usr.last_name, ' (', dlr.location, ')')
+        END AS dealership
+      FROM ${constants.models.ENQUIRY_TABLE} eq
+      LEFT JOIN ${constants.models.VEHICLE_TABLE} vh ON vh.id = eq.vehicle_id
+      LEFT JOIN ${constants.models.DEALER_TABLE} dlr ON dlr.id = eq.dealer_id
+      LEFT JOIN ${constants.models.USER_TABLE} usr ON usr.id = dlr.user_id
+      ORDER BY eq.created_at DESC
+      LIMIT :limit
+    `;
+
+  return await EnquiryModel.sequelize.query(query, {
+    replacements: { limit },
+    type: QueryTypes.SELECT,
+  });
+};
+
 export default {
   init: init,
   create: create,
@@ -207,4 +276,6 @@ export default {
   get: get,
   getById: getById,
   deleteById: deleteById,
+  getEnquiriesOverTime: getEnquiriesOverTime,
+  getLatestEnquiries: getLatestEnquiries,
 };
