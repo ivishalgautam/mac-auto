@@ -13,6 +13,8 @@ import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 import { Button } from "@/components/ui/button";
 import moment from "moment";
 import Link from "next/link";
+import { Badge } from "@/components/ui/badge";
+import { ExternalLink } from "lucide-react";
 
 export const columns = (setCustomerId, openModal) => [
   {
@@ -37,6 +39,21 @@ export const columns = (setCustomerId, openModal) => [
   {
     accessorKey: "email",
     header: "EMAIL",
+  },
+  {
+    accessorKey: "total_purchases",
+    header: "Total Purchases",
+    cell: ({ row }) => {
+      const id = row.original.id;
+      return (
+        <Link href={`/users/customers/purchases/${id}?page=1&limit=10`}>
+          <Badge variant="outline">
+            {row.getValue("total_purchases")}{" "}
+            <ExternalLink className="size-3" />
+          </Badge>
+        </Link>
+      );
+    },
   },
   {
     accessorKey: "created_at",

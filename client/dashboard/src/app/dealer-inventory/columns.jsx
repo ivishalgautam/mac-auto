@@ -14,7 +14,7 @@ import moment from "moment";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 
-export const columns = (updateMutation, setId, openModal) => [
+export const columns = (setId, openModal, updateMutation) => [
   {
     accessorKey: "title",
     header: "Title",
@@ -167,10 +167,6 @@ export const columns = (updateMutation, setId, openModal) => [
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem>
-              <Link href={`/vehicles/${id}/edit`}>Edit</Link>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>
               <Link href={`/dealer-inventory/${id}/inventory?page=1&limit=10`}>
                 Inventory
               </Link>
@@ -179,28 +175,10 @@ export const columns = (updateMutation, setId, openModal) => [
             <DropdownMenuItem
               onClick={() => {
                 setId(id);
-                openModal("inventory");
-              }}
-            >
-              Add inventory
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={() => {
-                setId(id);
-                openModal("dealer-order");
+                openModal("create-order");
               }}
             >
               Create order
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={() => {
-                setId(id);
-                openModal("vehicle");
-              }}
-            >
-              Delete
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

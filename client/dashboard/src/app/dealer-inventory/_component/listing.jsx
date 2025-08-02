@@ -7,7 +7,12 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { columns } from "../columns";
 import { useUpdateVehicle } from "@/mutations/vehicle-mutation";
-import { useGetDealerInventory } from "@/mutations/dealer-inventory.mutation";
+import {
+  useGetDealerInventory,
+  useUpdateDealerInventoryItem,
+} from "@/mutations/dealer-inventory.mutation";
+import { CustomerOrderCreateDialog } from "./order-create-dialog";
+import { useCreateCustomerOrder } from "@/mutations/customer-order-mutation";
 
 export default function Listing() {
   const [isModal, setIsModal] = useState(false);
@@ -16,12 +21,23 @@ export default function Listing() {
   const searchParamsStr = searchParams.toString();
   const router = useRouter();
 
-  const openModal = (type) => setIsModal(true);
-  const closeModal = () => setIsModal(false);
+  const openModal = (type) => {
+    if (type === "create-order") {
+      setIsModal(true);
+    }
+  };
+  const closeModal = (type) => {
+    if (type === "create-order") {
+      setIsModal(false);
+    }
+  };
 
   const { data, isLoading, isError, error } =
     useGetDealerInventory(searchParamsStr);
-  const updateMutation = useUpdateVehicle(id);
+  const createMutation = useCreateCustomerOrder(() =>
+    closeModal("create-order"),
+  );
+  const updateMutation = useUpdateDealerInventoryItem(id);
 
   useEffect(() => {
     if (!searchParamsStr) {
@@ -38,9 +54,16 @@ export default function Listing() {
   return (
     <div className="border-input w-full rounded-lg">
       <DataTable
-        columns={columns()}
+        columns={columns(setId, openModal)}
         data={data?.inventory ?? []}
         totalItems={data?.total}
+      />
+
+      <CustomerOrderCreateDialog
+        isOpen={isModal}
+        setIsOpen={setIsModal}
+        createMutation={createMutation}
+        vehicleId={id}
       />
     </div>
   );

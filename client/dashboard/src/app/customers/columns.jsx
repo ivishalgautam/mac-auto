@@ -13,6 +13,8 @@ import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 import { Button } from "@/components/ui/button";
 import moment from "moment";
 import Link from "next/link";
+import { Badge } from "@/components/ui/badge";
+import { ExternalLink } from "lucide-react";
 
 export const columns = () => [
   {
@@ -39,6 +41,21 @@ export const columns = () => [
     header: "EMAIL",
   },
   {
+    accessorKey: "total_purchases",
+    header: "Total Purchases",
+    cell: ({ row }) => {
+      const id = row.original.customer_id;
+      return (
+        <Link href={`/users/customers/purchases/${id}?page=1&limit=10`}>
+          <Badge variant="outline">
+            {row.getValue("total_purchases")}{" "}
+            <ExternalLink className="size-3" />
+          </Badge>
+        </Link>
+      );
+    },
+  },
+  {
     accessorKey: "created_at",
     header: ({ column }) => {
       return <Button variant="ghost">REGISTERED ON</Button>;
@@ -54,8 +71,6 @@ export const columns = () => [
     enableHiding: false,
     cell: ({ row }) => {
       const customerId = row.original.customer_id;
-      const userId = row.original.user_id;
-      const role = row.original.role;
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

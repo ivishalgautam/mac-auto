@@ -68,6 +68,7 @@ const defaultValues = {
   features: [{ heading: "", image: null }],
   specifications: [{ tab_name: "", specs: [{ label: "", value: "" }] }],
   base_price: "",
+  dealer_price: "",
   video_link: "",
   // pricing: [
   //   ...stateCityData.map((state, idx, arr) => {
@@ -570,6 +571,17 @@ export default function VehicleForm({ id, type }) {
             />
           </div>
 
+          {/* dealer price */}
+          <div className="space-y-2">
+            <Label>Dealer price *</Label>
+            <Input
+              type="number"
+              placeholder="Enter Dealer Price"
+              {...register(`dealer_price`, { valueAsNumber: true })}
+              className={cn({ "border-red-500": errors.dealer_price })}
+            />
+          </div>
+
           {/* quantity */}
           {type === "create" && (
             <div className="space-y-2">
@@ -706,7 +718,7 @@ export default function VehicleForm({ id, type }) {
         <div className="text-end">
           <Button
             type="submit"
-            disabled={isFormPending || !isDirty}
+            disabled={isFormPending}
             className="w-full sm:w-auto"
           >
             {isFormPending && (

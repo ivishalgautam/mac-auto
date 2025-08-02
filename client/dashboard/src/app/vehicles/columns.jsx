@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import moment from "moment";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
+import { rupee } from "@/lib/Intl";
 
 export const columns = (updateMutation, setId, openModal) => [
   {
@@ -108,6 +109,28 @@ export const columns = (updateMutation, setId, openModal) => [
           >
             {quantity}
           </Link>
+        </Badge>
+      );
+    },
+  },
+  {
+    header: "Price",
+    cell: ({ row }) => {
+      const id = row.original.id;
+      const price = row.original.dealer_price;
+      return (
+        <Badge className={"p-1 pr-1 pl-2"} variant={"outline"}>
+          {rupee.format(price)}
+          <Badge
+            type="button"
+            onClick={() => {
+              setId(id);
+              openModal("update-price");
+            }}
+            className={"ml-1 cursor-pointer"}
+          >
+            Update
+          </Badge>
         </Badge>
       );
     },

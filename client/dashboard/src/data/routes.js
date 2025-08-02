@@ -6,6 +6,7 @@ import {
   LayoutDashboard,
   ScrollText,
   SwatchBook,
+  Ticket,
   User,
   Users,
 } from "lucide-react";
@@ -14,6 +15,7 @@ const ROLES = {
   ADMIN: "admin",
   USER: "user",
   DEALER: "dealer",
+  CUSTOMER: "customer",
 };
 
 export const sidebarData = [
@@ -43,6 +45,12 @@ export const sidebarData = [
         url: "/users/customers?page=1&limit=10",
         roles: [ROLES.ADMIN],
         isVisible: true,
+      },
+      {
+        title: "Customers",
+        url: "/users/customers/purchases/:id?page=1&limit=10",
+        roles: [ROLES.ADMIN, ROLES.DEALER],
+        isVisible: false,
       },
       {
         title: "Edit",
@@ -193,6 +201,64 @@ export const sidebarData = [
     url: "/schemes?page=1&limit=10",
     icon: SwatchBook,
     roles: [ROLES.ADMIN, ROLES.DEALER],
+    isVisible: true,
+    items: [],
+  },
+  {
+    title: "Tickets",
+    url: "/tickets?page=1&limit=10",
+    icon: Ticket,
+    roles: [ROLES.ADMIN, ROLES.DEALER],
+    isVisible: true,
+    items: [
+      {
+        title: "Create",
+        url: "/tickets/create",
+        roles: [ROLES.ADMIN, ROLES.DEALER],
+        isVisible: true,
+      },
+      {
+        title: "Edit",
+        url: "/tickets/:id/edit",
+        roles: [ROLES.ADMIN, ROLES.DEALER],
+        isVisible: false,
+      },
+    ],
+  },
+  {
+    title: "My Tickets",
+    url: "/tickets?page=1&limit=10",
+    icon: Ticket,
+    roles: [ROLES.CUSTOMER],
+    isVisible: true,
+    items: [
+      {
+        title: "Create",
+        url: "/tickets/create",
+        roles: [ROLES.ADMIN, ROLES.DEALER, ROLES.CUSTOMER],
+        isVisible: true,
+      },
+      {
+        title: "Edit",
+        url: "/tickets/:id/edit",
+        roles: [ROLES.ADMIN, ROLES.DEALER, ROLES.CUSTOMER],
+        isVisible: false,
+      },
+    ],
+  },
+  {
+    title: "Customer Purchase",
+    url: "/customer-purchases?page=1&limit=10",
+    icon: SwatchBook,
+    roles: [ROLES.ADMIN, ROLES.DEALER],
+    isVisible: true,
+    items: [],
+  },
+  {
+    title: "My Purchase",
+    url: "/customer-purchases?page=1&limit=10",
+    icon: SwatchBook,
+    roles: [ROLES.CUSTOMER],
     isVisible: true,
     items: [],
   },

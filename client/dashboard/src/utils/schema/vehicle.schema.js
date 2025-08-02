@@ -86,6 +86,9 @@ export const vehicleSchema = z.object({
   // pricing: z.array(pricingItemSchema).nonempty(),
   video_link: z.string().optional(),
   base_price: z.coerce.number().min(1, { message: "Base price is reuqired*" }),
+  dealer_price: z.coerce
+    .number()
+    .min(1, { message: "Dealer price is reuqired*" }),
   chassis_numbers: z.array(
     z.object({
       number: z
@@ -123,6 +126,9 @@ export const vehicleUpdateSchema = z.object({
   features: z.array(featureItemSchema).optional(),
   video_link: z.string().optional(),
   base_price: z.coerce.number().min(1, { message: "Base price is reuqired*" }),
+  dealer_price: z.coerce
+    .number()
+    .min(1, { message: "Dealer price is reuqired*" }),
   // pricing: z.array(pricingItemSchema).nonempty(),
   emi_calculator: emiCalculatorSchema,
   specifications: z.array(specificationSchema).nonempty(),

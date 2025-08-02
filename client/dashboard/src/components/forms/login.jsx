@@ -31,7 +31,7 @@ import {
 const loginSchema = z.object({
   username: z.string().min(1, "Username is required"),
   password: z.string().min(6, "Password must be at least 6 characters"),
-  role: z.enum(["admin", "dealer"]),
+  role: z.enum(["admin", "dealer", "customer"]),
 });
 
 // API login function
@@ -104,6 +104,7 @@ export default function LoginForm() {
                   <SelectContent>
                     <SelectItem value="admin">Admin</SelectItem>
                     <SelectItem value="dealer">Dealer</SelectItem>
+                    <SelectItem value="customer">Customer</SelectItem>
                   </SelectContent>
                 </Select>
               )}

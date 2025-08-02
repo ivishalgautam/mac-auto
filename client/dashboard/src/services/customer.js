@@ -30,12 +30,20 @@ const getDealerCustomers = async (searchParams = "") => {
   return data;
 };
 
+const getCustomerPurchases = async (searchParams = "") => {
+  const { data } = await http().get(
+    `${endpoints.customers.getAll}/purchases?${searchParams}`,
+  );
+  return data;
+};
+
 const customer = {
   assignToDealer: assignToDealer,
   deleteById: deleteById,
   getById: getById,
   get: get,
   getDealerCustomers: getDealerCustomers,
+  getCustomerPurchases: getCustomerPurchases,
 };
 
 export default customer;

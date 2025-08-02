@@ -28,6 +28,25 @@ export function useGetFormattedCustomers() {
     },
   });
 }
+export function useGetCustomerPurchases(searchParams = "") {
+  return useQuery({
+    queryKey: ["customers-purchases", searchParams],
+    queryFn: () => customer.getCustomerPurchases(searchParams),
+  });
+}
+export function useGetFormattedPurchasesByCustomer(customerId = "") {
+  return useQuery({
+    queryKey: ["customers-purchases", customerId],
+    queryFn: () => customer.getCustomerPurchases(`customer=${customerId}`),
+    // enabled: !!customerId,
+    select: ({ inventory = [] }) => {
+      return inventory.map((purchase) => ({
+        value: purchase.id,
+        label: `${purchase.title} (${purchase.chassis_no})`,
+      }));
+    },
+  });
+}
 
 export function useAssignCustomerToDealer(callback) {
   return useMutation({

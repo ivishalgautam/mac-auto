@@ -22,6 +22,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { rupee } from "@/lib/Intl";
 
 export const columns = (setId, openModal) => [
   {
@@ -53,6 +54,14 @@ export const columns = (setId, openModal) => [
           ></span>
         </div>
       );
+    },
+  },
+  {
+    header: "Price",
+    cell: ({ row }) => {
+      const id = row.original.id;
+      const price = row.original.dealer_price;
+      return <Badge variant={"outline"}>{rupee.format(price)}</Badge>;
     },
   },
   {

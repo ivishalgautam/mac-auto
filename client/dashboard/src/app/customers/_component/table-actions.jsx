@@ -23,7 +23,7 @@ export default function TableActions() {
         setSearchQuery={setSearchQuery}
         setPage={setPage}
       />
-      <DataTableFilterBox
+      {/* <DataTableFilterBox
         filterKey="role"
         title="Role"
         options={[
@@ -32,7 +32,7 @@ export default function TableActions() {
         ]}
         setFilterValue={setRoleFilter}
         filterValue={roleFilter}
-      />
+      /> */}
       <DataTableResetFilter
         isFilterActive={isAnyFilterActive}
         onReset={resetFilters}

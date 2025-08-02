@@ -10,7 +10,11 @@ import {
   useUpdateInventoryItem,
 } from "@/mutations/inventory.mutation";
 import { UpdateDialog } from "./update-dialog";
-import { useGetDealerInventoryByVehicleId } from "@/mutations/dealer-inventory.mutation";
+import {
+  useDeleteDealerInventory,
+  useGetDealerInventoryByVehicleId,
+  useUpdateDealerInventoryItem,
+} from "@/mutations/dealer-inventory.mutation";
 
 export default function Listing({ vehicleId }) {
   const [isUpdateModal, setIsUpdateModal] = useState(false);
@@ -30,8 +34,9 @@ export default function Listing({ vehicleId }) {
     searchParamsStr,
   );
 
-  const deleteMutation = useDeleteInventory(id);
-  const updateMutation = useUpdateInventoryItem(id);
+  const deleteMutation = useDeleteDealerInventory(id);
+  const updateMutation = useUpdateDealerInventoryItem(id);
+
   useEffect(() => {
     if (!searchParamsStr) {
       const params = new URLSearchParams();

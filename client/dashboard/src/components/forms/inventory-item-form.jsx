@@ -31,6 +31,7 @@ export default function InventoryItemForm({ id, callback = null }) {
     resolver: zodResolver(schema),
     defaultValues: { chassis_no: "" },
   });
+
   const updateMutation = useUpdateInventory(id, callback);
   const { data, isLoading, isError, error } = useGetInventoryItem(id);
 

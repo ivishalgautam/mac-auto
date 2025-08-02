@@ -3,6 +3,7 @@ import { useGetInventoryByVehicleId } from "@/mutations/inventory.mutation";
 import { useMemo } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import MultipleSelector from "@/components/ui/multiselect";
+import { useAuth } from "@/providers/auth-provider";
 
 export default function ChassisSelect({
   vehicleId,
@@ -15,6 +16,7 @@ export default function ChassisSelect({
     vehicleId,
     "status=active",
   );
+
   const formattedNumbers = useMemo(() => {
     return (
       data?.inventory?.map(({ chassis_no }) => ({

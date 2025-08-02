@@ -16,11 +16,14 @@ import { DeleteDialog } from "./delete-dialog";
 import { DealerOrderCreateDialog } from "./order-create-dialog";
 import { CreateInventoryDialog } from "./create-inventory-dialog";
 import { useCreateDealerOrder } from "@/mutations/dealer-order-mutation";
+import UpdateVehiclePriceForm from "@/components/forms/vehicle-price";
+import { UpdatePriceDialog } from "./update-price-dialog";
 
 export default function Listing() {
   const [isModal, setIsModal] = useState(false);
   const [isInventoryModal, setIsInventoryModal] = useState(false);
   const [isDealerOrderModal, setIsDealerOrderModal] = useState(false);
+  const [isUpdatePriceModal, setIsUpdatePriceModal] = useState(false);
   const [id, setId] = useState("");
   const searchParams = useSearchParams();
   const searchParamsStr = searchParams.toString();
@@ -33,6 +36,8 @@ export default function Listing() {
       setIsInventoryModal(true);
     } else if (type === "dealer-order") {
       setIsDealerOrderModal(true);
+    } else if (type === "update-price") {
+      setIsUpdatePriceModal(true);
     }
   };
   const closeModal = () => setIsModal(false);
@@ -80,6 +85,11 @@ export default function Listing() {
         isOpen={isDealerOrderModal}
         setIsOpen={setIsDealerOrderModal}
         vehicleId={id}
+      />
+      <UpdatePriceDialog
+        isOpen={isUpdatePriceModal}
+        setIsOpen={setIsUpdatePriceModal}
+        id={id}
       />
     </div>
   );

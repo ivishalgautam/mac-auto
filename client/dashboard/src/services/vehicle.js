@@ -9,6 +9,13 @@ const update = async (id, data) => {
   return await http().put(`${endpoints.vehicles.getAll}/${id}`, data, true);
 };
 
+const updatePrice = async (id, data) => {
+  return await http().put(
+    `${endpoints.vehicles.getAll}/update-price/${id}`,
+    data,
+  );
+};
+
 const deleteById = async (id) => {
   return await http().delete(`${endpoints.vehicles.getAll}/${id}`);
 };
@@ -37,6 +44,7 @@ const getVehicleInventory = async (id) => {
 const vehicle = {
   create: create,
   update: update,
+  updatePrice: updatePrice,
   deleteById: deleteById,
   getById: getById,
   get: get,

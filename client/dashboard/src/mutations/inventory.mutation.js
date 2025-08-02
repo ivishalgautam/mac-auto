@@ -1,3 +1,6 @@
+import { useAuth } from "@/providers/auth-provider";
+import dealer from "@/services/dealer";
+import dealerInventory from "@/services/dealer-inventory";
 import inventory from "@/services/inventory";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -6,18 +9,28 @@ export const useGetInventoryByVehicleId = (
   vehicleId,
   searchParams = "page=1",
 ) => {
+  const { user } = useAuth();
+
   return useQuery({
     queryKey: ["vehicle-inventory", vehicleId, searchParams],
-    queryFn: () => inventory.getInventoryByVehicleId(vehicleId, searchParams),
-    enabled: !!vehicleId,
+    queryFn: () =>
+      user?.role === "admin"
+        ? inventory.getInventoryByVehicleId(vehicleId, searchParams)
+        : dealer.getDealerInventoryByVehicleId(vehicleId, searchParams),
+    enabled: !!vehicleId && !!user,
   });
 };
 
 export const useGetInventoryItem = (id) => {
+  const { user } = useAuth();
+
   return useQuery({
     queryKey: ["vehicle-inventory", id],
-    queryFn: () => inventory.getInventoryItemById(id),
-    enabled: !!id,
+    queryFn: () =>
+      user?.role === "admin"
+        ? inventory.getInventoryItemById(id)
+        : dealerInventory.getDealerInventoryItemById(id),
+    enabled: !!id && !!user,
   });
 };
 
@@ -42,9 +55,13 @@ export const useUpdateInventoryItem = (id, handleSuccess) => {
 
 export const useUpdateInventory = (id, handleSuccess) => {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   return useMutation({
-    mutationFn: (data) => inventory.updateInventoryItem(data, id),
+    mutationFn: (data) =>
+      user?.role === "admin"
+        ? inventory.updateInventoryItem(data, id)
+        : dealerInventory.updateDealerInventoryItem(data, id),
     onSuccess: () => {
       toast("Inventory updated successfully.");
       queryClient.invalidateQueries(["vehicle-inventory"]);

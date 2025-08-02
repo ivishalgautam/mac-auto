@@ -26,6 +26,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { P } from "@/components/ui/typography";
 import config from "@/config";
+import ErrorMessage from "@/components/ui/error";
 
 export default function Listing({}) {
   const { user } = useAuth();
@@ -72,7 +73,7 @@ export default function Listing({}) {
   }, [searchParamStr, router]);
 
   if (isLoading) return <DataTableSkeleton columnCount={5} rowCount={10} />;
-  if (isError) error?.message ?? "error";
+  if (isError) return <ErrorMessage error={error} />;
 
   return (
     <div className="border-input rounded-lg">
@@ -93,7 +94,7 @@ export default function Listing({}) {
       {!data?.schemes?.length ? (
         <P>No Schemes Found!</P>
       ) : (
-        <div className="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-4">
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(350px,1fr))] gap-4">
           {data?.schemes?.map((scheme) => (
             <SchemeCard
               key={scheme.id}
