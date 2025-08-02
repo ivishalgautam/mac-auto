@@ -82,6 +82,7 @@ const constants = {
     "https://dashboard.brandingwaale.com",
     "https://macautoindia.com",
     "https://www.macautoindia.com",
+    "https://dashboard.macautoindia.com",
   ],
 };
 
