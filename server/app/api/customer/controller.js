@@ -44,8 +44,18 @@ const assignToDealer = async (req, res) => {
   }
 };
 
+const getCustomerPurchases = async (req, res) => {
+  try {
+    const data = await table.CustomerPurchaseModel.get(req);
+    res.send({ status: true, data });
+  } catch (error) {
+    throw error;
+  }
+};
+
 export default {
   getDealerCustomers: getDealerCustomers,
   get: get,
   assignToDealer: assignToDealer,
+  getCustomerPurchases: getCustomerPurchases,
 };

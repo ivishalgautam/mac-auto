@@ -48,6 +48,7 @@ const init = async (sequelize) => {
       indexes: [
         { fields: ["vehicle_id"] },
         { fields: ["dealer_id"] },
+        { fields: ["chassis_nos"] },
         { fields: ["status"] },
       ],
     }

@@ -149,6 +149,27 @@ const update = async (req, res) => {
   }
 };
 
+const updatePrice = async (req, res) => {
+  const transaction = await sequelize.transaction();
+
+  try {
+    const record = await table.VehicleModel.getById(req);
+    if (!record)
+      return res
+        .code(status.NOT_FOUND)
+        .send({ status: false, message: responseMessage[status.NOT_FOUND] });
+
+    await table.VehicleModel.update(req, 0, transaction);
+    await transaction.commit();
+    res
+      .code(status.OK)
+      .send({ status: true, message: responseMessage[status.OK] });
+  } catch (error) {
+    await transaction.rollback();
+    throw error;
+  }
+};
+
 const deleteById = async (req, res) => {
   const transaction = await sequelize.transaction();
   try {
@@ -286,4 +307,5 @@ export default {
   getById: getById,
   get: get,
   getBySlug: getBySlug,
+  updatePrice: updatePrice,
 };

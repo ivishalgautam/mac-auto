@@ -85,7 +85,7 @@ const get = async (req) => {
 
   if (q) {
     whereConditions.push(
-      `(usr.first_name ILIKE :query OR usr.last_name ILIKE :query OR usr.email ILIKE :query)`
+      `(usr.first_name ILIKE :query OR usr.last_name ILIKE :query OR usr.email ILIKE :query OR usr.mobile_number ILIKE :query)`
     );
     queryParams.query = `%${q}%`;
   }
@@ -103,11 +103,13 @@ const get = async (req) => {
   SELECT 
     cstdlrs.*,
     usr.id as user_id, CONCAT(usr.first_name, ' ', usr.last_name) as fullname,
-    usr.mobile_number, usr.email
+    usr.mobile_number, usr.email,
+    COUNT(cpt.id) as total_purchases
   FROM ${constants.models.CUSTOMER_DEALERS_TABLE} cstdlrs
   LEFT JOIN ${constants.models.CUSTOMER_TABLE} cst ON cst.id = cstdlrs.customer_id
   LEFT JOIN ${constants.models.USER_TABLE} usr ON usr.id = cst.user_id
   LEFT JOIN ${constants.models.DEALER_TABLE} dlr ON dlr.id = cstdlrs.dealer_id
+  LEFT JOIN ${constants.models.CUSTOMER_PURCHASE_TABLE} cpt ON cpt.customer_id = cstdlrs.customer_id
   ${whereClause}
   GROUP BY cstdlrs.id, usr.id
   ORDER BY cstdlrs.created_at DESC

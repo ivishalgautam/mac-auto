@@ -89,9 +89,40 @@ const createInventory = async (req, res) => {
   }
 };
 
+const updateDealerInventory = async (req, res) => {
+  try {
+    const record = await table.DealerInventoryModel.getById(req.params.id);
+    if (!record)
+      return res
+        .code(status.NOT_FOUND)
+        .send({ status: false, message: "Inventory Item not found" });
+
+    const data = await table.DealerInventoryModel.update(req, req.params.id);
+    res.code(status.OK).send({ status: true, message: "Updated" });
+  } catch (error) {
+    throw error;
+  }
+};
+
+const getInventoryItemById = async (req, res) => {
+  try {
+    const record = await table.DealerInventoryModel.getById(req.params.id);
+    if (!record)
+      return res
+        .code(status.NOT_FOUND)
+        .send({ status: false, message: "Inventory not found" });
+
+    res.code(status.OK).send({ status: true, data: record });
+  } catch (error) {
+    throw error;
+  }
+};
+
 export default {
   get: get,
   getDealerInventory: getDealerInventory,
   createInventory: createInventory,
   getInventoryByVehicleId: getInventoryByVehicleId,
+  updateDealerInventory: updateDealerInventory,
+  getInventoryItemById: getInventoryItemById,
 };

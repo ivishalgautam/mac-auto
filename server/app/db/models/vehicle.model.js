@@ -59,6 +59,11 @@ const init = async (sequelize) => {
         type: DataTypes.DECIMAL(10, 2),
         allowNull: true,
       },
+      dealer_price: {
+        type: DataTypes.DECIMAL(10, 2),
+        allowNull: false,
+        defaultValue: 0,
+      },
       features: {
         // [{ heading: "", image: 0 }]
         type: DataTypes.JSONB,
@@ -145,6 +150,7 @@ const create = async (req, transaction) => {
       marketing_material: req.body.marketing_material,
       brochure: req.body.brochure,
       video_link: req.body.video_link,
+      dealer_price: req.body.dealer_price,
     },
     options
   );
@@ -179,6 +185,7 @@ const update = async (req, id, transaction) => {
       marketing_material: req.body.marketing_material,
       brochure: req.body.brochure,
       video_link: req.body.video_link,
+      dealer_price: req.body.dealer_price,
     },
     options
   );
@@ -251,14 +258,13 @@ const get = async (req) => {
 
   const query = `
   SELECT 
-      vh.id, vh.title, vh.description, vh.category, vh.slug, vh.color, vh.carousel, vh.marketing_material, vh.brochure,
+      vh.id, vh.title, vh.description, vh.category, vh.slug, vh.color, vh.carousel, vh.marketing_material, vh.brochure, vh.dealer_price,
       (vh.pricing->0->>'base_price')::numeric AS starting_from,
       COALESCE(JSON_AGG(
         JSON_BUILD_OBJECT(
           'color', vhvr.color
         )
-      ) FILTER (WHERE vhvr.id IS NOT NULL), '[]') as colors,
-       vh.created_at,
+      ) FILTER (WHERE vhvr.id IS NOT NULL), '[]') as colors, vh.created_at,
       COUNT(DISTINCT CASE WHEN invnt.status = 'active' THEN invnt.id END) as active_quantity,
       COUNT(DISTINCT CASE WHEN invnt.status = 'inactive' THEN invnt.id END) as inactive_quantity,
       COUNT(DISTINCT CASE WHEN invnt.status = 'sold' THEN invnt.id END) as sold_quantity,
@@ -268,7 +274,7 @@ const get = async (req) => {
     LEFT JOIN ${constants.models.VEHICLE_TABLE} vhvr ON vhvr.vehicle_id = vh.id
     ${whereClause}
     GROUP BY vh.id
-    ORDER BY vh.updated_at DESC
+    ORDER BY vh.created_at DESC
     LIMIT :limit OFFSET :offset
   `;
 

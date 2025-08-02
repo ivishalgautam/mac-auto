@@ -60,6 +60,9 @@ const constants = {
     CUSTOMER_DEALERS_TABLE: "customer_dealers",
     FOLLOW_UP_TABLE: "followups",
     SCHEME_TABLE: "schemes",
+    CUSTOMER_ORDER_TABLE: "customer_orders",
+    CUSTOMER_PURCHASE_TABLE: "customer_purchases",
+    TICKET_TABLE: "tickets",
   },
   bcrypt: {
     SALT_ROUNDS: 10,
@@ -77,8 +80,8 @@ const constants = {
     "http://localhost:3000",
     "http://localhost:4000",
     "https://dashboard.brandingwaale.com",
-    "https://mac.brandingwaale.com",
-    "https://ev-riksha.vercel.app/",
+    "https://macautoindia.com",
+    "https://www.macautoindia.com",
   ],
 };
 

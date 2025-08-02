@@ -51,7 +51,7 @@ const get = async (req) => {
 
   if (q) {
     whereConditions.push(
-      `(usr.first_name ILIKE :query OR usr.last_name ILIKE :query OR usr.email ILIKE :query)`
+      `(usr.first_name ILIKE :query OR usr.last_name ILIKE :query OR usr.email ILIKE :query OR usr.mobile_number ILIKE :query)`
     );
     queryParams.query = `%${q}%`;
   }
@@ -69,9 +69,11 @@ const get = async (req) => {
   SELECT 
       cst.*,
       usr.id as user_id, CONCAT(usr.first_name, ' ', usr.last_name) as fullname,
-      usr.mobile_number, usr.email
+      usr.mobile_number, usr.email,
+      COUNT(cpt.id) as total_purchases
     FROM ${constants.models.CUSTOMER_TABLE} cst
     LEFT JOIN ${constants.models.USER_TABLE} usr ON usr.id = cst.user_id
+    LEFT JOIN ${constants.models.CUSTOMER_PURCHASE_TABLE} cpt ON cpt.customer_id = cst.id
     ${whereClause}
     GROUP BY cst.id, usr.id
     ORDER BY usr.created_at DESC
@@ -102,8 +104,15 @@ const get = async (req) => {
   return { customers, total: count?.total ?? 0 };
 };
 
+const getById = async (req, id) => {
+  return await CustomerModel.findOne({
+    where: { id: req.params?.id || id },
+  });
+};
+
 export default {
   init: init,
   create: create,
   get: get,
+  getById: getById,
 };

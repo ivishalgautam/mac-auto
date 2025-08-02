@@ -15,6 +15,8 @@ import customerModel from "./models/customer.model.js";
 import customerDealersModel from "./models/customer-dealers.model.js";
 import followupModel from "./models/followup.model.js";
 import schemeModel from "./models/scheme.model.js";
+import customerPurchaseModel from "./models/customer-purchase.model.js";
+import ticketModel from "./models/ticket.model.js";
 
 export default {
   UserModel: userModel,
@@ -33,4 +35,6 @@ export default {
   CustomerDealersModel: customerDealersModel,
   FollowupModel: followupModel,
   SchemeModel: schemeModel,
+  CustomerPurchaseModel: customerPurchaseModel,
+  TicketModel: ticketModel,
 };

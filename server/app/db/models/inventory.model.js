@@ -155,6 +155,21 @@ const bulkUpdateStatusByChassisNos = async (nos = [], status, transaction) => {
   return updatedRecords;
 };
 
+const updateStatusByChassisNo = async (no, status, transaction) => {
+  const options = {
+    where: { chassis_no: no },
+    returning: true,
+  };
+  if (transaction) options.transaction = transaction;
+
+  const [, updatedRecords] = await InventoryModel.update(
+    { status: status },
+    options
+  );
+
+  return updatedRecords;
+};
+
 const getActiveInventoryIds = async (vehicleId) => {
   return await InventoryModel.findAll({
     where: {
@@ -252,4 +267,5 @@ export default {
   getById: getById,
   getByChassis: getByChassis,
   getActiveInventoryIds: getActiveInventoryIds,
+  updateStatusByChassisNo: updateStatusByChassisNo,
 };
