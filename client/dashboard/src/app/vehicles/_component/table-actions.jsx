@@ -28,8 +28,11 @@ export default function TableActions() {
         title="Category"
         options={[
           { label: "Passenger", value: "passenger" },
-          { label: "Cargo", value: "cargo" },
+          { label: "Loader", value: "loader" },
           { label: "Garbage", value: "garbage" },
+          { label: "E-Cycle", value: "e-cycle" },
+          { label: "E-Scooter", value: "e-scooter" },
+          { label: "Golf", value: "golf" },
         ]}
         setFilterValue={setCategoryFilter}
         filterValue={categoryFilter}

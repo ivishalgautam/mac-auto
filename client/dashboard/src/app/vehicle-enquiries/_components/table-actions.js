@@ -23,16 +23,6 @@ export default function TableActions() {
         setSearchQuery={setSearchQuery}
         setPage={setPage}
       />
-      {/* <DataTableFilterBox
-        title={"Type"}
-        filterKey={"type"}
-        options={[
-          { label: "IPO", value: "ipo" },
-          { label: "Share", value: "share" },
-        ]}
-        setFilterValue={setType}
-        filterValue={type}
-      /> */}
       <DataTableResetFilter
         isFilterActive={isAnyFilterActive}
         onReset={resetFilters}
