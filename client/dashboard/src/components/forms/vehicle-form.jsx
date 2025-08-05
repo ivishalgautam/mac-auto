@@ -508,6 +508,10 @@ export default function VehicleForm({ id, type }) {
                     <SelectItem value="passenger">Passenger</SelectItem>
                     <SelectItem value="cargo">Cargo</SelectItem>
                     <SelectItem value="garbage">Garbage</SelectItem>
+                    <SelectItem value="Loader">Loader</SelectItem>
+                    <SelectItem value="e-cycle">E-Cycle</SelectItem>
+                    <SelectItem value="e-scooter">E-Scooter</SelectItem>
+                    <SelectItem value="golf">Golf</SelectItem>
                   </SelectContent>
                 </Select>
               )}
