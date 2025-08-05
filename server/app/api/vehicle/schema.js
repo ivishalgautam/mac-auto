@@ -2,9 +2,12 @@ import { coerce, z } from "zod";
 
 // Zod schema for VehicleModel
 export const vehicleSchema = z.object({
-  category: z.enum(["passenger", "cargo", "garbage"], {
-    required_error: "Category is required!",
-  }),
+  category: z.enum(
+    ["passenger", "cargo", "loader", "garbage", "e-cycle", "e-scooter", "golf"],
+    {
+      required_error: "Category is required!",
+    }
+  ),
   title: z.string().min(1, { message: "Title is required" }),
   description: z.string().min(1, { message: "Description is required" }),
   vehicle_id: z.string().uuid().nullable().optional(),
