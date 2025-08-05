@@ -24,7 +24,15 @@ const init = async (sequelize) => {
         onDelete: "CASCADE",
       },
       category: {
-        type: DataTypes.ENUM(["passenger", "cargo", "garbage"]),
+        type: DataTypes.ENUM([
+          "passenger",
+          "cargo",
+          "loader",
+          "garbage",
+          "e-cycle",
+          "e-scooter",
+          "golf",
+        ]),
         allowNull: false,
       },
       title: {
