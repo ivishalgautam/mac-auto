@@ -13,6 +13,14 @@ export const userFormSchema = z
       .regex(/^[a-zA-Z0-9_]+$/, {
         message: "Username can only contain letters, numbers, and underscores",
       }),
+    dealer_code: z
+      .string()
+      .min(1, "Dealer code is required")
+      .max(50)
+      .regex(/^[a-zA-Z0-9]+$/, {
+        message:
+          "Dealer code can only contain letters, numbers, and underscores",
+      }),
     email: z.string().email("Please enter a valid email address"),
     mobile_number: z
       .string({ required_error: "Mobile number is required." })
@@ -59,6 +67,14 @@ export const userUpdateSchema = z
       .max(50, { message: "Username must be at most 50 characters long" })
       .regex(/^[a-zA-Z0-9_]+$/, {
         message: "Username can only contain letters, numbers, and underscores",
+      }),
+    dealer_code: z
+      .string()
+      .min(1, "Dealer code is required")
+      .max(50)
+      .regex(/^[a-zA-Z0-9]+$/, {
+        message:
+          "Dealer code can only contain letters, numbers, and underscores",
       }),
     email: z.string().email("Please enter a valid email address"),
     mobile_number: z

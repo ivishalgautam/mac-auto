@@ -15,7 +15,7 @@ export default function AuthLayout({ children, className }) {
               alt="Image"
               width={200}
               height={200}
-              className="h-full w-full object-contain dark:brightness-[0.2] dark:grayscale"
+              className="h-full w-full object-contain"
             />
           </div>
         </CardContent>

@@ -26,7 +26,7 @@ import Loader from "../loader";
 import ErrorMessage from "../ui/error";
 import { useRouter } from "next/navigation";
 
-export default function UserForm({ id, type }) {
+export default function UserForm({ id, type, role = "" }) {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -48,12 +48,12 @@ export default function UserForm({ id, type }) {
       first_name: "",
       last_name: "",
       password: "",
-      role: "",
+      role: role,
     },
   });
   const router = useRouter();
 
-  const role = watch("role");
+  const selectedRole = watch("role");
   const createMutation = useCreateUser();
   const updateMutation = useUpdateUser(id, function () {
     router.back();
@@ -93,7 +93,7 @@ export default function UserForm({ id, type }) {
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
         {/* Role */}
-        <div className="col-span-full space-y-2">
+        {/* <div className="col-span-full space-y-2">
           <Label htmlFor="role">Role *</Label>
           <Controller
             control={control}
@@ -120,10 +120,10 @@ export default function UserForm({ id, type }) {
               );
             }}
           />
-        </div>
+        </div> */}
 
         {/* location */}
-        {role === "dealer" && (
+        {selectedRole === "dealer" && (
           <div className="col-span-full space-y-2">
             <Label htmlFor="location">Location *</Label>
             <Input
@@ -131,6 +131,17 @@ export default function UserForm({ id, type }) {
               placeholder="Enter Dealer Location"
               {...register("location")}
               className={cn({ "border-red-500": errors.location })}
+            />
+          </div>
+        )}
+        {selectedRole === "dealer" && (
+          <div className="col-span-full space-y-2">
+            <Label htmlFor="dealer_code">Dealer code *</Label>
+            <Input
+              id="dealer_code"
+              placeholder="Enter Dealer Code"
+              {...register("dealer_code")}
+              className={cn({ "border-red-500": errors.dealer_code })}
             />
           </div>
         )}

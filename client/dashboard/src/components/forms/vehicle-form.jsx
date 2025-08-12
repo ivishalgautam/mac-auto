@@ -102,6 +102,9 @@ const defaultValues = {
     },
     financing_companies: [],
   },
+  meta_title: "",
+  meta_description: "",
+  meta_keywords: "",
 };
 
 export default function VehicleForm({ id, type }) {
@@ -698,6 +701,40 @@ export default function VehicleForm({ id, type }) {
         <div className="space-y-4">
           <h3 className="text-lg font-semibold">Specification</h3>
           <Specifications />
+        </div>
+
+        {/* seo */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold">SEO</h3>
+          <div className="space-y-2">
+            <div className="col-span-full space-y-2">
+              <Label htmlFor="meta_title">Meta title</Label>
+              <Input
+                id="meta_title"
+                {...register("meta_title")}
+                className={cn({ "border-red-500": errors.meta_title })}
+                placeholder="Enter meta title"
+              />
+            </div>
+            <div className="col-span-full space-y-2">
+              <Label htmlFor="meta_description">Meta description</Label>
+              <Textarea
+                id="meta_description"
+                {...register("meta_description")}
+                className={cn({ "border-red-500": errors.meta_description })}
+                placeholder="Enter meta description"
+              />
+            </div>
+            <div className="col-span-full space-y-2">
+              <Label htmlFor="meta_keywords">Meta keywords</Label>
+              <Textarea
+                id="meta_keywords"
+                {...register("meta_keywords")}
+                className={cn({ "border-red-500": errors.meta_keywords })}
+                placeholder="Enter meta keywords"
+              />
+            </div>
+          </div>
         </div>
 
         {/* errors print */}

@@ -26,12 +26,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
+import { cn } from "@/lib/utils";
 
 // Form validation schema
 const loginSchema = z.object({
   username: z.string().min(1, "Username is required"),
   password: z.string().min(6, "Password must be at least 6 characters"),
-  role: z.enum(["admin", "dealer", "customer"]),
+  role: z.enum(["admin", "dealer", "customer"], {
+    message: "Please select role.",
+  }),
 });
 
 // API login function
@@ -98,7 +101,11 @@ export default function LoginForm() {
                   onValueChange={field.onChange}
                   defaultValue={field.value}
                 >
-                  <SelectTrigger className="w-full">
+                  <SelectTrigger
+                    className={cn("w-full border-gray-700", {
+                      "border-red-500": errors.role,
+                    })}
+                  >
                     <SelectValue placeholder="Role" />
                   </SelectTrigger>
                   <SelectContent>
@@ -121,7 +128,9 @@ export default function LoginForm() {
               <Input
                 id="username"
                 placeholder="johndoe"
-                className="pl-10"
+                className={cn("pl-10", {
+                  "border-red-500": errors.username,
+                })}
                 {...register("username")}
               />
             </div>
@@ -148,7 +157,9 @@ export default function LoginForm() {
                 id="password"
                 type="password"
                 placeholder="••••••••"
-                className="pl-10"
+                className={cn("pl-10", {
+                  "border-red-500": errors.password,
+                })}
                 {...register("password")}
               />
             </div>

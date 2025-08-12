@@ -7,16 +7,17 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Muted } from "@/components/ui/typography";
+import { Switch } from "@/components/ui/switch";
+import { Muted, Small } from "@/components/ui/typography";
 import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import moment from "moment";
 import Link from "next/link";
-import { Badge } from "@/components/ui/badge";
-import { ExternalLink } from "lucide-react";
 
-export const columns = (setUserId, openModal) => [
+export const columns = (updateMutation, setUserId, openModal) => [
   {
     accessorKey: "fullname",
     header: "FULLNAME",
@@ -33,6 +34,18 @@ export const columns = (setUserId, openModal) => [
     },
   },
   {
+    accessorKey: "username",
+    header: "USERNAME",
+    cell: ({ row }) => {
+      const username = row.getValue("username");
+      return (
+        <div className="flex items-center justify-start gap-2">
+          <Badge variant={"outline"}>@{username}</Badge>
+        </div>
+      );
+    },
+  },
+  {
     accessorKey: "mobile_number",
     header: "PHONE",
   },
@@ -41,17 +54,26 @@ export const columns = (setUserId, openModal) => [
     header: "EMAIL",
   },
   {
-    accessorKey: "total_purchases",
-    header: "Total Purchases",
+    accessorKey: "is_active",
+    header: ({ column }) => {
+      return <Button variant="ghost">STATUS</Button>;
+    },
     cell: ({ row }) => {
-      const id = row.original.customer_id;
+      const is_active = row.getValue("is_active");
+      const id = row.original.user_id;
       return (
-        <Link href={`/users/customers/purchases/${id}?page=1&limit=10`}>
-          <Badge variant="outline">
-            {row.getValue("total_purchases")}{" "}
-            <ExternalLink className="size-3" />
-          </Badge>
-        </Link>
+        <div className="flex items-center justify-start gap-2">
+          <Switch
+            checked={is_active}
+            onCheckedChange={(checked) => {
+              setUserId(id);
+              return updateMutation.mutate({ is_active: checked });
+            }}
+          />
+          <Small className={is_active ? "text-green-500" : "text-red-500"}>
+            {is_active ? "active" : "inactive"}
+          </Small>
+        </div>
       );
     },
   },
@@ -70,8 +92,8 @@ export const columns = (setUserId, openModal) => [
     id: "actions",
     enableHiding: false,
     cell: ({ row }) => {
-      const customerId = row.original.customer_id;
-      const userId = row.original.user_id;
+      const id = row.original.user_id;
+      const role = row.original.role;
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -84,16 +106,12 @@ export const columns = (setUserId, openModal) => [
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem>
-              <Link href={`/customers/${userId}/edit`}>Edit</Link>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <Link href={`/customers/${customerId}/purchases`}>Purchases</Link>
+              <Link href={`/dealers/${id}/edit`}>Edit</Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={() => {
-                setUserId(userId);
+                setUserId(id);
                 openModal("delete");
               }}
             >

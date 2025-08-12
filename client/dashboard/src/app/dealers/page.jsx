@@ -4,16 +4,16 @@ import { DataTableSkeleton } from "@/components/ui/table/data-table-skeleton";
 import { searchParamsCache, serialize } from "@/lib/searchparams";
 import { Suspense } from "react";
 import UserTableActions from "./_component/table-actions";
-import Listing from "./_component/listing";
 import Link from "next/link";
-import { buttonVariants } from "@/components/ui/button";
 import { Plus } from "lucide-react";
+import { buttonVariants } from "@/components/ui/button";
+import Listing from "./_component/listing";
 
 export const metadata = {
-  title: "Customers",
+  title: "Dealers",
 };
 
-export default async function Customers({ searchParams }) {
+export default async function DealersPage({ searchParams }) {
   const sParams = await searchParams;
 
   searchParamsCache.parse(sParams);
@@ -23,14 +23,11 @@ export default async function Customers({ searchParams }) {
     <PageContainer>
       <div className="flex items-start justify-between">
         <Heading
-          title="Customers"
-          description="Manage customers (Create, Update, Delete)."
+          title="Dealers"
+          description="Manage Dealers (Create, Update, Delete)."
         />
-        <Link
-          href="/customers/create"
-          className={buttonVariants({ size: "sm" })}
-        >
-          <Plus size="15" /> Add customer
+        <Link href="/dealers/create" className={buttonVariants({ size: "sm" })}>
+          <Plus size="15" /> Add Dealer
         </Link>
       </div>
       <UserTableActions />

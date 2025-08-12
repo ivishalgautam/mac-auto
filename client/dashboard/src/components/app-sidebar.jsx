@@ -20,7 +20,7 @@ export function AppSidebar({ ...props }) {
   const { user, isUserLoading } = useAuth();
   const filteredRoutes = useMemo(() => {
     return sidebarData
-      .filter((route) => route.roles.includes(user?.role))
+      .filter((route) => route.roles.includes(user?.role) && route.isVisible)
       .map((item) => {
         return {
           ...item,

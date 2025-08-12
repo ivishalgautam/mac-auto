@@ -1,21 +1,25 @@
 "use client";
-
 import ErrorMessage from "@/components/ui/error";
 import { DataTable } from "@/components/ui/table/data-table";
 import { DataTableSkeleton } from "@/components/ui/table/data-table-skeleton";
+import {
+  useDeleteUser,
+  useGetUsers,
+  useUpdateUser,
+} from "@/mutations/user-mutation";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { columns } from "../columns";
-import { useGetDealerCustomers } from "@/mutations/customer-mutation";
-import { useDeleteUser } from "@/mutations/user-mutation";
-import { DeleteDialog } from "./delete-dialog";
+import { UserDeleteDialog } from "./delete-dialog";
+import { useGetDealers } from "@/mutations/dealer-mutation";
 
 export default function Listing() {
+  const [isDeleteModal, setIsDeleteModal] = useState(false);
+  const [isAssignDealerModal, setIsAssignDealerModal] = useState(false);
+  const [userId, setUserId] = useState("");
   const searchParams = useSearchParams();
   const searchParamsStr = searchParams.toString();
   const router = useRouter();
-  const [userId, setUserId] = useState("");
-  const [isDeleteModal, setIsDeleteModal] = useState(false);
 
   const openModal = (type) => {
     if (type === "delete") {
@@ -28,9 +32,9 @@ export default function Listing() {
     }
   };
 
-  const { data, isLoading, isError, error } =
-    useGetDealerCustomers(searchParamsStr);
+  const { data, isLoading, isError, error } = useGetDealers(searchParamsStr);
   const deleteMutation = useDeleteUser(userId, () => closeModal("delete"));
+  const updateMutation = useUpdateUser(userId);
 
   useEffect(() => {
     if (!searchParamsStr) {
@@ -47,11 +51,11 @@ export default function Listing() {
   return (
     <div className="border-input w-full rounded-lg">
       <DataTable
-        columns={columns(setUserId, openModal)}
-        data={data?.customers ?? []}
+        columns={columns(updateMutation, setUserId, openModal)}
+        data={data?.dealers ?? []}
         totalItems={data?.total}
       />
-      <DeleteDialog
+      <UserDeleteDialog
         deleteMutation={deleteMutation}
         isOpen={isDeleteModal}
         setIsOpen={setIsDeleteModal}

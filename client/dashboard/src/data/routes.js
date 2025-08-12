@@ -28,11 +28,11 @@ export const sidebarData = [
     items: [],
   },
   {
-    title: "User",
+    title: "Users",
     url: "/users?page=1&limit=10",
     icon: Users,
     roles: [ROLES.ADMIN],
-    isVisible: true,
+    isVisible: false,
     items: [
       {
         title: "Create",
@@ -61,12 +61,46 @@ export const sidebarData = [
     ],
   },
   {
+    title: "Dealers",
+    url: "/dealers?page=1&limit=10",
+    icon: Users,
+    roles: [ROLES.ADMIN],
+    isVisible: true,
+    items: [
+      {
+        title: "Create",
+        url: "/dealers/create",
+        roles: [ROLES.ADMIN],
+        isVisible: true,
+      },
+      {
+        title: "Edit",
+        url: "/dealers/:id/edit",
+        roles: [ROLES.ADMIN],
+        isVisible: false,
+      },
+    ],
+  },
+  {
     title: "Customers",
     url: "/customers?page=1&limit=10",
-    roles: [ROLES.DEALER],
+    roles: [ROLES.ADMIN, ROLES.DEALER],
     isVisible: true,
     icon: Users,
-    items: [],
+    items: [
+      {
+        title: "Create",
+        url: "/customers/create",
+        roles: [ROLES.ADMIN],
+        isVisible: true,
+      },
+      {
+        title: "Edit",
+        url: "/customers/:id/edit",
+        roles: [ROLES.ADMIN],
+        isVisible: false,
+      },
+    ],
   },
   {
     title: "Financers",
