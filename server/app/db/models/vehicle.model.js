@@ -114,6 +114,18 @@ const init = async (sequelize) => {
       video_link: {
         type: DataTypes.TEXT,
       },
+      meta_title: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
+      meta_description: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
+      meta_keywords: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
     },
     {
       createdAt: "created_at",
@@ -159,6 +171,9 @@ const create = async (req, transaction) => {
       brochure: req.body.brochure,
       video_link: req.body.video_link,
       dealer_price: req.body.dealer_price,
+      meta_title: req.body.meta_title,
+      meta_description: req.body.meta_description,
+      meta_keywords: req.body.meta_keywords,
     },
     options
   );
@@ -194,6 +209,9 @@ const update = async (req, id, transaction) => {
       brochure: req.body.brochure,
       video_link: req.body.video_link,
       dealer_price: req.body.dealer_price,
+      meta_title: req.body.meta_title,
+      meta_description: req.body.meta_description,
+      meta_keywords: req.body.meta_keywords,
     },
     options
   );
