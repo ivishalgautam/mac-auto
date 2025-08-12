@@ -101,9 +101,9 @@ export const vehicleSchema = z.object({
   ),
   specifications: z.array(specificationSchema).nonempty(),
   emi_calculator: emiCalculatorSchema,
-  meta_title: z.string(1, { message: "Meta title is required" }),
-  meta_description: z.string(1, { message: "Meta description is required" }),
-  meta_keywords: z.string(1, { message: "Meta keywords are required" }),
+  meta_title: z.string().optional(),
+  meta_description: z.string().optional(),
+  meta_keywords: z.string().optional(),
   // financing_companies: z.array(
   //   z.object({
   //     id: z.string(),
@@ -141,9 +141,9 @@ export const vehicleUpdateSchema = z.object({
   // pricing: z.array(pricingItemSchema).nonempty(),
   emi_calculator: emiCalculatorSchema,
   specifications: z.array(specificationSchema).nonempty(),
-  meta_title: z.string(1, { message: "Meta title is required" }),
-  meta_description: z.string(1, { message: "Meta description is required" }),
-  meta_keywords: z.string(1, { message: "Meta keywords are required" }),
+  meta_title: z.string().optional(),
+  meta_description: z.string().optional(),
+  meta_keywords: z.string().optional(),
   // financing_companies: z.array(
   //   z.object({
   //     id: z.string(),
