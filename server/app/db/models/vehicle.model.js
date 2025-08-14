@@ -249,7 +249,7 @@ const getBySlug = async (req, slug) => {
 };
 
 const get = async (req) => {
-  const whereConditions = ["vh.is_variant IS false"];
+  const whereConditions = ["vh.vehicle_id IS null"];
   const queryParams = {};
   const q = req.query.q ? req.query.q : null;
   const type = req?.query?.type ?? null;

@@ -12,7 +12,6 @@ export default async function routes(fastify, opts) {
           "variants",
           "pricing",
           "emi_calculator",
-          "vehicle_id",
           "chassis_numbers",
           "features",
           "specifications",

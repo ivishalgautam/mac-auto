@@ -17,13 +17,25 @@ export const vehicleSchema = z.object({
     .string({ required_error: "Color is required!" })
     .min(1, { message: "Color is required!" }),
   quantity: z.coerce.number().default(0),
-  chassis_numbers: z.array(
-    z.object({
-      number: z
-        .string({ required_error: "required*" })
-        .min(1, { message: "required*" }),
-    })
-  ),
+  // chassis_numbers: z.array(
+  //   z.object({
+  //     number: z
+  //       .string({ required_error: "required*" })
+  //       .min(1, { message: "required*" }),
+  //     motor_no: z
+  //       .string({ required_error: "required*" })
+  //       .min(1, { message: "required*" }),
+  //     battery_no: z
+  //       .string({ required_error: "required*" })
+  //       .min(1, { message: "required*" }),
+  //     controller_no: z
+  //       .string({ required_error: "required*" })
+  //       .min(1, { message: "required*" }),
+  //     charger_no: z
+  //       .string({ required_error: "required*" })
+  //       .min(1, { message: "required*" }),
+  //   })
+  // ),
   base_price: z.coerce.number().min(1, { message: "Base price is reuqired*" }),
   // pricing: z
   //   .array(

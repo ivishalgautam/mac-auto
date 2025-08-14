@@ -13,7 +13,7 @@ const create = async (req, res) => {
     if (record) {
       return res.code(409).send({
         message:
-          "User already exists with username. Please try with different username",
+          "User already exists with this username. Please try with different username",
       });
     }
 

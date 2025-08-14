@@ -17,6 +17,7 @@ import followupModel from "./models/followup.model.js";
 import schemeModel from "./models/scheme.model.js";
 import customerPurchaseModel from "./models/customer-purchase.model.js";
 import ticketModel from "./models/ticket.model.js";
+import vehicleColorModel from "./models/vehicle-color.model.js";
 
 export default {
   UserModel: userModel,
@@ -37,4 +38,5 @@ export default {
   SchemeModel: schemeModel,
   CustomerPurchaseModel: customerPurchaseModel,
   TicketModel: ticketModel,
+  VehicleColorModel: vehicleColorModel,
 };

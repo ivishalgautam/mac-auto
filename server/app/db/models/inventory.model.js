@@ -22,6 +22,16 @@ const init = async (sequelize) => {
         },
         onDelete: "CASCADE",
       },
+      vehicle_color_id: {
+        type: DataTypes.UUID,
+        allowNull: false,
+        references: {
+          model: constants.models.VEHICLE_COLOR_TABLE,
+          key: "id",
+          deferrable: Deferrable.INITIALLY_IMMEDIATE,
+        },
+        onDelete: "CASCADE",
+      },
       chassis_no: {
         type: DataTypes.STRING,
         allowNull: false,
@@ -57,6 +67,9 @@ const init = async (sequelize) => {
       indexes: [
         {
           fields: ["vehicle_id"],
+        },
+        {
+          fields: ["vehicle_color_id"],
         },
         {
           fields: ["chassis_no"],

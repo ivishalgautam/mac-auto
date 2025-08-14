@@ -3,10 +3,10 @@ import slugify from "slugify";
 import table from "../../db/models.js";
 import constants from "../../lib/constants/index.js";
 import { vehicleSchema, vehicleUpdateSchema } from "./schema.js";
-import { sequelize } from "../../db/postgres.js";
 import { getItemsToDelete } from "../../helpers/filter.js";
 import { cleanupFiles } from "../../helpers/cleanup-files.js";
 import { stateCityData, uniqueStates } from "../../data/state-city-data.js";
+import { sequelize } from "../../db/postgres.js";
 
 const status = constants.http.status;
 const responseMessage = constants.error.message;
@@ -15,6 +15,7 @@ const create = async (req, res) => {
   const transaction = await sequelize.transaction();
   try {
     const validateData = vehicleSchema.parse(req.body);
+    if (!!validateData.vehicle_id) req.body.is_variant = true;
     req.body.slug = slugify(validateData.title, {
       lower: true,
       strict: true,
@@ -37,9 +38,13 @@ const create = async (req, res) => {
 
     const vehicleData = await table.VehicleModel.create(req, transaction);
     if (vehicleData) {
-      const chassisData = validateData.chassis_numbers.map(({ number }) => ({
+      const chassisData = validateData.chassis_numbers.map((chassis) => ({
         vehicle_id: vehicleData.id,
-        chassis_no: number,
+        chassis_no: chassis.number,
+        motor_no: chassis.motor_no,
+        battery_no: chassis.battery_no,
+        controller_no: chassis.controller_no,
+        charger_no: chassis.charger_no,
       }));
       await table.InventoryModel.bulkCreate(chassisData, transaction);
     }
