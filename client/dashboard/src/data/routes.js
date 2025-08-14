@@ -148,6 +148,12 @@ export const sidebarData = [
         roles: [ROLES.ADMIN],
         isVisible: false,
       },
+      {
+        title: "Veriant create",
+        url: "/vehicles/:id/inventory/create",
+        roles: [ROLES.ADMIN],
+        isVisible: false,
+      },
     ],
   },
   {

@@ -36,6 +36,10 @@ const createVehicleInventory = async (id, data) => {
   return await http().post(`${endpoints.inventories.getAll}/${id}`, data);
 };
 
+const createVehicleVariant = async (data) => {
+  return await http().post(endpoints.vehicles.variant, data, true);
+};
+
 const getVehicleInventory = async (id) => {
   const { data } = await http().get(`${endpoints.inventories.getAll}/${id}`);
   return data;
@@ -49,6 +53,7 @@ const vehicle = {
   getById: getById,
   get: get,
   createVehicleInventory: createVehicleInventory,
+  createVehicleVariant: createVehicleVariant,
   getVehicleInventory: getVehicleInventory,
 };
 

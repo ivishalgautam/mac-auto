@@ -134,3 +134,21 @@ export const useCreateVehicleInventory = (id, handleSuccess) => {
     },
   });
 };
+export const useCreateVehicleVariant = (handleSuccess) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: vehicle.createVehicleVariant,
+    onSuccess: () => {
+      toast("Quantity updated successfully.");
+      queryClient.invalidateQueries(["vehicles"]);
+      typeof handleSuccess === "function" && handleSuccess();
+    },
+    onError: (error) => {
+      console.error("Mutation Error:", error);
+      toast.error(
+        error?.response?.data?.message ?? error?.message ?? "An error occurred",
+      );
+    },
+  });
+};

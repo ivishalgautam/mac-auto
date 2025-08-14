@@ -92,13 +92,25 @@ export const vehicleSchema = z.object({
   dealer_price: z.coerce
     .number()
     .min(1, { message: "Dealer price is reuqired*" }),
-  chassis_numbers: z.array(
-    z.object({
-      number: z
-        .string({ required_error: "required*" })
-        .min(1, { message: "required*" }),
-    }),
-  ),
+  // chassis_numbers: z.array(
+  //   z.object({
+  //     number: z
+  //       .string({ required_error: "required*" })
+  //       .min(1, { message: "required*" }),
+  //     motor_no: z
+  //       .string({ required_error: "required*" })
+  //       .min(1, { message: "required*" }),
+  //     battery_no: z
+  //       .string({ required_error: "required*" })
+  //       .min(1, { message: "required*" }),
+  //     controller_no: z
+  //       .string({ required_error: "required*" })
+  //       .min(1, { message: "required*" }),
+  //     charger_no: z
+  //       .string({ required_error: "required*" })
+  //       .min(1, { message: "required*" }),
+  //   }),
+  // ),
   specifications: z.array(specificationSchema).nonempty(),
   emi_calculator: emiCalculatorSchema,
   meta_title: z.string().optional(),
@@ -156,9 +168,9 @@ export const vehicleUpdateSchema = z.object({
 
 // Zod schema for Inventory
 export const inventorySchema = z.object({
-  quantity: z
-    .number({ required_error: "Quantity is required" })
-    .min(0, { message: "Quantity is required" }),
+  vehicle_id: z.string().uuid({ message: "Select valid vehicle sid" }),
+  color_name: z.string().min(1, { message: "Color name is reuqired" }),
+  color_hex: z.string().min(1, { message: "Color HEX is reuqired" }),
   chassis_numbers: z.array(
     z.object({
       number: z

@@ -53,6 +53,7 @@ import Features from "./vehicle/feature";
 import EMICalculator from "./vehicle/emi-calculator";
 import Specifications from "./vehicle/specifications";
 import { useCallback } from "react";
+import { Separator } from "../ui/separator";
 
 const defaultValues = {
   carousel: [],
@@ -305,7 +306,6 @@ export default function VehicleForm({ id, type }) {
               ))}
             </div>
           </div>
-
           {/* gallery */}
           <div className="col-span-full space-y-4">
             <Label>Gallery</Label>
@@ -351,6 +351,8 @@ export default function VehicleForm({ id, type }) {
               ))}
             </div>
           </div>
+
+          <Separator className="col-span-full" />
 
           {/* marketing materials */}
           <div className="col-span-full space-y-4">
@@ -445,217 +447,256 @@ export default function VehicleForm({ id, type }) {
             </div>
           </div>
 
-          {/* vehicle id */}
-          <div className="space-y-2">
-            <Label htmlFor="vehicle_id">Vehicle</Label>
-            {isFormattedVehiclesLoading ? (
-              <Skeleton className={"h-9 w-full"} />
-            ) : isFormattedVehiclesError ? (
-              <ErrorMessage error={formattedVehiclesError} />
-            ) : (
+          <Separator className="col-span-full" />
+          <div className="col-span-full grid grid-cols-3 gap-4">
+            {/* vehicle id */}
+            <div className="space-y-2">
+              <Label htmlFor="vehicle_id">Vehicle</Label>
+              {isFormattedVehiclesLoading ? (
+                <Skeleton className={"h-9 w-full"} />
+              ) : isFormattedVehiclesError ? (
+                <ErrorMessage error={formattedVehiclesError} />
+              ) : (
+                <Controller
+                  control={control}
+                  name="vehicle_id"
+                  render={({ field }) => (
+                    <Select
+                      key={field.value}
+                      onValueChange={field.onChange}
+                      value={field.value ?? ""}
+                      defaultValue={field.value ?? ""}
+                    >
+                      <SelectTrigger
+                        className={cn("w-full", {
+                          "border-red-500": errors.vehicle_id,
+                        })}
+                      >
+                        <SelectValue placeholder="Select a vehicle" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {formattedVehicles.map((vehicle) => (
+                          <SelectItem
+                            key={vehicle.value}
+                            value={vehicle.value}
+                            className={"capitalize"}
+                          >
+                            {vehicle.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+              )}
+            </div>
+
+            {/* category */}
+            <div className="space-y-2">
+              <Label htmlFor="category">Category *</Label>
               <Controller
                 control={control}
-                name="vehicle_id"
+                name="category"
                 render={({ field }) => (
                   <Select
                     key={field.value}
                     onValueChange={field.onChange}
-                    value={field.value ?? ""}
-                    defaultValue={field.value ?? ""}
+                    value={field.value}
+                    defaultValue={field.value}
                   >
                     <SelectTrigger
                       className={cn("w-full", {
-                        "border-red-500": errors.vehicle_id,
+                        "border-red-500": errors.category,
                       })}
                     >
-                      <SelectValue placeholder="Select a vehicle" />
+                      <SelectValue placeholder="Select a category" />
                     </SelectTrigger>
                     <SelectContent>
-                      {formattedVehicles.map((vehicle) => (
+                      <SelectItem value="passenger">Passenger</SelectItem>
+                      <SelectItem value="cargo">Cargo</SelectItem>
+                      <SelectItem value="garbage">Garbage</SelectItem>
+                      <SelectItem value="loader">Loader</SelectItem>
+                      <SelectItem value="e-cycle">E-Cycle</SelectItem>
+                      <SelectItem value="e-scooter">E-Scooter</SelectItem>
+                      <SelectItem value="golf">Golf</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+            </div>
+
+            {/* title */}
+            <div className="space-y-2">
+              <Label htmlFor="title">Title</Label>
+              <Input
+                id="title"
+                {...register("title")}
+                className={cn({ "border-red-500": errors.title })}
+                placeholder="Enter title"
+              />
+            </div>
+
+            {/* color */}
+            <div className="space-y-2">
+              <Label>Color</Label>
+              <Controller
+                name={`color`}
+                render={({ field }) => (
+                  <Select
+                    onValueChange={field.onChange}
+                    value={field.value}
+                    defaultValue={field.value}
+                    key={field.value}
+                  >
+                    <SelectTrigger
+                      className={cn("w-full", {
+                        "border-red-500": errors?.color,
+                      })}
+                    >
+                      <SelectValue placeholder="Select color" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {colors.map((color) => (
                         <SelectItem
-                          key={vehicle.value}
-                          value={vehicle.value}
+                          key={color.value}
+                          value={color.value}
                           className={"capitalize"}
                         >
-                          {vehicle.label}
+                          {color.label}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 )}
               />
-            )}
-          </div>
+            </div>
 
-          {/* category */}
-          <div className="space-y-2">
-            <Label htmlFor="category">Category *</Label>
-            <Controller
-              control={control}
-              name="category"
-              render={({ field }) => (
-                <Select
-                  key={field.value}
-                  onValueChange={field.onChange}
-                  value={field.value}
-                  defaultValue={field.value}
-                >
-                  <SelectTrigger
-                    className={cn("w-full", {
-                      "border-red-500": errors.category,
-                    })}
-                  >
-                    <SelectValue placeholder="Select a category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="passenger">Passenger</SelectItem>
-                    <SelectItem value="cargo">Cargo</SelectItem>
-                    <SelectItem value="garbage">Garbage</SelectItem>
-                    <SelectItem value="loader">Loader</SelectItem>
-                    <SelectItem value="e-cycle">E-Cycle</SelectItem>
-                    <SelectItem value="e-scooter">E-Scooter</SelectItem>
-                    <SelectItem value="golf">Golf</SelectItem>
-                  </SelectContent>
-                </Select>
-              )}
-            />
-          </div>
-
-          {/* title */}
-          <div className="space-y-2">
-            <Label htmlFor="title">Title</Label>
-            <Input
-              id="title"
-              {...register("title")}
-              className={cn({ "border-red-500": errors.title })}
-              placeholder="Enter title"
-            />
-          </div>
-
-          {/* color */}
-          <div className="space-y-2">
-            <Label>Color</Label>
-            <Controller
-              name={`color`}
-              render={({ field }) => (
-                <Select
-                  onValueChange={field.onChange}
-                  value={field.value}
-                  defaultValue={field.value}
-                  key={field.value}
-                >
-                  <SelectTrigger
-                    className={cn("w-full", {
-                      "border-red-500": errors?.color,
-                    })}
-                  >
-                    <SelectValue placeholder="Select color" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {colors.map((color) => (
-                      <SelectItem
-                        key={color.value}
-                        value={color.value}
-                        className={"capitalize"}
-                      >
-                        {color.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-            />
-          </div>
-
-          {/* base price */}
-          <div className="space-y-2">
-            <Label>Base Price *</Label>
-            <Input
-              type="number"
-              placeholder="Enter Base Price"
-              {...register(`base_price`, { valueAsNumber: true })}
-              className={cn({ "border-red-500": errors.base_price })}
-            />
-          </div>
-
-          {/* dealer price */}
-          <div className="space-y-2">
-            <Label>Dealer price *</Label>
-            <Input
-              type="number"
-              placeholder="Enter Dealer Price"
-              {...register(`dealer_price`, { valueAsNumber: true })}
-              className={cn({ "border-red-500": errors.dealer_price })}
-            />
-          </div>
-
-          {/* quantity */}
-          {type === "create" && (
+            {/* base price */}
             <div className="space-y-2">
-              <Label>Quantity</Label>
+              <Label>Base Price *</Label>
               <Input
                 type="number"
-                placeholder="Enter quantity"
-                {...register(`quantity`, { valueAsNumber: true })}
-                className={cn({ "border-red-500": errors.quantity })}
+                placeholder="Enter Base Price"
+                {...register(`base_price`, { valueAsNumber: true })}
+                className={cn({ "border-red-500": errors.base_price })}
               />
             </div>
-          )}
 
-          {/* description */}
-          <div className="col-span-full space-y-2">
-            <Label htmlFor="description">Description</Label>
-            <Textarea
-              id="description"
-              {...register("description")}
-              className={cn({ "border-red-500": errors.description })}
-              placeholder="Enter description"
-            />
-          </div>
+            {/* dealer price */}
+            <div className="space-y-2">
+              <Label>Dealer price *</Label>
+              <Input
+                type="number"
+                placeholder="Enter Dealer Price"
+                {...register(`dealer_price`, { valueAsNumber: true })}
+                className={cn({ "border-red-500": errors.dealer_price })}
+              />
+            </div>
 
-          {/* video_link */}
-          <div className="col-span-full space-y-2">
-            <Label htmlFor="video_link">Video link</Label>
-            <Input
-              id="video_link"
-              {...register("video_link")}
-              className={cn({ "border-red-500": errors.video_link })}
-              placeholder="Enter Video link"
-            />
+            {/* quantity */}
+            {type === "create" && (
+              <div className="space-y-2">
+                <Label>Quantity</Label>
+                <Input
+                  type="number"
+                  placeholder="Enter quantity"
+                  {...register(`quantity`, { valueAsNumber: true })}
+                  className={cn({ "border-red-500": errors.quantity })}
+                />
+              </div>
+            )}
+
+            {/* description */}
+            <div className="col-span-full space-y-2">
+              <Label htmlFor="description">Description</Label>
+              <Textarea
+                id="description"
+                {...register("description")}
+                className={cn({ "border-red-500": errors.description })}
+                placeholder="Enter description"
+              />
+            </div>
+
+            {/* video_link */}
+            <div className="col-span-full space-y-2">
+              <Label htmlFor="video_link">Video link</Label>
+              <Input
+                id="video_link"
+                {...register("video_link")}
+                className={cn({ "border-red-500": errors.video_link })}
+                placeholder="Enter Video link"
+              />
+            </div>
           </div>
         </div>
 
         {/* chassis numbers */}
         {type === "create" && quantity > 0 && (
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Chassis Numbers</h3>
-            <div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-4">
-              {Array.from({ length: quantity }, (_, index) => (
-                <div key={index} className="space-y-2">
-                  <Label>Chassis #{index + 1}</Label>
-                  <Input
-                    type="text"
-                    {...register(`chassis_numbers.${index}.number`)}
-                    placeholder={`Enter chassis number ${index + 1}`}
-                    className={cn({
-                      "border-red-500":
-                        errors?.chassis_numbers?.[index]?.number,
-                    })}
-                  />
-                  {/* {errors?.chassis_numbers?.[index]?.number && (
-                      <p className="text-sm text-red-500">
-                        {errors.chassis_numbers[index].number.message}
-                      </p>
-                    )} */}
-                </div>
-              ))}
+          <>
+            <Separator className="col-span-full" />
+            <div className="space-y-4">
+              <h3 className="text-3xl font-semibold">Chassis Numbers</h3>
+              <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
+                {Array.from({ length: quantity }, (_, index) => (
+                  <div
+                    key={index}
+                    className="border-input grid grid-cols-2 gap-3 rounded-lg border p-4"
+                  >
+                    <div className="space-y-2">
+                      <Label>Chassis #{index + 1}</Label>
+                      <Input
+                        type="text"
+                        {...register(`chassis_numbers.${index}.number`)}
+                        placeholder={`Enter chassis number ${index + 1}`}
+                        className={cn({
+                          "border-red-500":
+                            errors?.chassis_numbers?.[index]?.number,
+                        })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Motor No.</Label>
+                      <Input
+                        type="text"
+                        {...register(`chassis_numbers.${index}.motor_no`)}
+                        placeholder="Enter motor number"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Battery No.</Label>
+                      <Input
+                        type="text"
+                        {...register(`chassis_numbers.${index}.battery_no`)}
+                        placeholder="Enter battery number"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Controller No.</Label>
+                      <Input
+                        type="text"
+                        {...register(`chassis_numbers.${index}.controller_no`)}
+                        placeholder="Enter controller number"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Charger No.</Label>
+                      <Input
+                        type="text"
+                        {...register(`chassis_numbers.${index}.charger_no`)}
+                        placeholder="Enter charger number"
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
+          </>
         )}
+        <Separator className="col-span-full" />
 
         {/* pricing */}
         {/* <div className="space-y-4">
-          <h3 className="text-lg font-semibold">Pricing</h3>
+          <h3 className="text-3xl font-semibold">Pricing</h3>
           <div className="border-input space-y-2 rounded-md border p-4">
             {pricingFields.map((field, index) => (
               <PricingItem
@@ -687,25 +728,28 @@ export default function VehicleForm({ id, type }) {
 
         {/* emi calculator */}
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold">EMI Calculator</h3>
+          <h3 className="text-3xl font-semibold">EMI Calculator</h3>
           <EMICalculator />
         </div>
+        <Separator className="col-span-full" />
 
         {/* Features */}
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold">Features</h3>
+          <h3 className="text-3xl font-semibold">Features</h3>
           <Features />
         </div>
+        <Separator className="col-span-full" />
 
         {/* specification */}
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold">Specification</h3>
+          <h3 className="text-3xl font-semibold">Specification</h3>
           <Specifications />
         </div>
+        <Separator className="col-span-full" />
 
         {/* seo */}
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold">SEO</h3>
+          <h3 className="text-3xl font-semibold">SEO</h3>
           <div className="space-y-2">
             <div className="col-span-full space-y-2">
               <Label htmlFor="meta_title">Meta title</Label>

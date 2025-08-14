@@ -37,12 +37,21 @@ export const columns = (updateMutation, setId, openModal) => [
     header: "COLOR",
     cell: ({ row }) => {
       const color = row.getValue("color");
+      const variantColors = row.original.colors ?? [];
       return (
         <div className="flex gap-1">
           <span
             className="size-6 rounded-full"
             style={{ backgroundColor: color }}
           ></span>
+          {variantColors.length > 0 &&
+            variantColors.map(({ color }) => (
+              <span
+                key={color}
+                className="size-6 rounded-full"
+                style={{ backgroundColor: color }}
+              ></span>
+            ))}
         </div>
       );
     },
@@ -197,13 +206,8 @@ export const columns = (updateMutation, setId, openModal) => [
               </Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={() => {
-                setId(id);
-                openModal("inventory");
-              }}
-            >
-              Add inventory
+            <DropdownMenuItem>
+              <Link href={`/vehicles/${id}/inventory/create`}>Add Variant</Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem

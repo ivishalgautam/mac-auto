@@ -45,7 +45,7 @@ export default function InventoryItemForm({ id, callback = null }) {
 
   useEffect(() => {
     if (data) {
-      reset({ chassis_no: data.chassis_no || "" });
+      reset({ ...data });
     }
   }, [data, id, reset]);
 
@@ -62,6 +62,42 @@ export default function InventoryItemForm({ id, callback = null }) {
           placeholder="Enter Chassis No."
           {...register("chassis_no")}
           className={cn({ "border-red-500": errors.chassis_no })}
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label>Motor No.</Label>
+        <Input
+          type="text"
+          {...register(`motor_no`)}
+          placeholder="Enter motor number"
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label>Battery No.</Label>
+        <Input
+          type="text"
+          {...register(`battery_no`)}
+          placeholder="Enter battery number"
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label>Controller No.</Label>
+        <Input
+          type="text"
+          {...register(`controller_no`)}
+          placeholder="Enter controller number"
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label>Charger No.</Label>
+        <Input
+          type="text"
+          {...register(`charger_no`)}
+          placeholder="Enter charger number"
         />
       </div>
 

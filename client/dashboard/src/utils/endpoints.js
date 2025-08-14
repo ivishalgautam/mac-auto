@@ -17,7 +17,7 @@ export const endpoints = {
   users: { getAll: "/users" },
   customers: { getAll: "/customers" },
   dealerCustomers: { getAll: "/dealer-customers" },
-  vehicles: { getAll: "/vehicles" },
+  vehicles: { getAll: "/vehicles", variant: "/vehicle-colors" },
   pdiChecks: { getAll: "/pdi-checks" },
   dealers: { getAll: "/dealers", inventory: "/dealers/inventory" },
   inventories: {
