@@ -37,17 +37,17 @@ const create = async (req, res) => {
     });
 
     const vehicleData = await table.VehicleModel.create(req, transaction);
-    if (vehicleData) {
-      const chassisData = validateData.chassis_numbers.map((chassis) => ({
-        vehicle_id: vehicleData.id,
-        chassis_no: chassis.number,
-        motor_no: chassis.motor_no,
-        battery_no: chassis.battery_no,
-        controller_no: chassis.controller_no,
-        charger_no: chassis.charger_no,
-      }));
-      await table.InventoryModel.bulkCreate(chassisData, transaction);
-    }
+    // if (vehicleData) {
+    //   const chassisData = validateData.chassis_numbers.map((chassis) => ({
+    //     vehicle_id: vehicleData.id,
+    //     chassis_no: chassis.number,
+    //     motor_no: chassis.motor_no,
+    //     battery_no: chassis.battery_no,
+    //     controller_no: chassis.controller_no,
+    //     charger_no: chassis.charger_no,
+    //   }));
+    //   await table.InventoryModel.bulkCreate(chassisData, transaction);
+    // }
     await transaction.commit();
     res
       .code(status.CREATED)
