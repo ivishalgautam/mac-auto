@@ -51,10 +51,6 @@ const init = async (sequelize) => {
           msg: "Vehicle exist with this name!",
         },
       },
-      color: {
-        type: DataTypes.STRING,
-        allowNull: false,
-      },
       video_link: {
         type: DataTypes.STRING,
         allowNull: true,
@@ -138,6 +134,21 @@ const init = async (sequelize) => {
           fields: ["slug"],
           unique: true,
         },
+        {
+          fields: ["base_price"],
+        },
+        {
+          fields: ["dealer_price"],
+        },
+        {
+          fields: ["meta_title"],
+        },
+        {
+          fields: ["meta_description"],
+        },
+        {
+          fields: ["meta_keywords"],
+        },
       ],
     }
   );
@@ -162,7 +173,6 @@ const create = async (req, transaction) => {
       specifications: req.body.specifications,
       slug: req.body.slug,
       is_variant: req.body.is_variant,
-      color: req.body.color,
       pricing: req.body.pricing,
       emi_calculator: req.body.emi_calculator,
       carousel: req.body.carousel,
@@ -200,7 +210,6 @@ const update = async (req, id, transaction) => {
       features: req.body.features,
       specifications: req.body.specifications,
       slug: req.body.slug,
-      color: req.body.color,
       pricing: req.body.pricing,
       emi_calculator: req.body.emi_calculator,
       carousel: req.body.carousel,
@@ -284,20 +293,24 @@ const get = async (req) => {
 
   const query = `
   SELECT 
-      vh.id, vh.title, vh.description, vh.category, vh.slug, vh.color, vh.carousel, vh.marketing_material, vh.brochure, vh.dealer_price,
+      vh.id, vh.title, vh.description, vh.category, vh.slug, vh.carousel, vh.marketing_material, vh.brochure, vh.dealer_price,
       (vh.pricing->0->>'base_price')::numeric AS starting_from,
       COALESCE(JSON_AGG(
-        JSON_BUILD_OBJECT(
-          'color', vhvr.color
-        )
-      ) FILTER (WHERE vhvr.id IS NOT NULL), '[]') as colors, vh.created_at,
+        DISTINCT JSON_BUILD_OBJECT(
+          'id', vclr.id,
+          'color', vclr.color_name,
+          'color_hex', vclr.color_hex,
+          'carousel', vclr.carousel,
+          'gallery', vclr.gallery
+        )::jsonb
+      ) FILTER (WHERE vclr.id IS NOT NULL), '[]') as colors, vh.created_at,
       COUNT(DISTINCT CASE WHEN invnt.status = 'active' THEN invnt.id END) as active_quantity,
       COUNT(DISTINCT CASE WHEN invnt.status = 'inactive' THEN invnt.id END) as inactive_quantity,
       COUNT(DISTINCT CASE WHEN invnt.status = 'sold' THEN invnt.id END) as sold_quantity,
       COUNT(DISTINCT CASE WHEN invnt.status = 'scrapped' THEN invnt.id END) as scrapped_quantity
     FROM ${constants.models.VEHICLE_TABLE} vh
     LEFT JOIN ${constants.models.INVENTORY_TABLE} invnt ON invnt.vehicle_id = vh.id
-    LEFT JOIN ${constants.models.VEHICLE_TABLE} vhvr ON vhvr.vehicle_id = vh.id
+    LEFT JOIN ${constants.models.VEHICLE_COLOR_TABLE} vclr ON vclr.vehicle_id = vh.id
     ${whereClause}
     GROUP BY vh.id
     ORDER BY vh.created_at DESC

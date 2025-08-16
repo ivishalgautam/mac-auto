@@ -16,6 +16,7 @@ import customerOrderRoutes from "../../api/customer-order/routes.js";
 import ticketRoutes from "../../api/ticket/routes.js";
 import reportRoutes from "../../api/report/routes.js";
 import vehicleColorRoutes from "../../api/vehicle-color/routes.js";
+import walkinEnquiryRoutes from "../../api/walkin-enquiry/routes.js";
 
 export default async function routes(fastify, options) {
   // middlewares
@@ -42,4 +43,5 @@ export default async function routes(fastify, options) {
   fastify.register(ticketRoutes, { prefix: "tickets" });
   fastify.register(reportRoutes, { prefix: "reports" });
   fastify.register(vehicleColorRoutes, { prefix: "vehicle-colors" });
+  fastify.register(walkinEnquiryRoutes, { prefix: "walkin-enquiries" });
 }

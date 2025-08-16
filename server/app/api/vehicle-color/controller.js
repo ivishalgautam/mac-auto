@@ -9,9 +9,12 @@ const create = async (req, res) => {
     const chassisNumbers = req.body.chassis_numbers;
 
     const newColor = await table.VehicleColorModel.create(req, transaction);
+
+    console.log({ newColor });
     if (chassisNumbers && chassisNumbers.length) {
       const bulkData = chassisNumbers.map((c) => ({
         vehicle_color_id: newColor.id,
+        vehicle_id: newColor.vehicle_id,
         chassis_no: c.number,
         motor_no: c.motor_no,
         battery_no: c.battery_no,

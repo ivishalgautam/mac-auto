@@ -104,6 +104,7 @@ const create = async (req, transaction) => {
   const data = await InventoryModel.create(
     {
       vehicle_id: req.body.vehicle_id,
+      vehicle_color_id: req.body.vehicle_color_id,
       chassis_no: req.body.chassis_no,
       motor_no: req.body.motor_no,
       battery_no: req.body.battery_no,
@@ -125,7 +126,14 @@ const bulkCreate = async (data, transaction) => {
 
 const update = async (req, id) => {
   return await InventoryModel.update(
-    { chassis_no: req.body.chassis_no, status: req.body.status },
+    {
+      chassis_no: req.body.chassis_no,
+      motor_no: req.body.motor_no,
+      battery_no: req.body.battery_no,
+      controller_no: req.body.controller_no,
+      charger_no: req.body.charger_no,
+      status: req.body.status,
+    },
     {
       where: { id: req?.params?.id || id },
       returning: true,
@@ -199,6 +207,7 @@ const getByVehicleId = async (req, vehicle_id) => {
   const queryParams = { vehicle_id: vehicle_id };
   const q = req.query.q ? req.query.q : null;
   const status = req.query?.status?.split(".") ?? null;
+  const colors = req.query?.colors?.split(".") ?? null;
 
   if (q) {
     whereConditions.push(`(invnt.chassis_no ILIKE :query)`);
@@ -210,6 +219,11 @@ const getByVehicleId = async (req, vehicle_id) => {
     queryParams.status = `{${status.join(",")}}`;
   }
 
+  if (colors && colors.length) {
+    whereConditions.push(`LOWER(vclr.color_hex) = ANY(:colors)`);
+    queryParams.colors = `{${colors.map((color) => String(color).toLowerCase()).join(",")}}`;
+  }
+
   const page = req.query.page ? Number(req.query.page) : 1;
   const limit = req.query.limit ? Number(req.query.limit) : null;
   const offset = (page - 1) * limit;
@@ -218,8 +232,11 @@ const getByVehicleId = async (req, vehicle_id) => {
 
   let query = `
   SELECT
-      *
+      invnt.*,
+      vclr.color_hex,
+      vclr.color_name
     FROM ${constants.models.INVENTORY_TABLE} invnt
+    LEFT JOIN ${constants.models.VEHICLE_COLOR_TABLE} as vclr ON vclr.id = invnt.vehicle_color_id 
     ${whereClause}
     ORDER BY invnt.created_at DESC
     LIMIT :limit OFFSET :offset
@@ -229,6 +246,7 @@ const getByVehicleId = async (req, vehicle_id) => {
   SELECT
       COUNT(invnt.id) OVER()::INTEGER as total
     FROM ${constants.models.INVENTORY_TABLE} invnt
+    LEFT JOIN ${constants.models.VEHICLE_COLOR_TABLE} as vclr ON vclr.id = invnt.vehicle_color_id 
     ${whereClause}
     ORDER BY invnt.created_at DESC
   `;

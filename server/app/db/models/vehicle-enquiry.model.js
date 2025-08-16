@@ -23,11 +23,11 @@ const init = async (sequelize) => {
         },
         onDelete: "CASCADE",
       },
-      vehicle_id: {
+      vehicle_color_id: {
         type: DataTypes.UUID,
         allowNull: false,
         references: {
-          model: constants.models.VEHICLE_TABLE,
+          model: constants.models.VEHICLE_COLOR_TABLE,
           key: "id",
           deferrable: Deferrable.INITIALLY_IMMEDIATE,
         },
@@ -46,7 +46,7 @@ const init = async (sequelize) => {
       createdAt: "created_at",
       updatedAt: "updated_at",
       indexes: [
-        { fields: ["vehicle_id"] },
+        { fields: ["vehicle_color_id"] },
         { fields: ["quantity"] },
         { fields: ["message"] },
       ],
@@ -63,7 +63,7 @@ const create = async (req, transaction) => {
   const data = await VehicleEnquiryModel.create(
     {
       dealer_id: req.body.dealer_id,
-      vehicle_id: req.body.vehicle_id,
+      vehicle_color_id: req.body.vehicle_color_id,
       quantity: req.body.quantity,
       message: req.body.message,
     },
@@ -103,7 +103,8 @@ const get = async (req) => {
   FROM ${constants.models.VEHICLE_ENQUIRY_TABLE} enq
   LEFT JOIN ${constants.models.DEALER_TABLE} dlr ON dlr.id = enq.dealer_id
   LEFT JOIN ${constants.models.USER_TABLE} usr ON usr.id = dlr.user_id
-  LEFT JOIN ${constants.models.VEHICLE_TABLE} vhc ON vhc.id = enq.vehicle_id
+  LEFT JOIN ${constants.models.VEHICLE_COLOR_TABLE} vclr ON vclr.id = enq.vehicle_color_id
+  LEFT JOIN ${constants.models.VEHICLE_TABLE} vhc ON vhc.id = vclr.vehicle_id
   ${whereClause}
   GROUP BY enq.id, usr.id, vhc.id, dlr.location
   ORDER BY usr.created_at DESC

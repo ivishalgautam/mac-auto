@@ -45,7 +45,11 @@ const init = async (sequelize) => {
     {
       createdAt: "created_at",
       updatedAt: "updated_at",
-      indexes: [{ fields: ["vehicle_id"] }],
+      indexes: [
+        { fields: ["vehicle_id"] },
+        { fields: ["color_name"] },
+        { fields: ["color_hex"] },
+      ],
     }
   );
 

@@ -49,6 +49,7 @@ const constants = {
     DEALER_INVENTORY_TABLE: "dealer_inventories",
     QUERY_TABLE: "queries",
     ENQUIRY_TABLE: "enquiries",
+    WALKIN_ENQUIRY_TABLE: "walkin_enquiries",
     DEALER_TABLE: "dealers",
     DEALER_INVENTORY_HISTORY_TABLE: "dealer_inventory_histories",
     CHASSIS_TABLE: "chassis_numbers",
