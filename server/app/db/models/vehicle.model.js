@@ -239,10 +239,7 @@ const getById = async (req, id) => {
 const getBySlug = async (req, slug) => {
   let query = `
   SELECT
-      vh.*,
-      COALESCE(JSON_AGG(
-        JSON_BUILD_OBJECT('color', vhvr.color)
-      ) FILTER (WHERE vhvr.id IS NOT NULL), '[]') as colors
+      vh.*
     FROM ${constants.models.VEHICLE_TABLE} vh
     LEFT JOIN ${constants.models.VEHICLE_TABLE} vhvr ON vhvr.vehicle_id = vh.id
     WHERE vh.slug = :slug
