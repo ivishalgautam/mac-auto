@@ -3,7 +3,6 @@ import { DataTableResetFilter } from "@/components/ui/table/data-table-reset-fil
 import { DataTableSearch } from "@/components/ui/table/data-table-search";
 import { useTableFilters } from "./use-table-filters";
 import { DataTableFilterBox } from "@/components/ui/table/data-table-filter-box";
-import { colors } from "@/data";
 
 export const statusOptions = [
   { label: "Active", value: "active" },
@@ -21,8 +20,6 @@ export default function TableActions() {
     setStatusFilter,
     setSearchQuery,
     isAnyFilterActive,
-    colorFilter,
-    setColorFilter,
   } = useTableFilters();
 
   return (
@@ -39,13 +36,6 @@ export default function TableActions() {
         options={statusOptions}
         setFilterValue={setStatusFilter}
         filterValue={statusFilter}
-      />
-      <DataTableFilterBox
-        filterKey="colors"
-        title="Colors"
-        options={colors}
-        setFilterValue={setColorFilter}
-        filterValue={colorFilter}
       />
       <DataTableResetFilter
         isFilterActive={isAnyFilterActive}

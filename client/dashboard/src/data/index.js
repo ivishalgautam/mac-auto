@@ -24,3 +24,8 @@ export const colors = [
   { label: "Coral", value: "#FF7F50" },
   { label: "Turquoise", value: "#40E0D0" },
 ];
+
+export const purchaseTypes = [
+  { label: "Cash", value: "cash" },
+  { label: "Finance", value: "finance" },
+];

@@ -19,6 +19,10 @@ import {
 
 const schema = z.object({
   chassis_no: z.string().min(1, { message: "Chassis No. is required*" }),
+  motor_no: z.string().min(1, { message: "Motor No. is required*" }),
+  battery_no: z.string().min(1, { message: "Battery No. is required*" }),
+  controller_no: z.string().min(1, { message: "Controller No. is required*" }),
+  charger_no: z.string().min(1, { message: "Charger No. is required*" }),
 });
 
 export default function InventoryItemForm({ id, callback = null }) {
@@ -29,7 +33,13 @@ export default function InventoryItemForm({ id, callback = null }) {
     reset,
   } = useForm({
     resolver: zodResolver(schema),
-    defaultValues: { chassis_no: "" },
+    defaultValues: {
+      chassis_no: "",
+      motor_no: "",
+      battery_no: "",
+      controller_no: "",
+      charger_no: "",
+    },
   });
 
   const updateMutation = useUpdateInventory(id, callback);

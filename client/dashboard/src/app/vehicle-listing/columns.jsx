@@ -1,21 +1,6 @@
 "use client";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { DotsHorizontalIcon } from "@radix-ui/react-icons";
-
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import config from "@/config";
 import {
   Popover,
@@ -23,6 +8,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { rupee } from "@/lib/Intl";
+import Link from "next/link";
 
 export const columns = (setId, openModal) => [
   {
@@ -45,13 +31,19 @@ export const columns = (setId, openModal) => [
     accessorKey: "color",
     header: "COLOR",
     cell: ({ row }) => {
-      const color = row.getValue("color");
+      const variantColors = row.original.colors ?? [];
+      const id = row.original.id;
       return (
         <div className="flex gap-1">
-          <span
-            className="size-6 rounded-full"
-            style={{ backgroundColor: color }}
-          ></span>
+          {variantColors.length > 0 &&
+            variantColors.map(({ color_hex }) => (
+              <Link
+                href={`/vehicles/${id}/inventory?page=1&limit=10&colors=${color_hex.replace("#", "%23")}`}
+                key={color_hex}
+                className="size-6 rounded-full"
+                style={{ backgroundColor: color_hex }}
+              ></Link>
+            ))}
         </div>
       );
     },

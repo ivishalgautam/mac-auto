@@ -9,6 +9,12 @@ import { columns } from "../columns";
 import { useGetDealerCustomers } from "@/mutations/customer-mutation";
 import { useDeleteUser } from "@/mutations/user-mutation";
 import { DeleteDialog } from "./delete-dialog";
+import Link from "next/link";
+import { buttonVariants } from "@/components/ui/button";
+import { Heading } from "@/components/ui/heading";
+import { useAuth } from "@/providers/auth-provider";
+import { Plus } from "lucide-react";
+import TableActions from "./table-actions";
 
 export default function Listing() {
   const searchParams = useSearchParams();
@@ -16,6 +22,7 @@ export default function Listing() {
   const router = useRouter();
   const [userId, setUserId] = useState("");
   const [isDeleteModal, setIsDeleteModal] = useState(false);
+  const { user } = useAuth();
 
   const openModal = (type) => {
     if (type === "delete") {
@@ -45,17 +52,32 @@ export default function Listing() {
   if (isError) return <ErrorMessage error={error?.message ?? "error"} />;
 
   return (
-    <div className="border-input w-full rounded-lg">
-      <DataTable
-        columns={columns(setUserId, openModal)}
-        data={data?.customers ?? []}
-        totalItems={data?.total}
-      />
-      <DeleteDialog
-        deleteMutation={deleteMutation}
-        isOpen={isDeleteModal}
-        setIsOpen={setIsDeleteModal}
-      />
-    </div>
+    <>
+      <div className="flex items-start justify-between">
+        <Heading
+          title={user?.role === "dealer" ? "My Customers" : "Customers"}
+          description="Manage customers (Create, Update, Delete)."
+        />
+        <Link
+          href="/customers/create"
+          className={buttonVariants({ size: "sm" })}
+        >
+          <Plus size="15" /> Add customer
+        </Link>
+      </div>
+      <TableActions />
+      <div className="border-input w-full rounded-lg">
+        <DataTable
+          columns={columns(setUserId, openModal)}
+          data={data?.customers ?? []}
+          totalItems={data?.total}
+        />
+        <DeleteDialog
+          deleteMutation={deleteMutation}
+          isOpen={isDeleteModal}
+          setIsOpen={setIsDeleteModal}
+        />
+      </div>
+    </>
   );
 }

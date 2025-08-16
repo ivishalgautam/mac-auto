@@ -41,7 +41,7 @@ const defaultValues = {
   ],
 };
 
-export default function InventoryForm({ vehicleId }) {
+export default function VariantForm({ vehicleId, type = "create" }) {
   const [fileUrls, setFileUrls] = useState({
     carousel_urls: [],
     gallery_urls: [],
@@ -63,6 +63,7 @@ export default function InventoryForm({ vehicleId }) {
     control,
     setError,
   } = methods;
+  console.log({ errors });
 
   const { fields, append, remove } = useFieldArray({
     control,
@@ -86,21 +87,135 @@ export default function InventoryForm({ vehicleId }) {
     }
 
     const formData = new FormData();
+
+    files.carousel?.forEach((file) => {
+      formData.append("carousel", file);
+    });
+    files.gallery?.forEach((file) => {
+      formData.append("gallery", file);
+    });
+
     Object.entries(data).forEach(([key, value]) => {
       typeof value === "object"
         ? formData.append(key, JSON.stringify(value))
         : formData.append(key, value);
     });
+
+    if (type === "edit") {
+      Object.entries(fileUrls).forEach(([key, value]) => {
+        formData.append(key, JSON.stringify(value));
+      });
+    }
+
     // return;
-    createMutation.mutate(data);
+    createMutation.mutate(formData);
   };
 
   const isFormPending = createMutation.isPending;
+
+  const handleCarouselChange = useCallback((data) => {
+    setFiles((prev) => ({ ...prev, carousel: data }));
+  }, []);
+  const handleGalleryChange = useCallback((data) => {
+    setFiles((prev) => ({ ...prev, gallery: data }));
+  }, []);
 
   return (
     <FormProvider {...methods}>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
         <div className="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-2">
+          {/* images */}
+          <div className="col-span-full space-y-4">
+            <Label>Carousel</Label>
+            <FileUpload
+              onFileChange={handleCarouselChange}
+              inputName={"carousel"}
+              className={cn({ "border-red-500": errors.carousel })}
+              initialFiles={[]}
+              multiple={true}
+              maxFiles={50}
+            />
+
+            <div className="grid grid-cols-[repeat(auto-fill,minmax(100px,1fr))] gap-4">
+              {fileUrls.carousel_urls?.map((src, index) => (
+                <div
+                  className="bg-accent relative aspect-square w-24 rounded-md"
+                  key={index}
+                >
+                  <Image
+                    src={`${config.file_base}/${src}`}
+                    width={200}
+                    height={200}
+                    className="size-full rounded-[inherit] object-cover"
+                    alt={`carousel-${index}`}
+                  />
+                  <Button
+                    onClick={() =>
+                      setFileUrls((prev) => ({
+                        ...prev,
+                        carousel_urls: prev.carousel_urls.filter(
+                          (i) => i !== src,
+                        ),
+                      }))
+                    }
+                    size="icon"
+                    className="border-background focus-visible:border-background absolute -top-2 -right-2 size-6 rounded-full border-2 shadow-none"
+                    aria-label="Remove image"
+                    type="button"
+                  >
+                    <XIcon className="size-3.5" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* gallery */}
+          <div className="col-span-full space-y-4">
+            <Label>Gallery</Label>
+            <FileUpload
+              onFileChange={handleGalleryChange}
+              inputName={"gallery"}
+              className={cn({ "border-red-500": errors.gallery })}
+              initialFiles={[]}
+              multiple={true}
+              maxFiles={50}
+            />
+
+            <div className="grid grid-cols-[repeat(auto-fill,minmax(100px,1fr))] gap-4">
+              {fileUrls.gallery_urls?.map((src, index) => (
+                <div
+                  className="bg-accent relative aspect-square w-24 rounded-md"
+                  key={index}
+                >
+                  <Image
+                    src={`${config.file_base}/${src}`}
+                    width={200}
+                    height={200}
+                    className="size-full rounded-[inherit] object-cover"
+                    alt={`gallery-${index}`}
+                  />
+                  <Button
+                    onClick={() =>
+                      setFileUrls((prev) => ({
+                        ...prev,
+                        gallery_urls: prev.gallery_urls.filter(
+                          (i) => i !== src,
+                        ),
+                      }))
+                    }
+                    size="icon"
+                    className="border-background focus-visible:border-background absolute -top-2 -right-2 size-6 rounded-full border-2 shadow-none"
+                    aria-label="Remove image"
+                    type="button"
+                  >
+                    <XIcon className="size-3.5" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </div>
+
           {/* Select color */}
           <div className="space-y-2">
             <Label>Color</Label>

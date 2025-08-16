@@ -36,21 +36,18 @@ export const columns = (updateMutation, setId, openModal) => [
     accessorKey: "color",
     header: "COLOR",
     cell: ({ row }) => {
-      const color = row.getValue("color");
       const variantColors = row.original.colors ?? [];
+      const id = row.original.id;
       return (
         <div className="flex gap-1">
-          <span
-            className="size-6 rounded-full"
-            style={{ backgroundColor: color }}
-          ></span>
           {variantColors.length > 0 &&
-            variantColors.map(({ color }) => (
-              <span
-                key={color}
+            variantColors.map(({ color_hex }) => (
+              <Link
+                href={`/vehicles/${id}/inventory?page=1&limit=10&colors=${color_hex.replace("#", "%23")}`}
+                key={color_hex}
                 className="size-6 rounded-full"
-                style={{ backgroundColor: color }}
-              ></span>
+                style={{ backgroundColor: color_hex }}
+              ></Link>
             ))}
         </div>
       );
@@ -207,7 +204,7 @@ export const columns = (updateMutation, setId, openModal) => [
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem>
-              <Link href={`/vehicles/${id}/inventory/create`}>Add Variant</Link>
+              <Link href={`/vehicles/${id}/variant/create`}>Add Variant</Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem

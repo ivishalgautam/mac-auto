@@ -18,22 +18,17 @@ export function useTableFilters() {
     "status",
     searchParams.status.withDefault(""),
   );
-  const [colorFilter, setColorFilter] = useQueryState(
-    "colors",
-    searchParams.colors.withDefault(""),
-  );
 
   const resetFilters = useCallback(() => {
     setSearchQuery(null);
     setStatusFilter(null);
-    setColorFilter(null);
 
     setPage(1);
-  }, [setSearchQuery, setStatusFilter, setColorFilter, setPage]);
+  }, [setSearchQuery, setStatusFilter, setPage]);
 
   const isAnyFilterActive = useMemo(() => {
-    return !!searchQuery || !!statusFilter || !!colorFilter;
-  }, [searchQuery, statusFilter, colorFilter]);
+    return !!searchQuery || !!statusFilter;
+  }, [searchQuery, statusFilter]);
 
   return {
     searchQuery,
@@ -44,7 +39,5 @@ export function useTableFilters() {
     setStatusFilter,
     resetFilters,
     isAnyFilterActive,
-    colorFilter,
-    setColorFilter,
   };
 }

@@ -9,42 +9,36 @@ export function useTableFilters() {
       .withOptions({ shallow: false, throttleMs: 1000 })
       .withDefault(""),
   );
+  const [type, setType] = useQueryState(
+    "type",
+    searchParams.q
+      .withOptions({ shallow: false, throttleMs: 1000 })
+      .withDefault(""),
+  );
 
   const [page, setPage] = useQueryState(
     "page",
     searchParams.page.withDefault(1),
   );
-  const [statusFilter, setStatusFilter] = useQueryState(
-    "status",
-    searchParams.status.withDefault(""),
-  );
-  const [colorFilter, setColorFilter] = useQueryState(
-    "colors",
-    searchParams.colors.withDefault(""),
-  );
 
   const resetFilters = useCallback(() => {
     setSearchQuery(null);
-    setStatusFilter(null);
-    setColorFilter(null);
-
     setPage(1);
-  }, [setSearchQuery, setStatusFilter, setColorFilter, setPage]);
+    setType(null);
+  }, [setSearchQuery, setPage, setType]);
 
   const isAnyFilterActive = useMemo(() => {
-    return !!searchQuery || !!statusFilter || !!colorFilter;
-  }, [searchQuery, statusFilter, colorFilter]);
+    return !!searchQuery || !!type;
+  }, [searchQuery, type]);
 
   return {
     searchQuery,
     setSearchQuery,
     page,
     setPage,
-    statusFilter,
-    setStatusFilter,
     resetFilters,
+    type,
+    setType,
     isAnyFilterActive,
-    colorFilter,
-    setColorFilter,
   };
 }

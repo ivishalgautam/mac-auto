@@ -593,19 +593,6 @@ export default function VehicleForm({ id, type }) {
               />
             </div>
 
-            {/* quantity */}
-            {type === "create" && (
-              <div className="space-y-2">
-                <Label>Quantity</Label>
-                <Input
-                  type="number"
-                  placeholder="Enter quantity"
-                  {...register(`quantity`, { valueAsNumber: true })}
-                  className={cn({ "border-red-500": errors.quantity })}
-                />
-              </div>
-            )}
-
             {/* description */}
             <div className="col-span-full space-y-2">
               <Label htmlFor="description">Description</Label>
@@ -630,68 +617,6 @@ export default function VehicleForm({ id, type }) {
           </div>
         </div>
 
-        {/* chassis numbers */}
-        {type === "create" && quantity > 0 && (
-          <>
-            <Separator className="col-span-full" />
-            <div className="space-y-4">
-              <h3 className="text-3xl font-semibold">Chassis Numbers</h3>
-              <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
-                {Array.from({ length: quantity }, (_, index) => (
-                  <div
-                    key={index}
-                    className="border-input grid grid-cols-2 gap-3 rounded-lg border p-4"
-                  >
-                    <div className="space-y-2">
-                      <Label>Chassis #{index + 1}</Label>
-                      <Input
-                        type="text"
-                        {...register(`chassis_numbers.${index}.number`)}
-                        placeholder={`Enter chassis number ${index + 1}`}
-                        className={cn({
-                          "border-red-500":
-                            errors?.chassis_numbers?.[index]?.number,
-                        })}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Motor No.</Label>
-                      <Input
-                        type="text"
-                        {...register(`chassis_numbers.${index}.motor_no`)}
-                        placeholder="Enter motor number"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Battery No.</Label>
-                      <Input
-                        type="text"
-                        {...register(`chassis_numbers.${index}.battery_no`)}
-                        placeholder="Enter battery number"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Controller No.</Label>
-                      <Input
-                        type="text"
-                        {...register(`chassis_numbers.${index}.controller_no`)}
-                        placeholder="Enter controller number"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Charger No.</Label>
-                      <Input
-                        type="text"
-                        {...register(`chassis_numbers.${index}.charger_no`)}
-                        placeholder="Enter charger number"
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </>
-        )}
         <Separator className="col-span-full" />
 
         {/* pricing */}

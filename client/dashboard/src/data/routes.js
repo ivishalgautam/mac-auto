@@ -150,7 +150,7 @@ export const sidebarData = [
       },
       {
         title: "Veriant create",
-        url: "/vehicles/:id/inventory/create",
+        url: "/vehicles/:id/variant/create",
         roles: [ROLES.ADMIN],
         isVisible: false,
       },
@@ -194,6 +194,33 @@ export const sidebarData = [
     roles: [ROLES.ADMIN, ROLES.DEALER],
     isVisible: true,
     items: [],
+  },
+  {
+    title: "Walk In Enquiries",
+    url: "/walkin-enquiries?page=1&limit=10",
+    icon: ScrollText,
+    roles: [ROLES.DEALER],
+    isVisible: true,
+    items: [
+      {
+        title: "Create",
+        url: "/walkin-enquiries/create",
+        roles: [ROLES.DEALER],
+        isVisible: true,
+      },
+      {
+        title: "Edit",
+        url: "/walkin-enquiries/:id/edit",
+        roles: [ROLES.DEALER],
+        isVisible: true,
+      },
+      {
+        title: "View",
+        url: "/walkin-enquiries/:id/view",
+        roles: [ROLES.DEALER],
+        isVisible: true,
+      },
+    ],
   },
   {
     title: "Orders",
