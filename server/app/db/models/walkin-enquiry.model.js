@@ -27,6 +27,16 @@ const init = async (sequelize) => {
         },
         onDelete: "CASCADE",
       },
+      dealer_id: {
+        type: DataTypes.UUID,
+        allowNull: false,
+        references: {
+          model: constants.models.DEALER_TABLE,
+          key: "id",
+          deferrable: Deferrable.INITIALLY_IMMEDIATE,
+        },
+        onDelete: "CASCADE",
+      },
       name: {
         type: DataTypes.STRING,
         allowNull: false,
@@ -69,8 +79,8 @@ const init = async (sequelize) => {
       updatedAt: "updated_at",
       indexes: [
         { fields: ["vehicle_id"] },
+        { fields: ["dealer_id"] },
         { fields: ["name"] },
-        { fields: ["email"] },
         { fields: ["phone"] },
         { fields: ["location"] },
         { fields: ["status"] },
@@ -84,6 +94,7 @@ const init = async (sequelize) => {
 
 const create = async (req) => {
   return await WalkInEnquiryModel.create({
+    dealer_id: req.body.dealer_id,
     vehicle_id: req.body.vehicle_id,
     message: req.body.message,
     name: req.body.name,
@@ -109,7 +120,7 @@ const get = async (req) => {
   const q = req.query.q ? req.query.q : null;
   if (q) {
     whereConditions.push(
-      `(vh.title ILIKE :query OR dlr.location ILIKE :query OR usr.first_name ILIKE :query OR usr.last_name ILIKE :query))`
+      `(enq.name ILIKE :query OR enq.location ILIKE :query OR enq.phone ILIKE :query))`
     );
     queryParams.query = `%${q}%`;
   }
@@ -129,21 +140,15 @@ const get = async (req) => {
       FROM ${constants.models.WALKIN_ENQUIRY_TABLE} enq
       LEFT JOIN ${constants.models.VEHICLE_TABLE} vh ON vh.id = enq.vehicle_id
       LEFT JOIN ${constants.models.DEALER_TABLE} dlr ON dlr.id = enq.dealer_id
-      LEFT JOIN ${constants.models.USER_TABLE} usr ON usr.id = dlr.user_id
       ${whereClause}
       `;
 
   let query = `
       SELECT
-        enq.*, vh.title as vehicle_name,
-        CASE 
-          WHEN dlr.id IS NULL THEN 'Not assigned'
-          ELSE CONCAT(usr.first_name, ' ', usr.last_name, ' (', dlr.location, ')')
-        END AS dealership
+        enq.*, vh.title as vehicle_name
       FROM ${constants.models.WALKIN_ENQUIRY_TABLE} enq
       LEFT JOIN ${constants.models.VEHICLE_TABLE} vh ON vh.id = enq.vehicle_id
       LEFT JOIN ${constants.models.DEALER_TABLE} dlr ON dlr.id = enq.dealer_id
-      LEFT JOIN ${constants.models.USER_TABLE} usr ON usr.id = dlr.user_id
       ${whereClause}
       ORDER BY enq.created_at DESC
       LIMIT :limit OFFSET :offset
@@ -162,7 +167,7 @@ const get = async (req) => {
     plain: true,
   });
 
-  return { enquiries: data, total: count.total ?? 0 };
+  return { enquiries: data, total: count?.total ?? 0 };
 };
 
 const getById = async (req, id) => {
@@ -179,15 +184,30 @@ const update = async (req, id, transaction) => {
   if (transaction) options.transaction = transaction;
 
   return await WalkInEnquiryModel.update(
-    { status: req.body.status, dealer_id: req.body.dealer_id },
+    {
+      status: req.body.status,
+      vehicle_id: req.body.vehicle_id,
+      message: req.body.message,
+      name: req.body.name,
+      phone: req.body.phone,
+      location: req.body.location,
+      purchase_type: req.body.purchase_type,
+      pan: req.body.pan,
+      aadhaar: req.body.aadhaar,
+      electricity_bill: req.body.electricity_bill,
+      rent_agreement: req.body.rent_agreement,
+    },
     options
   );
 };
 
-const deleteById = async (req, id) => {
-  return await WalkInEnquiryModel.destroy({
+const deleteById = async (req, id, transaction) => {
+  const options = {
     where: { id: req.params.id || id },
-  });
+  };
+  if (transaction) options.transaction = transaction;
+
+  return await WalkInEnquiryModel.destroy(options);
 };
 
 const getEnquiriesOverTime = async (days = 7) => {

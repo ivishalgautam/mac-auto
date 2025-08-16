@@ -4,6 +4,8 @@ import table from "../../db/models.js";
 import { sequelize } from "../../db/postgres.js";
 import { convertToCustomerSchema, inquiryAssignToDealer } from "./schema.js";
 import { isValidPhoneNumber } from "libphonenumber-js";
+import { cleanupFiles } from "../../helpers/cleanup-files.js";
+import { getItemsToDelete } from "../../helpers/filter.js";
 
 export const walkInEnquirySchema = z
   .object({
@@ -73,6 +75,11 @@ export const walkInEnquirySchema = z
 
 const create = async (req, res) => {
   try {
+    const dealerRecord = await table.DealerModel.getByUserId(req.user_data.id);
+    if (!dealerRecord)
+      return res.code(404).send({ message: "Dealer not registered!" });
+    req.body.dealer_id = dealerRecord.id;
+
     const validateData = walkInEnquirySchema.parse(req.body);
     res.send({
       status: true,
@@ -94,13 +101,91 @@ const getById = async (req, res) => {
   }
 };
 
-const deleteById = async (req, res) => {
+const update = async (req, res) => {
+  const transaction = await sequelize.transaction();
+
   try {
     const record = await table.WalkinEnquiryModel.getById(req);
     if (!record) return res.code(404).send({ message: "Enquiry not found!" });
 
-    res.send(await table.WalkinEnquiryModel.deleteById(req));
+    const documentsToDelete = [];
+    const existingPanDocs = record.pan;
+    const updatedPanDocs = req.body.pan_urls;
+    if (updatedPanDocs) {
+      req.body.pan = [...(req.body?.pan ?? []), ...updatedPanDocs];
+      documentsToDelete.push(
+        ...getItemsToDelete(existingPanDocs, updatedPanDocs)
+      );
+    }
+
+    const existingAadhaarDocs = record.aadhaar;
+    const updatedAadhaarDocs = req.body.aadhaar_urls;
+    if (updatedAadhaarDocs) {
+      req.body.aadhaar = [...(req.body?.aadhaar ?? []), ...updatedAadhaarDocs];
+      documentsToDelete.push(
+        ...getItemsToDelete(existingAadhaarDocs, updatedAadhaarDocs)
+      );
+    }
+
+    const existingEBillDocs = record.electricity_bill;
+    const updatedEBillDocs = req.body.electricity_bill_urls;
+    if (updatedEBillDocs) {
+      req.body.electricity_bill = [
+        ...(req.body?.electricity_bill ?? []),
+        ...updatedEBillDocs,
+      ];
+      documentsToDelete.push(
+        ...getItemsToDelete(existingEBillDocs, updatedEBillDocs)
+      );
+    }
+
+    const existingRentAgreementDocs = record.rent_agreement;
+    const updatedRentAgreementDocs = req.body.rent_agreement_urls;
+    if (updatedRentAgreementDocs) {
+      req.body.rent_agreement = [
+        ...(req.body?.rent_agreement ?? []),
+        ...updatedRentAgreementDocs,
+      ];
+      documentsToDelete.push(
+        ...getItemsToDelete(existingRentAgreementDocs, updatedRentAgreementDocs)
+      );
+    }
+    console.log(req.body);
+    if (documentsToDelete.length) await cleanupFiles(documentsToDelete);
+
+    await table.WalkinEnquiryModel.update(req, 0, transaction);
+
+    await transaction.commit();
+    res.send({ status: true, message: "Updated" });
   } catch (error) {
+    console.log(error);
+    if (transaction) await transaction.rollback();
+    if (req.filePaths) await cleanupFiles(req.filePaths);
+    throw error;
+  }
+};
+
+const deleteById = async (req, res) => {
+  const transaction = await sequelize.transaction();
+
+  try {
+    const record = await table.WalkinEnquiryModel.getById(req);
+    if (!record) return res.code(404).send({ message: "Enquiry not found!" });
+
+    const data = await table.WalkinEnquiryModel.deleteById(req, 0, transaction);
+    console.log(data);
+
+    const filesToDelete = [
+      ...(record?.pan ?? []),
+      ...(record?.aadhaar ?? []),
+      ...(record?.electricity_bill ?? []),
+      ...(record?.rent_agreement ?? []),
+    ];
+    await cleanupFiles(filesToDelete);
+    await transaction.commit();
+    res.send({ status: true, message: "Deleted" });
+  } catch (error) {
+    await transaction.rollback();
     throw error;
   }
 };
@@ -201,6 +286,7 @@ export default {
   create: create,
   getById: getById,
   deleteById: deleteById,
+  update: update,
   get: get,
   convertToCustomer: convertToCustomer,
   assignToDealer: assignToDealer,

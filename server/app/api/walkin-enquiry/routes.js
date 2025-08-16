@@ -8,6 +8,19 @@ export default async function routes(fastify, options) {
     { preHandler: (req, res) => multipartPreHandler(req, res, []) },
     controller.create
   );
+  fastify.put(
+    "/:id",
+    {
+      preHandler: (req, res) =>
+        multipartPreHandler(req, res, [
+          "pan_urls",
+          "aadhaar_urls",
+          "electricity_bill_urls",
+          "rent_agreement_urls",
+        ]),
+    },
+    controller.update
+  );
   fastify.get("/:id", {}, controller.getById);
   fastify.delete("/:id", {}, controller.deleteById);
   fastify.get("/", {}, controller.get);
