@@ -39,6 +39,7 @@ export default async function routes(fastify, opts) {
   fastify.put("/update-price/:id", {}, controller.updatePrice);
   fastify.delete("/:id", {}, controller.deleteById);
   fastify.get("/:id", {}, controller.getById);
+  fastify.get("/:id/colors", {}, controller.getColors);
 }
 
 export async function vehiclePublicRoutes(fastify, opts) {

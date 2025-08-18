@@ -57,6 +57,27 @@ const getByVehicleId = async (req, res) => {
   }
 };
 
+const getByVehicleColorId = async (req, res) => {
+  try {
+    const vehicleColorId = req.params.vehicle_color_id;
+
+    const record = await table.VehicleColorModel.getById(0, vehicleColorId);
+    if (!record)
+      return res
+        .code(status.NOT_FOUND)
+        .send({ status: false, message: "Vehicle color not found" });
+
+    const data = await table.InventoryModel.getByVehicleColorId(
+      req,
+      vehicleColorId
+    );
+
+    res.code(status.OK).send({ status: true, data: data });
+  } catch (error) {
+    throw error;
+  }
+};
+
 const getById = async (req, res) => {
   try {
     const record = await table.InventoryModel.getById(req);
@@ -89,6 +110,7 @@ const update = async (req, res) => {
 export default {
   create: create,
   getByVehicleId: getByVehicleId,
+  getByVehicleColorId: getByVehicleColorId,
   update: update,
   getById: getById,
 };

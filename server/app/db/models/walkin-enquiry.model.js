@@ -27,6 +27,11 @@ const init = async (sequelize) => {
         },
         onDelete: "CASCADE",
       },
+      enquiry_code: {
+        type: DataTypes.STRING,
+        unique: true,
+        allowNull: false,
+      },
       dealer_id: {
         type: DataTypes.UUID,
         allowNull: false,
@@ -50,7 +55,7 @@ const init = async (sequelize) => {
         allowNull: false,
       },
       status: {
-        type: DataTypes.ENUM(["pending", "converted"]),
+        type: DataTypes.ENUM(["pending", "approved", "rejected"]),
         defaultValue: "pending",
       },
       purchase_type: {
@@ -79,6 +84,7 @@ const init = async (sequelize) => {
       updatedAt: "updated_at",
       indexes: [
         { fields: ["vehicle_id"] },
+        { fields: ["enquiry_code"] },
         { fields: ["dealer_id"] },
         { fields: ["name"] },
         { fields: ["phone"] },
@@ -93,8 +99,22 @@ const init = async (sequelize) => {
 };
 
 const create = async (req) => {
+  const latest = await WalkInEnquiryModel.findOne({
+    attributes: ["enquiry_code"],
+    order: [["created_at", "DESC"]],
+    raw: true,
+  });
+
+  let newEnqCode = "ENQ-0001";
+  if (latest?.enquiry_code) {
+    const number = parseInt(latest.enquiry_code.split("-")[1]);
+    const nextNumber = number + 1;
+    newEnqCode = `ENQ-${String(nextNumber).padStart(4, "0")}`;
+  }
+
   return await WalkInEnquiryModel.create({
     dealer_id: req.body.dealer_id,
+    enquiry_code: newEnqCode,
     vehicle_id: req.body.vehicle_id,
     message: req.body.message,
     name: req.body.name,
@@ -120,7 +140,7 @@ const get = async (req) => {
   const q = req.query.q ? req.query.q : null;
   if (q) {
     whereConditions.push(
-      `(enq.name ILIKE :query OR enq.location ILIKE :query OR enq.phone ILIKE :query))`
+      `(enq.name ILIKE :query OR enq.enquiry_code ILIKE :query OR enq.location ILIKE :query OR enq.phone ILIKE :query)`
     );
     queryParams.query = `%${q}%`;
   }

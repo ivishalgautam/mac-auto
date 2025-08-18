@@ -22,6 +22,16 @@ const init = async (sequelize) => {
         },
         onDelete: "CASCADE",
       },
+      vehicle_color_id: {
+        type: DataTypes.UUID,
+        allowNull: false,
+        references: {
+          model: constants.models.VEHICLE_COLOR_TABLE,
+          key: "id",
+          deferrable: Deferrable.INITIALLY_IMMEDIATE,
+        },
+        onDelete: "CASCADE",
+      },
       dealer_id: {
         type: DataTypes.UUID,
         allowNull: false,
@@ -47,6 +57,7 @@ const init = async (sequelize) => {
       updatedAt: "updated_at",
       indexes: [
         { fields: ["vehicle_id"] },
+        { fields: ["vehicle_color_id"] },
         { fields: ["dealer_id"] },
         { fields: ["chassis_nos"] },
         { fields: ["status"] },
@@ -64,6 +75,7 @@ const create = async (req, transaction) => {
   const data = await DealerOrderModel.create(
     {
       vehicle_id: req.body.vehicle_id,
+      vehicle_color_id: req.body.vehicle_color_id,
       dealer_id: req.body.dealer_id,
       chassis_nos: req.body.chassis_numbers,
     },
@@ -123,7 +135,7 @@ const get = async (req) => {
       ord.*,
       CONCAT(usr.first_name, ' ', usr.last_name, ' (', dlr.location, ')') AS dealer_name,
       vh.title AS vehicle_title,
-      vh.color,
+      vhclr.color_hex as color,
       ord.chassis_nos,
       COALESCE(
         JSON_AGG(DISTINCT JSONB_BUILD_OBJECT(
@@ -141,12 +153,13 @@ const get = async (req) => {
     FROM ${constants.models.DEALER_ORDER_TABLE} ord
     LEFT JOIN ${constants.models.INVENTORY_TABLE} invnt ON invnt.chassis_no = ANY(ord.chassis_nos)
     LEFT JOIN ${constants.models.VEHICLE_TABLE} vh ON vh.id = ord.vehicle_id
+    LEFT JOIN ${constants.models.VEHICLE_COLOR_TABLE} vhclr ON vhclr.id = ord.vehicle_color_id
     LEFT JOIN ${constants.models.DEALER_TABLE} dlr ON dlr.id = ord.dealer_id
     LEFT JOIN ${constants.models.USER_TABLE} usr ON usr.id = dlr.user_id
     LEFT JOIN ${constants.models.PDI_CHECK_TABLE} pdi ON pdi.dealer_order_id = ord.id
     LEFT JOIN ${constants.models.USER_TABLE} pdiusr ON pdiusr.id = pdi.pdi_by
     ${whereClause}
-    GROUP BY ord.id, usr.first_name, usr.last_name, vh.title, vh.color, dlr.location
+    GROUP BY ord.id, usr.first_name, usr.last_name, vh.title, vhclr.color_hex, dlr.location
     ORDER BY ord.created_at DESC
     LIMIT :limit OFFSET :offset
   `;

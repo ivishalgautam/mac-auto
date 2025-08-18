@@ -125,9 +125,17 @@ const getById = async (req, id) => {
   });
 };
 
+const getByVehicleId = async (req, id, options = {}) => {
+  return await VehicleColorModel.findAll({
+    where: { vehicle_id: req.params?.id || id },
+    ...(options ?? {}),
+  });
+};
+
 export default {
   init: init,
   create: create,
   get: get,
   getById: getById,
+  getByVehicleId: getByVehicleId,
 };
