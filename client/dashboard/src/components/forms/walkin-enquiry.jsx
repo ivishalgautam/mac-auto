@@ -2,7 +2,6 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   AlertCircle,
@@ -38,6 +37,7 @@ import FileUpload from "../file-uploader";
 import Loader from "../loader";
 import ErrorMessage from "../ui/error";
 import config from "@/config";
+import { H1 } from "../ui/typography";
 
 export default function WalkInEnquiryForm({ onSuccess, type = "create", id }) {
   const [files, setFiles] = useState({
@@ -190,6 +190,8 @@ export default function WalkInEnquiryForm({ onSuccess, type = "create", id }) {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      {type === "view" && <H1>{data.enquiry_code}</H1>}
+
       <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
         {/* Vehicle ID (Hidden field if passed as prop) */}
         <div className="space-y-2">
@@ -353,8 +355,8 @@ export default function WalkInEnquiryForm({ onSuccess, type = "create", id }) {
                   inputName={"aadhaar"}
                   className={cn({ "border-red-500": errors.aadhaar })}
                   initialFiles={[]}
-                  multiple={false}
-                  maxFiles={1}
+                  multiple={true}
+                  maxFiles={2}
                   grid="grid-cols-[repeat(auto-fill,minmax(100px,1fr))]"
                 />
               )}
@@ -420,8 +422,8 @@ export default function WalkInEnquiryForm({ onSuccess, type = "create", id }) {
                   inputName={"rent_agreement"}
                   className={cn({ "border-red-500": errors.rent_agreement })}
                   initialFiles={[]}
-                  multiple={false}
-                  maxFiles={1}
+                  multiple={true}
+                  maxFiles={5}
                   grid="grid-cols-[repeat(auto-fill,minmax(100px,1fr))]"
                 />
               )}

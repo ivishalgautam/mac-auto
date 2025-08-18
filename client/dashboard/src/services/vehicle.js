@@ -45,6 +45,13 @@ const getVehicleInventory = async (id) => {
   return data;
 };
 
+const getVehicleColors = async (vehicleId) => {
+  const { data } = await http().get(
+    `${endpoints.vehicles.getAll}/${vehicleId}/colors`,
+  );
+  return data;
+};
+
 const vehicle = {
   create: create,
   update: update,
@@ -55,6 +62,7 @@ const vehicle = {
   createVehicleInventory: createVehicleInventory,
   createVehicleVariant: createVehicleVariant,
   getVehicleInventory: getVehicleInventory,
+  getVehicleColors: getVehicleColors,
 };
 
 export default vehicle;

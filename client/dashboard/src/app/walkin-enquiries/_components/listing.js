@@ -16,6 +16,11 @@ import { Plus } from "lucide-react";
 import { useAuth } from "@/providers/auth-provider";
 import ErrorMessage from "@/components/ui/error";
 import { DeleteDialog } from "./delete-dialog";
+import {
+  useDeleteWalkInEnquiryMutation,
+  useGetWalkInEnquiries,
+  useUpdateWalkInEnquiryMutation,
+} from "@/mutations/walkin-enquiries-mutation";
 
 export default function Listing() {
   const { user } = useAuth();
@@ -42,23 +47,12 @@ export default function Listing() {
     }
   }
 
-  const { data, isLoading, isError, error } = useQuery({
-    queryFn: () => fetchWalkinEnquiries(searchParamStr),
-    queryKey: ["enquiries", searchParamStr],
-    enabled: !!searchParamStr,
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: () => deleteWalkinEnquiry(id),
-    onSuccess: () => {
-      toast.success("Enquiry deleted.");
-      queryClient.invalidateQueries(["enquiries", searchParamStr]);
-      setIsDeleteOpen(false);
-    },
-    onError: (error) => {
-      toast.error(error.response?.data?.message ?? error?.message ?? "error");
-    },
-  });
+  const { data, isLoading, isError, error } =
+    useGetWalkInEnquiries(searchParamStr);
+  const updateMutation = useUpdateWalkInEnquiryMutation(id);
+  const deleteMutation = useDeleteWalkInEnquiryMutation(id, () =>
+    setIsDeleteOpen(false),
+  );
 
   useEffect(() => {
     if (!searchParamStr) {
@@ -75,7 +69,7 @@ export default function Listing() {
   return (
     <div className="border-input rounded-lg">
       <DataTable
-        columns={columns(openModal, setId, user)}
+        columns={columns(openModal, setId, user, updateMutation)}
         data={data.enquiries}
         totalItems={data.total}
       />

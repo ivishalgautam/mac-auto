@@ -25,6 +25,12 @@ export const colors = [
   { label: "Turquoise", value: "#40E0D0" },
 ];
 
+export const walkinEnquiriesStatus = [
+  { label: "Pending", value: "pending" },
+  { label: "Approved", value: "approved" },
+  { label: "Rejected", value: "rejected" },
+];
+
 export const purchaseTypes = [
   { label: "Cash", value: "cash" },
   { label: "Finance", value: "finance" },

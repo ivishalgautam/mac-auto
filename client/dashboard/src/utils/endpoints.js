@@ -23,6 +23,7 @@ export const endpoints = {
   inventories: {
     getAll: "/inventories",
     getByVehicle: "/inventories/by-vehicle",
+    getByVehicleColor: "/inventories/by-vehicle-color",
   },
   enquiries: { getAll: "/enquiries" },
   walkInEnquiries: { getAll: "/walkin-enquiries" },

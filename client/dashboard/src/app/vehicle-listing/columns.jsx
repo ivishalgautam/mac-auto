@@ -1,12 +1,6 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import config from "@/config";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import { rupee } from "@/lib/Intl";
 import Link from "next/link";
 
@@ -54,93 +48,6 @@ export const columns = (setId, openModal) => [
       const id = row.original.id;
       const price = row.original.dealer_price;
       return <Badge variant={"outline"}>{rupee.format(price)}</Badge>;
-    },
-  },
-  {
-    header: "Marketing Materials",
-    cell: ({ row }) => {
-      const data = row.original?.marketing_material ?? [];
-
-      // Don't render anything if no materials
-      if (!data.length) {
-        return <span className="text-gray-400">No materials</span>;
-      }
-
-      return (
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button type="button" className="text-white">
-              {data.length} file{data.length !== 1 ? "s" : ""}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-3">
-            <div className="space-y-2">
-              <h4 className="mb-2 text-sm font-medium">Marketing Materials</h4>
-              {data.map((file, index) => {
-                const fileName = file.split(/[/\\]/).pop();
-                return (
-                  <div key={index}>
-                    <Badge variant={"outline"}>
-                      <a
-                        href={`${config.file_base}/${file}`}
-                        download
-                        className="block text-sm text-blue-600 underline hover:text-blue-800"
-                        onClick={(e) => e.stopPropagation()}
-                        target="_blank"
-                      >
-                        {fileName}
-                      </a>
-                    </Badge>
-                  </div>
-                );
-              })}
-            </div>
-          </PopoverContent>
-        </Popover>
-      );
-    },
-  },
-  {
-    header: "Brochure",
-    cell: ({ row }) => {
-      const data = row.original?.brochure ?? [];
-
-      if (!data.length) {
-        return <span className="text-gray-400">No brochure</span>;
-      }
-
-      return (
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button type="button" className="text-white">
-              {data.length} file{data.length !== 1 ? "s" : ""}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-3">
-            <div className="space-y-2">
-              <h4 className="mb-2 text-sm font-medium">Brochure</h4>
-              {data.map((file, index) => {
-                const fileName = file.split(/[/\\]/).pop();
-                return (
-                  <div key={index}>
-                    <Badge variant={"outline"}>
-                      <a
-                        href={`${config.file_base}/${file}`}
-                        download
-                        className="block text-sm text-blue-600 underline hover:text-blue-800"
-                        onClick={(e) => e.stopPropagation()}
-                        target="_blank"
-                      >
-                        {fileName}
-                      </a>
-                    </Badge>
-                  </div>
-                );
-              })}
-            </div>
-          </PopoverContent>
-        </Popover>
-      );
     },
   },
   {

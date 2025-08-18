@@ -12,9 +12,24 @@ import { DropdownMenuSeparator } from "@radix-ui/react-dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { walkinEnquiriesStatus } from "@/data";
 
-export const columns = (openModal, setId, user) =>
+export const columns = (openModal, setId, user, updateMutation) =>
   [
+    {
+      accessorKey: "enquiry_code",
+      header: "Enquiry ID",
+      cell: ({ row }) => {
+        return <Badge>{row.getValue("enquiry_code")}</Badge>;
+      },
+    },
     {
       accessorKey: "vehicle_name",
       header: "VEHICLE NAME",
@@ -33,12 +48,39 @@ export const columns = (openModal, setId, user) =>
     },
     {
       accessorKey: "status",
-      header: "Status",
+      header: ({ column }) => {
+        return <Button variant="ghost">Status</Button>;
+      },
       cell: ({ row }) => {
+        const status = row.getValue("status");
+        const id = row.original.id;
+
         return (
-          <Badge className={"capitalize"} variant={"outline"}>
-            {row.getValue("status")}
-          </Badge>
+          <Select
+            value={status}
+            onValueChange={(value) => {
+              setId(id);
+              const formData = new FormData();
+              formData.append("status", value);
+              updateMutation.mutate(formData);
+            }}
+          >
+            <SelectTrigger className={"capitalize"}>
+              <SelectValue placeholder="Select a status" />
+            </SelectTrigger>
+            <SelectContent>
+              {walkinEnquiriesStatus.map((option) => (
+                <SelectItem
+                  key={option.value}
+                  value={option.value}
+                  className={"capitalize"}
+                  disabled={["approved", "rejected"].includes(status)}
+                >
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         );
       },
     },

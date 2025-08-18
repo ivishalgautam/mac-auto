@@ -21,6 +21,22 @@ export const useGetInventoryByVehicleId = (
   });
 };
 
+export const useGetInventoryByVehicleColorId = (
+  vehicleColorId,
+  searchParams = "page=1",
+) => {
+  const { user } = useAuth();
+
+  return useQuery({
+    queryKey: ["vehicle-color-inventory", vehicleColorId, searchParams],
+    queryFn: () =>
+      user?.role === "admin"
+        ? inventory.getInventoryByVehicleColorId(vehicleColorId, searchParams)
+        : dealer.getDealerInventoryByVehicleId(vehicleColorId, searchParams),
+    enabled: !!vehicleColorId && !!user,
+  });
+};
+
 export const useGetInventoryItem = (id) => {
   const { user } = useAuth();
 

@@ -22,7 +22,7 @@ export function DealerOrderCreateDialog({
       <DialogTrigger className="sr-only">Open</DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Assign to dealer?</DialogTitle>
+          <DialogTitle>Create dealer order?</DialogTitle>
           <DialogDescription className="sr-only">
             This action cannot be undone. This will permanently delete your
             account and remove your data from our servers.
