@@ -5,7 +5,7 @@ import { Card, CardContent } from "../ui/card";
 export default function AuthLayout({
   children,
   className,
-  imageSrc = "/login.svg",
+  imageSrc = "/login.png",
   imageAlt = "Authentication illustration",
   title = "Welcome back",
   subtitle = "Enter your credentials to access your account",
@@ -32,9 +32,18 @@ export default function AuthLayout({
             </div>
 
             {/* Image Section */}
-            <div className="from-primary/10 via-primary/5 relative hidden items-center justify-center bg-gradient-to-br to-transparent p-12 lg:flex">
+            <div className="from-primary/10 via-primary/5 relative hidden items-center justify-center bg-gradient-to-br to-transparent p-12 lg:flex lg:flex-col lg:gap-4">
+              <Image
+                src={"/logo.png"}
+                alt={"Mac Auto India"}
+                width={200}
+                height={200}
+                className="relative z-10 h-auto object-contain drop-shadow-2xl"
+                priority
+              />
               <div className="relative w-full max-w-md">
                 <div className="from-primary/20 to-secondary/20 absolute inset-0 rounded-full bg-gradient-to-r opacity-30 blur-3xl" />
+
                 <Image
                   src={imageSrc || "/placeholder.svg"}
                   alt={imageAlt}
