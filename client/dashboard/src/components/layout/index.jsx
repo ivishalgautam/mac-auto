@@ -1,18 +1,20 @@
 "use client";
 import AuthProvider from "@/providers/auth-provider";
 import QueryProvider from "@/providers/query-client-provider";
-import { usePathname } from "next/navigation";
+import { useParams, usePathname } from "next/navigation";
 import RoleContext from "@/providers/role-context";
 import SidebarContext from "@/providers/sidebar-context";
 import { SidebarInset, SidebarTrigger, useSidebar } from "../ui/sidebar";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { AppSidebar } from "../app-sidebar";
 import { cn } from "@/lib/utils";
+import { publicRoutes } from "@/data/routes";
 
 export default function Layout({ children }) {
   const pathname = usePathname();
+  const { id } = useParams();
   const getContent = () => {
-    if (["/", "/signup", "/unauthorized"].includes(pathname)) {
+    if (publicRoutes.includes(pathname.replace(id, ":id"))) {
       return children;
     }
 

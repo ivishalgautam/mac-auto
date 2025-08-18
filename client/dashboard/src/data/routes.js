@@ -347,4 +347,9 @@ export const sidebarData = [
   },
 ];
 
-export const publicRoutes = ["/", "/admin", "/register"];
+export const publicRoutes = [
+  "/",
+  "/register",
+  "/unauthorized",
+  "/walkin-enquiries/:id/view",
+];

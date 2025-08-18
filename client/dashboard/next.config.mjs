@@ -14,7 +14,7 @@ const nextConfig = {
       },
       {
         protocol: "https",
-        hostname: "macapi.brandingwaale.com",
+        hostname: "api.macautoindia.com",
         port: "",
       },
     ],
