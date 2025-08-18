@@ -6,7 +6,7 @@ process.env.NODE_ENV = process.env.NODE_ENV || "development";
 process.env.PORT = process.env.PORT || 3001;
 
 const config = {
-  port: parseInt(3002 || process.env.PORT, 10),
+  port: parseInt(process.env.PORT, 10),
   // postgres creds
   PG_DATABASE_NAME: process.env.PG_DATABASE_NAME,
   PG_USERNAME: process.env.PG_USERNAME,
