@@ -27,7 +27,7 @@ export default function MarketingMaterialsPage() {
   const category = watch("category") ?? null;
   const vehicleId = watch("vehicle_id");
   const { data, isLoading, isError, error } = useGetVehicle(vehicleId);
-  console.log({ data });
+
   return (
     <PageContainer>
       <div className="flex items-center justify-between">

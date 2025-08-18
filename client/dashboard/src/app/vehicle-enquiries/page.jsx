@@ -11,8 +11,10 @@ export const metadata = {
 };
 
 export default async function VehicleEnquiriesPage({ searchParams }) {
-  searchParamsCache.parse(searchParams);
-  const key = serialize({ ...searchParams });
+  const searchParamsStr = await searchParams;
+
+  searchParamsCache.parse(searchParamsStr);
+  const key = serialize({ ...searchParamsStr });
 
   return (
     <PageContainer>

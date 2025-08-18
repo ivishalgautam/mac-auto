@@ -22,6 +22,7 @@ export default function Listing() {
   const [maxSelect, setMaxSelect] = useState(null);
   const [id, setId] = useState(null);
   const [vehicleId, setVehicleId] = useState(null);
+  const [vehicleColorId, setVehicleColorId] = useState(null);
   const [dealerId, setDealerId] = useState(null);
   const searchParams = useSearchParams();
   const searchParamStr = searchParams.toString();
@@ -62,6 +63,7 @@ export default function Listing() {
           openModal,
           setId,
           setVehicleId,
+          setVehicleColorId,
           setDealerId,
           setMaxSelect,
         )}
@@ -76,7 +78,7 @@ export default function Listing() {
         vehicleId={vehicleId}
         dealerId={dealerId}
         maxSelect={maxSelect}
-        callback
+        vehicleColorId={vehicleColorId}
       />
 
       <DeleteDialog

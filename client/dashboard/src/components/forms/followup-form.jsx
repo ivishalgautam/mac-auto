@@ -46,7 +46,7 @@ export default function FollowUpForm({
   const { data, isLoading, isError, error } = useGetFollowup(id);
   const createMutation = useCreateFollowUp(onSuccess);
   const updateMutation = useUpdateFollowUp(onSuccess);
-  console.log({ type, data });
+
   const onSubmit = (data) => {
     type === "create"
       ? createMutation.mutate(data)
@@ -59,7 +59,6 @@ export default function FollowUpForm({
 
   useEffect(() => {
     if (type === "edit" && data) {
-      console.log({ data });
       reset({ message: data?.message ?? "" });
     }
   }, [type, data, id, reset]);

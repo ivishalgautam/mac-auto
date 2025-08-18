@@ -51,7 +51,6 @@ export default function InquiryToCustomerForm({ onSuccess, inquiryId }) {
       typeof onSuccess === "function" && onSuccess();
     },
     onError: (error) => {
-      console.log({ error });
       toast.error(error.response?.data?.message ?? error?.message ?? "error");
     },
   });

@@ -2,7 +2,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useCreateVehicleEnquiry } from "@/mutations/vehicle-enquiry-mutation";
 import { Textarea } from "../ui/textarea";
+import ChassisSelectByColor from "@/features/chassis-select-by-color";
+import VehicleColorSelect from "@/features/vehicle-color-select";
+import { cn } from "@/lib/utils";
 
 export default function RaiseVehicleEnquiryForm({
   vehicleId,
@@ -21,6 +24,7 @@ export default function RaiseVehicleEnquiryForm({
     handleSubmit,
     formState: { errors },
     control,
+    watch,
   } = useForm({
     resolver: zodResolver(
       z.object({
@@ -28,10 +32,15 @@ export default function RaiseVehicleEnquiryForm({
           .number({ message: "Expected number" })
           .min(1, { message: "required*" }),
         message: z.string().optional(),
+        vehicle_color_id: z
+          .string({ required_error: "Vehicle color ID is required" })
+          .uuid()
+          .min(1, { message: "Vehicle color ID is required" }),
       }),
     ),
-    defaultValues: { quantity: "" },
+    defaultValues: { quantity: "", vehicle_color_id: "" },
   });
+  const vehicleColorId = watch("vehicle_color_id");
 
   const createMutation = useCreateVehicleEnquiry(callback);
   const onSubmit = (data) => {
@@ -40,6 +49,25 @@ export default function RaiseVehicleEnquiryForm({
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      {/* vehicle color id */}
+      <div className="space-y-2">
+        <Label>Color</Label>
+        <Controller
+          name="vehicle_color_id"
+          control={control}
+          render={({ field }) => (
+            <VehicleColorSelect
+              vehicleId={vehicleId}
+              value={field.value}
+              onChange={field.onChange}
+              className={cn({
+                "border-red-500 dark:border-red-500": errors.vehicle_color_id,
+              })}
+            />
+          )}
+        />
+      </div>
+
       <div className="space-y-2">
         <Label htmlFor="quantity">Quantity</Label>
         <div className="relative">

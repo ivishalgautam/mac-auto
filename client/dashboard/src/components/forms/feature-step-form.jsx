@@ -42,7 +42,6 @@ export default function FeaturesStepsForm() {
 
   const onSubmit = (data) => {
     setPreviewData(data);
-    console.log("Form Data:", JSON.stringify(data, null, 2));
   };
 
   const addNewStep = () => {

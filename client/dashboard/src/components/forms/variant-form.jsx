@@ -63,7 +63,6 @@ export default function VariantForm({ vehicleId, type = "create" }) {
     control,
     setError,
   } = methods;
-  console.log({ errors });
 
   const { fields, append, remove } = useFieldArray({
     control,

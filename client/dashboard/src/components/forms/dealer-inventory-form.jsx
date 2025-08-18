@@ -17,6 +17,7 @@ import ChassisSelectByColor from "@/features/chassis-select-by-color";
 export default function OrderForm({
   createMutation,
   vehicleId,
+  vehicleColorId: defaultVehicleColorId = null,
   dealerId = null,
   maxSelect = null,
 }) {
@@ -25,7 +26,7 @@ export default function OrderForm({
     defaultValues: {
       dealer_id: dealerId ?? "",
       vehicle_id: vehicleId,
-      vehicle_color_id: "",
+      vehicle_color_id: defaultVehicleColorId ?? "",
       chassis_numbers: [],
     },
   });

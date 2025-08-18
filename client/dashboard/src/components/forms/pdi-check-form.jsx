@@ -37,7 +37,6 @@ export default function PDICheckForm({ orderId, type = "create", id }) {
   const [result, setResult] = useState(null);
   const { data, isLoading, isError, error } =
     useGetDealerOrdersChassisDetails(orderId);
-
   const createMutation = useCreatePDICheck(orderId, () => router.back());
   const updateMutation = useUpdatePDICheck(id);
   const {
@@ -62,7 +61,8 @@ export default function PDICheckForm({ orderId, type = "create", id }) {
           battery_no: item.battery_no,
           controller_no: item.controller_no,
           charger_no: item.charger_no,
-          color: item.color,
+          color_name: item.color_name,
+          color_hex: item.color_hex,
           vehicle_title: item.vehicle_title,
         };
       });
@@ -141,7 +141,7 @@ export default function PDICheckForm({ orderId, type = "create", id }) {
                     <Label>Colour</Label>
                     <div
                       className="size-9 rounded-full"
-                      style={{ backgroundColor: item.color }}
+                      style={{ background: item.color_name }}
                     />
                   </div>
                   <div>

@@ -32,16 +32,19 @@ export const columns = (setId, openModal, updateMutation) => [
     },
   },
   {
-    accessorKey: "color",
+    accessorKey: "colors",
     header: "COLOR",
     cell: ({ row }) => {
-      const color = row.getValue("color");
+      const colors = row.getValue("colors");
       return (
         <div className="flex gap-1">
-          <span
-            className="size-6 rounded-full"
-            style={{ backgroundColor: color }}
-          ></span>
+          {colors.map((c) => (
+            <span
+              key={c.id}
+              className="size-6 rounded-full"
+              style={{ backgroundColor: c.color_hex }}
+            ></span>
+          ))}
         </div>
       );
     },

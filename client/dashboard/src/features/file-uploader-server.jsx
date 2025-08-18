@@ -112,7 +112,6 @@ export default function FileUploaderServer({
 
   // Remove the progress tracking for the file
   const handleFileRemoved = async (filePath) => {
-    console.log({ filePath });
     return new Promise(async (resolve, reject) => {
       if (!filePath) return resolve("Image deleted");
       try {

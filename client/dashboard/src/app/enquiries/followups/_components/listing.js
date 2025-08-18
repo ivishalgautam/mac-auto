@@ -29,8 +29,6 @@ export default function Listing({}) {
   const [enquiryId, setEnquiryId] = useState(searchParams.get("enquiry"));
   const [type, setType] = useState("");
 
-  console.log({ enquiryId });
-
   const router = useRouter();
 
   function openModal(type) {

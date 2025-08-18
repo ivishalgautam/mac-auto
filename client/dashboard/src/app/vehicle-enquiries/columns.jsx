@@ -17,6 +17,7 @@ export const columns = (
   openModal,
   setId,
   setVehicleId,
+  setVehicleColorId,
   setDealerId,
   setMaxSelect,
 ) => [
@@ -25,10 +26,10 @@ export const columns = (
     header: "VEHICLE",
   },
   {
-    accessorKey: "color",
+    accessorKey: "color_hex",
     header: "COLOR",
     cell: ({ row }) => {
-      const color = row.getValue("color");
+      const color = row.getValue("color_hex");
       return (
         <div className="flex gap-1">
           <span
@@ -68,6 +69,7 @@ export const columns = (
     cell: ({ row }) => {
       const id = row.original.id;
       const vehicleId = row.original.vehicle_id;
+      const vehicleColorId = row.original.vehicle_color_id;
       const dealerId = row.original.dealer_id;
       const quantity = row.original.quantity;
 
@@ -94,6 +96,7 @@ export const columns = (
             <DropdownMenuItem
               onClick={() => {
                 setVehicleId(vehicleId);
+                setVehicleColorId(vehicleColorId);
                 setDealerId(dealerId);
                 setMaxSelect(quantity);
                 openModal("dealer-order");
