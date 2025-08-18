@@ -196,13 +196,14 @@ const getChassisDetailsOfOrder = async (req, id) => {
   let query = `
   SELECT
       ord.id,
-      vh.title as vehicle_title, vh.color,
+      vh.title as vehicle_title, vhclr.color_name, vhclr.color_hex,
       invnt.id as inventory_id, invnt.chassis_no, invnt.motor_no, invnt.battery_no, invnt.controller_no, invnt.charger_no
     FROM ${constants.models.DEALER_ORDER_TABLE} ord
     LEFT JOIN ${constants.models.INVENTORY_TABLE} invnt ON invnt.chassis_no = ANY(ord.chassis_nos)
     LEFT JOIN ${constants.models.VEHICLE_TABLE} vh ON vh.id = ord.vehicle_id
+    LEFT JOIN ${constants.models.VEHICLE_COLOR_TABLE} vhclr ON vhclr.id = ord.vehicle_color_id
     WHERE ord.id = :order_id
-    GROUP BY ord.id, vh.title, vh.color, invnt.id
+    GROUP BY ord.id, vh.title, invnt.id, vhclr.color_name, vhclr.color_hex
   `;
 
   return await DealerOrderModel.sequelize.query(query, {

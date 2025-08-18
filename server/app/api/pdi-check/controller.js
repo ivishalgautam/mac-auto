@@ -38,6 +38,7 @@ const create = async (req, res) => {
     if (req.user_data.role === "dealer") {
       const bulkAddData = orderRecord.chassis_nos.map((no) => ({
         vehicle_id: orderRecord.vehicle_id,
+        vehicle_color_id: orderRecord.vehicle_color_id,
         dealer_id: orderRecord.dealer_id,
         chassis_no: no,
         status: "active",

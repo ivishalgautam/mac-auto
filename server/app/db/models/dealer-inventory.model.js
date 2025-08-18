@@ -33,6 +33,16 @@ const init = async (sequelize) => {
         },
         onDelete: "CASCADE",
       },
+      vehicle_color_id: {
+        type: DataTypes.UUID,
+        allowNull: false,
+        references: {
+          model: constants.models.VEHICLE_COLOR_TABLE,
+          key: "id",
+          deferrable: Deferrable.INITIALLY_IMMEDIATE,
+        },
+        onDelete: "CASCADE",
+      },
       chassis_no: {
         type: DataTypes.STRING,
         allowNull: false,
@@ -52,6 +62,9 @@ const init = async (sequelize) => {
           fields: ["vehicle_id"],
         },
         {
+          fields: ["vehicle_color_id"],
+        },
+        {
           fields: ["chassis_no"],
           unique: true,
         },
@@ -62,12 +75,16 @@ const init = async (sequelize) => {
   await DealerInventoryModel.sync({ alter: true });
 };
 
-const create = async ({ vehicle_id, dealer_id, chassis_no }, transaction) => {
+const create = async (
+  { vehicle_color_id, vehicle_id, dealer_id, chassis_no },
+  transaction
+) => {
   const options = {};
   if (transaction) options.transaction = transaction;
 
   const data = await DealerInventoryModel.create(
     {
+      vehicle_color_id: vehicle_color_id,
       vehicle_id: vehicle_id,
       dealer_id: dealer_id,
       chassis_no: chassis_no,
@@ -180,13 +197,16 @@ const get = async (req) => {
 
   const query = `
   SELECT 
-      vh.id, vh.title, vh.description, vh.category, vh.slug, vh.color, vh.carousel,
+      vh.id, vh.title, vh.description, vh.category, vh.slug, vh.carousel,
       (vh.pricing->0->>'base_price')::numeric AS starting_from,
-      COALESCE(JSON_AGG(
-        JSON_BUILD_OBJECT(
-          'color', vh.color
-        )
-      ) FILTER (WHERE vh.id IS NOT NULL), '[]') as colors,
+      COALESCE(
+        JSON_AGG(
+          JSON_BUILD_OBJECT(
+            'id', vhclr.id,
+            'color_name', vhclr.color_name,
+            'color_hex', vhclr.color_hex
+          )
+        ) FILTER (WHERE vh.id IS NOT NULL), '[]') as colors,
       vh.created_at,
       COUNT(DISTINCT CASE WHEN dlrinvn.status = 'active' THEN dlrinvn.id END) as active_quantity,
       COUNT(DISTINCT CASE WHEN dlrinvn.status = 'inactive' THEN dlrinvn.id END) as inactive_quantity,
@@ -194,6 +214,7 @@ const get = async (req) => {
       COUNT(DISTINCT CASE WHEN dlrinvn.status = 'scrapped' THEN dlrinvn.id END) as scrapped_quantity
     FROM ${constants.models.DEALER_INVENTORY_TABLE} dlrinvn
     LEFT JOIN ${constants.models.VEHICLE_TABLE} vh ON dlrinvn.vehicle_id = vh.id
+    LEFT JOIN ${constants.models.VEHICLE_COLOR_TABLE} vhclr ON dlrinvn.vehicle_color_id = vhclr.id
     LEFT JOIN ${constants.models.DEALER_TABLE} dlr ON dlr.id = dlrinvn.dealer_id
     ${whereClause}
     GROUP BY vh.id

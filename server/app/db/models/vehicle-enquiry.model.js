@@ -97,16 +97,17 @@ const get = async (req) => {
   const query = `
   SELECT 
     enq.*,
-    vhc.id as vehicle_id, vhc.title, vhc.color,
+    vhc.id as vehicle_id, vhc.title, 
+    vhclr.color_hex, vhclr.id as vehicle_color_id,
     usr.id as dealer_user_id, 
     CONCAT(usr.first_name, ' ', usr.last_name, ' (', dlr.location, ')') as dealership_name
   FROM ${constants.models.VEHICLE_ENQUIRY_TABLE} enq
   LEFT JOIN ${constants.models.DEALER_TABLE} dlr ON dlr.id = enq.dealer_id
   LEFT JOIN ${constants.models.USER_TABLE} usr ON usr.id = dlr.user_id
-  LEFT JOIN ${constants.models.VEHICLE_COLOR_TABLE} vclr ON vclr.id = enq.vehicle_color_id
-  LEFT JOIN ${constants.models.VEHICLE_TABLE} vhc ON vhc.id = vclr.vehicle_id
+  LEFT JOIN ${constants.models.VEHICLE_COLOR_TABLE} vhclr ON vhclr.id = enq.vehicle_color_id
+  LEFT JOIN ${constants.models.VEHICLE_TABLE} vhc ON vhc.id = vhclr.vehicle_id
   ${whereClause}
-  GROUP BY enq.id, usr.id, vhc.id, dlr.location
+  GROUP BY enq.id, usr.id, vhc.id, dlr.location, vhclr.id
   ORDER BY usr.created_at DESC
   LIMIT :limit OFFSET :offset
   `;
