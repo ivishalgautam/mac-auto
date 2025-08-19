@@ -239,9 +239,18 @@ const getById = async (req, id) => {
 const getBySlug = async (req, slug) => {
   let query = `
   SELECT
-      vh.*
+      vh.*,
+      COALESCE(JSON_AGG(
+        DISTINCT JSON_BUILD_OBJECT(
+          'id', vclr.id,
+          'color', vclr.color_name,
+          'color_hex', vclr.color_hex,
+          'carousel', vclr.carousel,
+          'gallery', vclr.gallery
+        )::jsonb
+      ) FILTER (WHERE vclr.id IS NOT NULL), '[]') as colors, vh.created_at
     FROM ${constants.models.VEHICLE_TABLE} vh
-    LEFT JOIN ${constants.models.VEHICLE_TABLE} vhvr ON vhvr.vehicle_id = vh.id
+    LEFT JOIN ${constants.models.VEHICLE_COLOR_TABLE} vclr ON vclr.vehicle_id = vh.id
     WHERE vh.slug = :slug
     GROUP BY vh.id
   `;
