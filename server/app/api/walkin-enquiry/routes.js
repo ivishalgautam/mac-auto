@@ -5,7 +5,14 @@ import controller from "./controller.js";
 export default async function routes(fastify, options) {
   fastify.post(
     "/",
-    { preHandler: (req, res) => multipartPreHandler(req, res, []) },
+    {
+      preHandler: (req, res) =>
+        multipartPreHandler(req, res, [
+          "references",
+          "guarantor",
+          "co_applicant",
+        ]),
+    },
     controller.create
   );
   fastify.put(
@@ -13,6 +20,10 @@ export default async function routes(fastify, options) {
     {
       preHandler: (req, res) =>
         multipartPreHandler(req, res, [
+          "references",
+          "guarantor",
+          "co_applicant",
+
           "pan_urls",
           "aadhaar_urls",
           "electricity_bill_urls",

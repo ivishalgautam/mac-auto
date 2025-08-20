@@ -319,7 +319,7 @@ const get = async (req) => {
     LEFT JOIN ${constants.models.VEHICLE_COLOR_TABLE} vclr ON vclr.vehicle_id = vh.id
     ${whereClause}
     GROUP BY vh.id
-    ORDER BY vh.created_at DESC
+    ORDER BY vh.title ASC
     LIMIT :limit OFFSET :offset
   `;
 

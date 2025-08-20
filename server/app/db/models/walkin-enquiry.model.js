@@ -78,6 +78,39 @@ const init = async (sequelize) => {
         type: DataTypes.JSONB,
         defaultValue: [],
       },
+
+      house: {
+        type: DataTypes.ENUM(["rented", "owned", "parental"]),
+        allowNull: true,
+      },
+      landmark: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      alt_phone: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      references: {
+        type: DataTypes.JSONB,
+        allowNull: true,
+      },
+      permanent_address: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      present_address: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      guarantor: {
+        type: DataTypes.JSONB,
+        allowNull: true,
+      },
+      co_applicant: {
+        type: DataTypes.JSONB,
+        allowNull: true,
+      },
     },
     {
       createdAt: "created_at",
@@ -91,6 +124,13 @@ const init = async (sequelize) => {
         { fields: ["location"] },
         { fields: ["status"] },
         { fields: ["purchase_type"] },
+        { fields: ["landmark"] },
+        { fields: ["alt_phone"] },
+        { fields: ["references"] },
+        { fields: ["permanent_address"] },
+        { fields: ["present_address"] },
+        { fields: ["guarantor"] },
+        { fields: ["co_applicant"] },
       ],
     }
   );
@@ -125,6 +165,14 @@ const create = async (req) => {
     aadhaar: req.body.aadhaar,
     electricity_bill: req.body.electricity_bill,
     rent_agreement: req.body.rent_agreement,
+
+    landmark: req.body.landmark,
+    alt_phone: req.body.alt_phone,
+    references: req.body.references,
+    permanent_address: req.body.permanent_address,
+    present_address: req.body.present_address,
+    guarantor: req.body.guarantor,
+    co_applicant: req.body.co_applicant,
   });
 };
 
@@ -216,6 +264,14 @@ const update = async (req, id, transaction) => {
       aadhaar: req.body.aadhaar,
       electricity_bill: req.body.electricity_bill,
       rent_agreement: req.body.rent_agreement,
+
+      landmark: req.body.landmark,
+      alt_phone: req.body.alt_phone,
+      references: req.body.references,
+      permanent_address: req.body.permanent_address,
+      present_address: req.body.present_address,
+      guarantor: req.body.guarantor,
+      co_applicant: req.body.co_applicant,
     },
     options
   );
