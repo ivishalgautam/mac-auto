@@ -166,6 +166,7 @@ const create = async (req) => {
     electricity_bill: req.body.electricity_bill,
     rent_agreement: req.body.rent_agreement,
 
+    house: req.body.house,
     landmark: req.body.landmark,
     alt_phone: req.body.alt_phone,
     references: req.body.references,
@@ -265,6 +266,7 @@ const update = async (req, id, transaction) => {
       electricity_bill: req.body.electricity_bill,
       rent_agreement: req.body.rent_agreement,
 
+      house: req.body.house,
       landmark: req.body.landmark,
       alt_phone: req.body.alt_phone,
       references: req.body.references,
