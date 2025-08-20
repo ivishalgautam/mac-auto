@@ -2,10 +2,10 @@
 import { DataTableResetFilter } from "@/components/ui/table/data-table-reset-filter";
 import { DataTableSearch } from "@/components/ui/table/data-table-search";
 import { useTableFilters } from "./use-table-filters";
-import { DataTableFilterBox } from "@/components/ui/table/data-table-filter-box";
 
 export const statusOptions = [
   { label: "In Process", value: "in process" },
+  { label: "PDI", value: "pdi" },
   { label: "Dispatch", value: "dispatch" },
   { label: "Canceled", value: "canceled" },
   { label: "Delivered", value: "delivered" },

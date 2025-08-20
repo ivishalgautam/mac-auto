@@ -96,7 +96,7 @@ export const columns = (
           <Select
             value={status}
             onValueChange={(value) => {
-              if (["dispatch", "delivered"].includes(value))
+              if (["pdi", "delivered"].includes(value))
                 return handleNavigate(`/dealer-orders/${id}/pdi/add`);
 
               setId(id);
@@ -114,6 +114,9 @@ export const columns = (
                   className={"capitalize"}
                   disabled={
                     ["delivered", "canceled"].includes(status) ||
+                    (user.role === "admin" &&
+                      status === "in process" &&
+                      ["dispatch", "delivered"].includes(option.value)) ||
                     (user.role === "dealer" &&
                       (option.value === "dispatch" ||
                         (option.value === "delivered" && !isAdminPdi)))

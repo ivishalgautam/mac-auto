@@ -35,3 +35,14 @@ export const purchaseTypes = [
   { label: "Cash", value: "cash" },
   { label: "Finance", value: "finance" },
 ];
+
+export const batteryTypes = [
+  { value: "lithium ion", label: "Lithium ion" },
+  { value: "lead acid", label: "Lead acid" },
+];
+
+export const houseTypes = [
+  { label: "Owned", value: "owned" },
+  { label: "Rented", value: "rented" },
+  { label: "Parental", value: "parental" },
+];

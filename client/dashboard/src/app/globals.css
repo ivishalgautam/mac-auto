@@ -169,6 +169,10 @@
   --tracking-widest: calc(var(--tracking-normal) + 0.1em);
 }
 
+html {
+  scrollbar-gutter: stable;
+}
+
 body {
   letter-spacing: var(--tracking-normal);
 }

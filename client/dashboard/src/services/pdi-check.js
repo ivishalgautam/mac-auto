@@ -2,11 +2,15 @@ const { endpoints } = require("@/utils/endpoints");
 const { default: http } = require("@/utils/http");
 
 const create = async (orderId, data) => {
-  return await http().post(`${endpoints.pdiChecks.getAll}/${orderId}`, data);
+  return await http().post(
+    `${endpoints.pdiChecks.getAll}/${orderId}`,
+    data,
+    true,
+  );
 };
 
 const update = async (id, data) => {
-  return await http().put(`${endpoints.pdiChecks.getAll}/${id}`, data);
+  return await http().put(`${endpoints.pdiChecks.getAll}/${id}`, data, true);
 };
 
 const deleteById = async (id) => {

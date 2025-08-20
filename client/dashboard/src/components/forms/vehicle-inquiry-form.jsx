@@ -27,6 +27,7 @@ export default function VehicleInquiryForm({ onSuccess }) {
   } = useForm({
     resolver: zodResolver(vehicleInquirySchema),
     defaultValues: {
+      battery_type: "",
       vehicle_id: "",
       quantity: 1,
       message: "",

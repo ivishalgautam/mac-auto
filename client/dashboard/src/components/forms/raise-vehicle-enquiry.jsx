@@ -13,6 +13,14 @@ import { Textarea } from "../ui/textarea";
 import ChassisSelectByColor from "@/features/chassis-select-by-color";
 import VehicleColorSelect from "@/features/vehicle-color-select";
 import { cn } from "@/lib/utils";
+import { batteryTypes } from "@/data";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
 
 export default function RaiseVehicleEnquiryForm({
   vehicleId,
@@ -36,6 +44,12 @@ export default function RaiseVehicleEnquiryForm({
           .string({ required_error: "Vehicle color ID is required" })
           .uuid()
           .min(1, { message: "Vehicle color ID is required" }),
+        battery_type: z.enum(
+          batteryTypes.map(({ value }) => value),
+          {
+            message: "Battery type is required.",
+          },
+        ),
       }),
     ),
     defaultValues: { quantity: "", vehicle_color_id: "" },
@@ -49,6 +63,29 @@ export default function RaiseVehicleEnquiryForm({
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      {/* battery type */}
+      <div className="space-y-2">
+        <Label>Color</Label>
+        <Controller
+          name="battery_type"
+          control={control}
+          render={({ field }) => (
+            <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <SelectTrigger className={"w-full"}>
+                <SelectValue placeholder="Select battery type" />
+              </SelectTrigger>
+              <SelectContent>
+                {batteryTypes.map(({ value, label }) => (
+                  <SelectItem key={value} value={value}>
+                    {label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+        />
+      </div>
+
       {/* vehicle color id */}
       <div className="space-y-2">
         <Label>Color</Label>

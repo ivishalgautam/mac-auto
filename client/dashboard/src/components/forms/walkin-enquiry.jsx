@@ -17,7 +17,6 @@ import { Alert, AlertDescription } from "../ui/alert";
 import { getFormErrors } from "@/lib/get-form-errors";
 import { useRouter } from "next/navigation";
 import VehicleSelect from "@/features/vehicle-select";
-import { walkInEnquirySchema } from "@/utils/schema/vehicle-inquiry.schema";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   createWalkInEnquiry,
@@ -31,13 +30,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
-import { purchaseTypes } from "@/data";
+import { houseTypes, purchaseTypes } from "@/data";
 import { useCallback, useEffect, useState } from "react";
 import FileUpload from "../file-uploader";
 import Loader from "../loader";
 import ErrorMessage from "../ui/error";
 import config from "@/config";
-import { H1 } from "../ui/typography";
+import { H1, H3 } from "../ui/typography";
+import { walkInEnquirySchema } from "@/utils/schema/walking-enquiry.schema";
 
 export default function WalkInEnquiryForm({ onSuccess, type = "create", id }) {
   const [files, setFiles] = useState({
@@ -52,16 +52,17 @@ export default function WalkInEnquiryForm({ onSuccess, type = "create", id }) {
     electricity_bill_urls: [],
     rent_agreement_urls: [],
   });
+
   const {
     register,
     handleSubmit,
-    formState: { errors, isDirty },
+    formState: { errors },
     control,
     reset,
     watch,
-    setError,
-    trigger,
     setValue,
+    trigger,
+    getValues,
   } = useForm({
     resolver: zodResolver(walkInEnquirySchema),
     defaultValues: {
@@ -70,15 +71,29 @@ export default function WalkInEnquiryForm({ onSuccess, type = "create", id }) {
       phone: "",
       location: "",
       purchase_type: "",
+
+      house: undefined,
+
       pan: [],
       aadhaar: [],
       electricity_bill: [],
       rent_agreement: [],
+
+      landmark: undefined,
+      alt_phone: undefined,
+      references: undefined,
+      permanent_address: undefined,
+      present_address: undefined,
+      guarantor: undefined,
+      co_applicant: undefined,
     },
   });
+
   const queryClient = useQueryClient();
   const router = useRouter();
   const purchaseType = watch("purchase_type");
+  const houseType = watch("house");
+
   const createMutation = useMutation({
     mutationFn: createWalkInEnquiry,
     onSuccess: () => {
@@ -91,6 +106,7 @@ export default function WalkInEnquiryForm({ onSuccess, type = "create", id }) {
       toast.error(error.response?.data?.message ?? error?.message ?? "error");
     },
   });
+
   const updateMutation = useMutation({
     mutationFn: (data) => updateWalkinEnquiry(id, data),
     onSuccess: () => {
@@ -103,37 +119,36 @@ export default function WalkInEnquiryForm({ onSuccess, type = "create", id }) {
       toast.error(error.response?.data?.message ?? error?.message ?? "error");
     },
   });
+
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["walkin-enquiries", id],
     queryFn: () => fetchWalkinEnquiry(id),
     enabled: ["edit", "view"].includes(type) && !!id,
   });
-  const onSubmit = async (data) => {
+
+  const onSubmit = async (formDataValues) => {
     const isValid = await trigger([
       "pan",
       "aadhaar",
       "electricity_bill",
       "rent_agreement",
     ]);
-
     if (!isValid) return;
 
-    const payload = {
-      vehicle_id: data.vehicle_id,
-      name: data.name,
-      phone: data.phone,
-      location: data.location,
-      purchase_type: data.purchase_type,
-    };
+    const { pan, aadhaar, electricity_bill, rent_agreement, ...rest } =
+      formDataValues;
+    const payload = { ...rest };
 
     const formData = new FormData();
     Object.entries(files).forEach(([key, value]) => {
-      value.forEach((file) => {
-        formData.append(key, file);
-      });
+      value.forEach((file) => formData.append(key, file));
     });
     Object.entries(payload).forEach(([key, value]) => {
-      formData.append(key, value);
+      if (typeof value === "object") {
+        formData.append(key, JSON.stringify(value));
+      } else {
+        formData.append(key, value);
+      }
     });
 
     if (type === "edit") {
@@ -168,16 +183,80 @@ export default function WalkInEnquiryForm({ onSuccess, type = "create", id }) {
   }, []);
 
   useEffect(() => {
+    const currentReferences = getValues("references");
+    const currentGuarantor = getValues("guarantor");
+    const currentCoApplicant = getValues("co_applicant");
+    console.log({ currentReferences, currentGuarantor, currentCoApplicant });
+    console.log({ purchaseType, houseType });
+
+    // ✅ Set references only if finance and not already populated
+    if (purchaseType === "finance") {
+      if (!currentReferences || currentReferences.length < 2) {
+        setValue(
+          "references",
+          !currentReferences
+            ? [
+                { name: "", landmark: "" },
+                { name: "", landmark: "" },
+              ]
+            : currentReferences?.map((r) => ({
+                name: r.name ?? "",
+                landmark: r.landmark ?? "",
+              })),
+        );
+      }
+    } else {
+      setValue("references", undefined);
+    }
+
+    // ✅ Set guarantor only if rented and not already populated
+    if (purchaseType === "finance" && houseType === "rented") {
+      if (!currentGuarantor || !currentGuarantor.name) {
+        setValue("guarantor", {
+          name: currentGuarantor.name,
+          phone: currentGuarantor.phone,
+          address: currentGuarantor.address,
+        });
+      }
+    } else {
+      setValue("guarantor", undefined);
+    }
+
+    // ✅ Set co-applicant only if owned or parental and not already populated
+    if (
+      purchaseType === "finance" &&
+      ["owned", "parental"].includes(houseType)
+    ) {
+      if (!currentCoApplicant || !currentCoApplicant.name) {
+        setValue("co_applicant", {
+          name: currentCoApplicant.name,
+          phone: currentCoApplicant.phone,
+          address: currentCoApplicant.address,
+        });
+      }
+    } else {
+      setValue("co_applicant", undefined);
+    }
+  }, [purchaseType, houseType, getValues, setValue]);
+
+  useEffect(() => {
     if (["edit", "view"].includes(type) && data) {
-      setFileUrls((prev) => ({
-        ...prev,
+      const safeData = {
+        ...data,
+        references: data.references?.length ? data.references : undefined,
+        guarantor: data.guarantor?.name ? data.guarantor : undefined,
+        co_applicant: data.co_applicant?.name ? data.co_applicant : undefined,
+        alt_phone: data.alt_phone || undefined,
+      };
+
+      console.log({ data, safeData });
+      setFileUrls({
         pan_urls: data.pan,
         aadhaar_urls: data.aadhaar,
         electricity_bill_urls: data.electricity_bill,
         rent_agreement_urls: data.rent_agreement,
-      }));
-
-      reset({ ...data });
+      });
+      reset(safeData);
     }
   }, [data, type, reset]);
 
@@ -188,14 +267,16 @@ export default function WalkInEnquiryForm({ onSuccess, type = "create", id }) {
   if (["edit", "view"].includes(type) && isLoading) return <Loader />;
   if (type === "edit" && isError) return <ErrorMessage error={error} />;
 
+  console.log(watch());
+
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       {type === "view" && <H1>{data.enquiry_code}</H1>}
 
+      {/* Core Fields */}
       <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-        {/* Vehicle ID (Hidden field if passed as prop) */}
         <div className="space-y-2">
-          <Label htmlFor="vehicle_id">Vehicle ID *</Label>
+          <Label>Vehicle *</Label>
           <Controller
             name="vehicle_id"
             control={control}
@@ -203,98 +284,288 @@ export default function WalkInEnquiryForm({ onSuccess, type = "create", id }) {
               <VehicleSelect
                 value={field.value}
                 onChange={field.onChange}
+                disabled={type === "view"}
                 className={cn({
                   "border-red-500 dark:border-red-500": errors.vehicle_id,
                 })}
-                disabled={type === "view"}
               />
             )}
           />
         </div>
 
-        {/* Name */}
         <div className="space-y-2">
-          <Label htmlFor="name">Full Name *</Label>
+          <Label>Full Name *</Label>
           <Input
-            id="name"
-            placeholder="Enter your full name"
+            placeholder="Enter full name"
             {...register("name")}
-            className={cn({ "border-red-500": errors.name })}
             disabled={type === "view"}
+            className={cn({ "border-red-500": errors.name })}
           />
         </div>
 
-        {/* Phone */}
         <div className="space-y-2">
-          <Label htmlFor="phone">Phone Number *</Label>
+          <Label>Phone *</Label>
           <Controller
-            control={control}
             name="phone"
+            control={control}
             render={({ field }) => (
               <PhoneSelect
                 value={field.value}
                 onChange={field.onChange}
-                placeholder="Enter your phone number"
                 className={cn({
                   "border border-red-500": errors.phone,
                 })}
                 disabled={type === "view"}
+                placeholder="Enter phone number"
               />
             )}
           />
         </div>
 
-        {/* Location */}
         <div className="space-y-2">
-          <Label htmlFor="location">Location *</Label>
+          <Label>Location *</Label>
           <Input
-            id="location"
-            placeholder="Enter your location"
+            placeholder="Enter location"
             {...register("location")}
-            className={cn({ "border-red-500": errors.location })}
             disabled={type === "view"}
+            className={cn({ "border-red-500": errors.location })}
           />
         </div>
 
-        {/* purchase type */}
         <div className="space-y-2">
-          <Label htmlFor="purchase_type">Purchase type *</Label>
+          <Label>Purchase Type *</Label>
           <Controller
             name="purchase_type"
             control={control}
-            render={({ field }) => {
-              return (
-                <Select
-                  key={field.value ?? ""}
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
+            render={({ field }) => (
+              <Select
+                key={field.value}
+                onValueChange={field.onChange}
+                defaultValue={field.value}
+                disabled={type === "view"}
+              >
+                <SelectTrigger
+                  className={cn("w-full", {
+                    "border-red-500": errors.purchase_type,
+                  })}
                 >
-                  <SelectTrigger
-                    className={"w-full"}
-                    disabled={type === "view"}
-                  >
-                    <SelectValue placeholder="Select purchase type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {purchaseTypes.map((t) => {
-                      return (
-                        <SelectItem
-                          key={t.value}
-                          value={t.value}
-                          className={"capitalize"}
-                        >
-                          {t.label}
-                        </SelectItem>
-                      );
-                    })}
-                  </SelectContent>
-                </Select>
-              );
-            }}
+                  <SelectValue placeholder="Select purchase type" />
+                </SelectTrigger>
+                <SelectContent>
+                  {purchaseTypes.map((t) => (
+                    <SelectItem key={t.value} value={t.value}>
+                      {t.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
           />
         </div>
+      </div>
 
-        {purchaseType === "finance" && (
+      {/* Always Fields */}
+      {purchaseType === "finance" && (
+        <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+          <div className="space-y-2">
+            <Label>Landmark *</Label>
+            <Input
+              placeholder="Enter landmark"
+              {...register("landmark")}
+              disabled={type === "view"}
+              className={cn({ "border-red-500": errors.landmark })}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>Alternate Phone *</Label>
+            <Controller
+              name="alt_phone"
+              control={control}
+              render={({ field }) => (
+                <PhoneSelect
+                  value={field.value}
+                  onChange={field.onChange}
+                  className={cn({
+                    "border border-red-500": errors.alt_phone,
+                  })}
+                  disabled={type === "view"}
+                  placeholder="Enter alternate phone number"
+                />
+              )}
+            />
+          </div>
+          <div className="col-span-full space-y-2">
+            <Label>References (2)</Label>
+            {watch("references")?.map((_, i) => (
+              <div key={i} className="grid grid-cols-2 gap-2">
+                <Input
+                  id={`references.${i}.name`}
+                  placeholder="Reference Name"
+                  {...register(`references.${i}.name`)}
+                  disabled={type === "view"}
+                  className={cn({
+                    "border-red-500": errors.references?.[i]?.name,
+                  })}
+                />
+                <Input
+                  id={`references.${i}.landmark`}
+                  placeholder="Reference Landmark"
+                  {...register(`references.${i}.landmark`)}
+                  disabled={type === "view"}
+                  className={cn({
+                    "border-red-500": errors.references?.[i]?.landmark,
+                  })}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Finance Fields */}
+      {purchaseType === "finance" && (
+        <div className="space-y-2">
+          <H3>Finance</H3>
+          <div>
+            <div className="space-y-2">
+              <Label>House *</Label>
+              <Controller
+                name="house"
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    onValueChange={(val) =>
+                      field.onChange(val, { shouldValidate: true })
+                    }
+                    defaultValue={field.value}
+                    disabled={type === "view"}
+                  >
+                    <SelectTrigger
+                      className={cn("w-full capitalize", {
+                        "border-red-500": errors.house,
+                      })}
+                    >
+                      <SelectValue placeholder="Select house type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {houseTypes.map((t) => (
+                        <SelectItem key={t.value} value={t.value}>
+                          {t.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+            </div>
+
+            {houseType === "rented" && (
+              <div className="col-span-full grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label>Permanent Address</Label>
+                  <Input
+                    placeholder="Enter permanent address"
+                    {...register("permanent_address")}
+                    className={cn({
+                      "border-red-500": errors.permanent_address,
+                    })}
+                    disabled={type === "view"}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Present Address</Label>
+                  <Input
+                    placeholder="Enter present address"
+                    {...register("present_address")}
+                    className={cn({ "border-red-500": errors.present_address })}
+                    disabled={type === "view"}
+                  />
+                </div>
+                <div className="col-span-full space-y-2">
+                  <Label>Guarantor Details</Label>
+                  <div className="grid gap-2 md:grid-cols-3">
+                    <Input
+                      placeholder="Guarantor name"
+                      {...register("guarantor.name")}
+                      className={cn({
+                        "border-red-500": errors.guarantor?.name,
+                      })}
+                      disabled={type === "view"}
+                    />
+                    <Controller
+                      name="guarantor.phone"
+                      control={control}
+                      render={({ field }) => (
+                        <PhoneSelect
+                          value={field.value}
+                          onChange={field.onChange}
+                          className={cn({
+                            "border border-red-500": errors?.guarantor?.phone,
+                          })}
+                          disabled={type === "view"}
+                          placeholder="Enter guarantor phone number"
+                        />
+                      )}
+                    />
+                    <Input
+                      placeholder="Guarantor address"
+                      {...register("guarantor.address")}
+                      className={cn({
+                        "border-red-500": errors.guarantor?.address,
+                      })}
+                      disabled={type === "view"}
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {["owned", "parental"].includes(houseType) && (
+              <div className="col-span-full space-y-2">
+                <Label>Co-applicant Details</Label>
+                <div className="grid gap-2 md:grid-cols-3">
+                  <Input
+                    placeholder="Co-applicant name"
+                    {...register("co_applicant.name")}
+                    disabled={type === "view"}
+                    className={cn({
+                      "border-red-500": errors?.co_applicant?.name,
+                    })}
+                  />
+                  <Controller
+                    name="co_applicant.phone"
+                    control={control}
+                    render={({ field }) => (
+                      <PhoneSelect
+                        value={field.value}
+                        onChange={field.onChange}
+                        className={cn({
+                          "border border-red-500": errors.co_applicant?.phone,
+                        })}
+                        disabled={type === "view"}
+                        placeholder="Enter Co applicant number"
+                      />
+                    )}
+                  />
+                  <Input
+                    placeholder="Co-applicant address"
+                    {...register("co_applicant.address")}
+                    disabled={type === "view"}
+                    className={cn({
+                      "border-red-500": errors?.co_applicant?.address,
+                    })}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* File Uploads */}
+      {purchaseType === "finance" && (
+        <div className="space-y-2">
+          <H3>Documents</H3>
           <div className="col-span-full grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             {/* PAN Card */}
             <div className="space-y-2">
@@ -429,10 +700,9 @@ export default function WalkInEnquiryForm({ onSuccess, type = "create", id }) {
               )}
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
-      {/* Form Errors Alert */}
       {hasErrors && (
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
@@ -441,9 +711,9 @@ export default function WalkInEnquiryForm({ onSuccess, type = "create", id }) {
               Please fix the following errors:
             </div>
             <ul className="list-inside list-disc space-y-1">
-              {formErrors.map((error, index) => (
-                <li key={index} className="text-sm">
-                  {error}
+              {formErrors.map((err, i) => (
+                <li key={i} className="text-sm">
+                  {err}
                 </li>
               ))}
             </ul>
@@ -451,20 +721,11 @@ export default function WalkInEnquiryForm({ onSuccess, type = "create", id }) {
         </Alert>
       )}
 
-      {/* Submit Button */}
       {type !== "view" && (
         <div className="text-end">
-          <Button
-            type="submit"
-            disabled={isFormPending}
-            className="w-full sm:w-auto"
-          >
+          <Button type="submit" disabled={isFormPending}>
             {isFormPending && (
-              <LoaderCircleIcon
-                className="-ms-1 animate-spin"
-                size={16}
-                aria-hidden="true"
-              />
+              <LoaderCircleIcon className="mr-2 animate-spin" size={16} />
             )}
             Submit
           </Button>
@@ -474,26 +735,23 @@ export default function WalkInEnquiryForm({ onSuccess, type = "create", id }) {
   );
 }
 
-export const FileCard = ({ file, onRemove, type }) => {
-  return (
-    <div className="hover:bg-muted/50 relative flex items-center justify-between rounded-lg border px-3 py-2 text-sm">
-      <div className="flex min-w-0 flex-1 items-center gap-2">
-        <a href={`${config.file_base}${file}`} target="_blank">
-          <ExternalLink className="h-4 w-4" />
-        </a>
-        <span className="truncate">{file.split("\\").pop()}</span>
-      </div>
-      {type !== "view" && (
-        <Button
-          onClick={onRemove}
-          size="icon"
-          className="border-background focus-visible:border-background absolute -top-2 -right-2 size-6 rounded-full border-2 shadow-none"
-          aria-label="Remove image"
-          type="button"
-        >
-          <XIcon className="size-3.5" />
-        </Button>
-      )}
+export const FileCard = ({ file, onRemove, type }) => (
+  <div className="hover:bg-muted/50 relative flex items-center justify-between rounded-lg border px-3 py-2 text-sm">
+    <div className="flex min-w-0 flex-1 items-center gap-2">
+      <a href={`${config.file_base}${file}`} target="_blank">
+        <ExternalLink className="h-4 w-4" />
+      </a>
+      <span className="truncate">{file.split("\\").pop()}</span>
     </div>
-  );
-};
+    {type !== "view" && (
+      <Button
+        onClick={onRemove}
+        size="icon"
+        className="absolute -top-2 -right-2 size-6 rounded-full border-2"
+        type="button"
+      >
+        <XIcon className="size-3.5" />
+      </Button>
+    )}
+  </div>
+);

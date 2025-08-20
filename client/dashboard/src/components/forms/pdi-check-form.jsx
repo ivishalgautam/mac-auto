@@ -1,17 +1,16 @@
 "use client";
 
 import { Controller, useFieldArray, useForm } from "react-hook-form";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { Checkbox } from "../ui/checkbox";
 import { Button, buttonVariants } from "../ui/button";
 import { Label } from "../ui/label";
 import { useGetDealerOrdersChassisDetails } from "@/mutations/dealer-order-mutation";
 import Loader from "../loader";
 import ErrorMessage from "../ui/error";
-import { H4 } from "../ui/typography";
 import { Input } from "../ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
-import { CalendarIcon, LoaderCircle, SquarePen } from "lucide-react";
+import { CalendarIcon, LoaderCircle, SquarePen, XIcon } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Calendar } from "../ui/calendar";
@@ -24,17 +23,47 @@ import {
 } from "@/mutations/pdi-check-mutation";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import MyStepper from "../stepper";
+import FileUpload from "../file-uploader";
+import config from "@/config";
+import Image from "next/image";
+
+const steps = [
+  {
+    step: 1,
+    title: "Upload Photos",
+  },
+  {
+    step: 2,
+    title: "PDI (Pre-Delivery Inspection)",
+  },
+];
 
 export default function PDICheckForm({ orderId, type = "create", id }) {
-  const { register, handleSubmit, watch, control, setValue, reset } = useForm({
+  const [currentStep, setCurrentStep] = useState(1);
+  const {
+    register,
+    handleSubmit,
+    watch,
+    control,
+    setValue,
+    reset,
+    errors,
+    setError,
+  } = useForm({
     defaultValues: {
       pdi: [],
       pdi_incharge: { pdi_date: new Date(), bill_no: "", remarks: "" },
     },
   });
+  const [files, setFiles] = useState({
+    images: [],
+  });
+  const [fileUrls, setFileUrls] = useState({
+    image_urls: [],
+  });
   const router = useRouter();
   const [open, setOpen] = useState(false);
-  const [result, setResult] = useState(null);
   const { data, isLoading, isError, error } =
     useGetDealerOrdersChassisDetails(orderId);
   const createMutation = useCreatePDICheck(orderId, () => router.back());
@@ -47,8 +76,32 @@ export default function PDICheckForm({ orderId, type = "create", id }) {
   } = useGetPDICheck(id);
 
   const onSubmit = (data) => {
-    setResult(data);
-    type === "edit" ? updateMutation.mutate(data) : createMutation.mutate(data);
+    if (!fileUrls?.image_urls?.length && !files.images.length) {
+      return setError("images", {
+        type: "manual",
+        message: "Atleat 1 image is required*",
+      });
+    }
+
+    const formData = new FormData();
+    files.images?.forEach((file) => {
+      formData.append("images", file);
+    });
+    Object.entries(data).forEach(([key, value]) => {
+      typeof value === "object"
+        ? formData.append(key, JSON.stringify(value))
+        : formData.append(key, value);
+    });
+
+    if (type === "edit") {
+      Object.entries(fileUrls).forEach(([key, value]) => {
+        formData.append(key, JSON.stringify(value));
+      });
+    }
+
+    type === "edit"
+      ? updateMutation.mutate(formData)
+      : createMutation.mutate(formData);
   };
   const { fields } = useFieldArray({ control, name: "pdi" });
   useEffect(() => {
@@ -73,12 +126,17 @@ export default function PDICheckForm({ orderId, type = "create", id }) {
   useEffect(() => {
     if (["view", "edit"].includes(type) && pdiData) {
       reset({ pdi: pdiData.pdi, pdi_incharge: pdiData.pdi_incharge });
+      setFileUrls((prev) => ({ ...prev, image_urls: pdiData.images }));
     }
   }, [pdiData, reset, type]);
 
   const isButtonPending =
     (type === "edit" && updateMutation.isPending) ||
     (type === "create" && createMutation.isPending);
+
+  const handleImagesChange = useCallback((data) => {
+    setFiles((prev) => ({ ...prev, images: data }));
+  }, []);
 
   if (
     (type === "create" && isLoading) ||
@@ -94,177 +152,270 @@ export default function PDICheckForm({ orderId, type = "create", id }) {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      <div className="divide-input space-y-6">
+      <MyStepper
+        currentStep={currentStep}
+        setCurrentStep={setCurrentStep}
+        steps={steps}
+      >
         {type === "view" && (
-          <div className="text-end">
+          <div className="mb-4 text-end">
             <Link href="edit" className={buttonVariants({})}>
               <SquarePen className="size-4" /> Edit
             </Link>
           </div>
         )}
+        {/* step: 1 */}
+        <div
+          className={cn("col-span-full space-y-4", {
+            hidden: currentStep === 2,
+          })}
+        >
+          <Label>Images</Label>
+          {["edit", "create"].includes(type) && (
+            <FileUpload
+              onFileChange={handleImagesChange}
+              inputName={"images"}
+              className={cn({ "border-red-500": errors?.images })}
+              initialFiles={files.images}
+              multiple={true}
+              maxFiles={50}
+            />
+          )}
 
-        <div className="space-y-6">
-          {fields.map((item, idx) => (
-            <div
-              key={item.chassis_no}
-              className="space-y-6 rounded-lg border p-6"
-            >
-              <div>
-                <h2 className="text-lg font-bold capitalize">
-                  Vehicle details
-                </h2>
-                <div className="grid grid-cols-2 gap-2 md:grid-cols-3 lg:grid-cols-4">
-                  <div>
-                    <Label>Chassis No.</Label>
-                    <Input {...register(`pdi.${idx}.chassis_no`)} disabled />
-                  </div>
-                  <div>
-                    <Label>Motor No.</Label>
-                    <Input {...register(`pdi.${idx}.motor_no`)} disabled />
-                  </div>
-                  <div>
-                    <Label>Battery No.</Label>
-                    <Input {...register(`pdi.${idx}.battery_no`)} disabled />
-                  </div>
-                  <div>
-                    <Label>PDI No.</Label>
-                    <Input {...register(`pdi.${idx}.pdi_no`)} disabled />
-                  </div>
-                  <div>
-                    <Label>PDI Date.</Label>
-                    <Input
-                      {...register(`pdi.${idx}.pdi_datemotor_no`)}
-                      disabled
-                    />
-                  </div>
-                  <div>
-                    <Label>Colour</Label>
-                    <div
-                      className="size-9 rounded-full"
-                      style={{ background: item.color_name }}
-                    />
-                  </div>
-                  <div>
-                    <Label>Controller No.</Label>
-                    <Input {...register(`pdi.${idx}.controller_no`)} disabled />
-                  </div>
-                  <div>
-                    <Label>Charger No.</Label>
-                    <Input {...register(`pdi.${idx}.charger_no`)} disabled />
-                  </div>
-                </div>
+          <div className="grid grid-cols-[repeat(auto-fill,minmax(100px,1fr))] gap-4">
+            {fileUrls.image_urls?.map((src, index) => (
+              <div
+                className="bg-accent relative aspect-square w-24 rounded-md"
+                key={index}
+              >
+                <Image
+                  src={`${config.file_base}/${src}`}
+                  width={200}
+                  height={200}
+                  className="size-full rounded-[inherit] object-cover"
+                  alt={`image-${index}`}
+                />
+                {type === "edit" && (
+                  <Button
+                    onClick={() =>
+                      setFileUrls((prev) => ({
+                        ...prev,
+                        image_urls: prev.image_urls.filter((i) => i !== src),
+                      }))
+                    }
+                    size="icon"
+                    className="border-background focus-visible:border-background absolute -top-2 -right-2 size-6 rounded-full border-2 shadow-none"
+                    aria-label="Remove image"
+                    type="button"
+                  >
+                    <XIcon className="size-3.5" />
+                  </Button>
+                )}
               </div>
-              <div className="space-y-4">
-                {Object.entries(item.pdi_check).map(([group, items]) => (
-                  <div key={group} className="space-y-2">
-                    <h2 className="text-lg font-bold capitalize">
-                      {group.replace(/([A-Z])/g, " $1")}
-                    </h2>
-                    <div className="grid grid-cols-2 gap-2 md:grid-cols-3 lg:grid-cols-4">
-                      {Object.entries(items).map(([item, value]) => (
-                        <Label
-                          key={item}
-                          className={cn(
-                            "hover:bg-accent/50 border-input flex items-center gap-2 rounded-lg border p-2 px-3 has-[[aria-checked=true]]:border-blue-600 has-[[aria-checked=true]]:bg-blue-50 dark:has-[[aria-checked=true]]:border-blue-900 dark:has-[[aria-checked=true]]:bg-blue-950",
-                            {
-                              "cursor-not-allowed": type === "view",
-                            },
-                          )}
-                        >
-                          <Controller
-                            control={control}
-                            name={`pdi.${idx}.pdi_check.${group}.${item}`}
-                            render={({ field }) => (
-                              <Checkbox
-                                onCheckedChange={field.onChange}
-                                checked={field.value}
-                                disabled={type === "view"}
-                              />
-                            )}
-                          />
-                          <span className="capitalize">{item}</span>
-                        </Label>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
 
-        <div>
-          <h2 className="text-lg font-bold capitalize">PDI Incharge</h2>
-          <div className="grid grid-cols-2 gap-2 md:grid-cols-3 lg:grid-cols-4">
-            <div>
-              <Label>Bill No.</Label>
-              <Input
-                {...register("pdi_incharge.bill_no")}
-                placeholder="Enter bill no."
-                disabled={type === "view"}
-              />
-            </div>
-
-            <div>
-              <Label>Bill date</Label>
-              <Controller
-                control={control}
-                name="pdi_incharge.bill_date"
-                render={({ field }) => (
-                  <div>
-                    <Popover open={open} onOpenChange={setOpen}>
-                      <PopoverTrigger asChild disabled={type === "view"}>
-                        <Button
-                          variant={"outline"}
-                          className={cn(
-                            "h-10 w-full pl-3 text-left font-normal",
-                            !field.value && "text-muted-foreground",
-                          )}
-                        >
-                          {field.value ? (
-                            format(field.value, "PPP")
-                          ) : (
-                            <span>Pick a date</span>
-                          )}
-                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={(value) => {
-                            field.onChange(value);
-                            setOpen(false);
-                          }}
-                          disabled={(date) =>
-                            date > new Date() || date < new Date("1900-01-01")
-                          }
-                          captionLayout="dropdown"
-                        />
-                      </PopoverContent>
-                    </Popover>
+        {/* step: 2 */}
+        <div
+          className={cn("divide-input space-y-6", {
+            hidden: currentStep === 1,
+          })}
+        >
+          <div className="space-y-6">
+            {fields.map((item, idx) => (
+              <div
+                key={item.chassis_no}
+                className="space-y-6 rounded-lg border p-6"
+              >
+                <div>
+                  <h2 className="text-lg font-bold capitalize">
+                    Vehicle details
+                  </h2>
+                  <div className="grid grid-cols-2 gap-2 md:grid-cols-3 lg:grid-cols-4">
+                    <div>
+                      <Label>Chassis No.</Label>
+                      <Input {...register(`pdi.${idx}.chassis_no`)} disabled />
+                    </div>
+                    <div>
+                      <Label>Motor No.</Label>
+                      <Input {...register(`pdi.${idx}.motor_no`)} disabled />
+                    </div>
+                    <div>
+                      <Label>Battery No.</Label>
+                      <Input {...register(`pdi.${idx}.battery_no`)} disabled />
+                    </div>
+                    <div>
+                      <Label>PDI No.</Label>
+                      <Input {...register(`pdi.${idx}.pdi_no`)} disabled />
+                    </div>
+                    <div>
+                      <Label>PDI Date.</Label>
+                      <Input
+                        {...register(`pdi.${idx}.pdi_datemotor_no`)}
+                        disabled
+                      />
+                    </div>
+                    <div>
+                      <Label>Colour</Label>
+                      <div
+                        className="size-9 rounded-full"
+                        style={{ background: item.color_name }}
+                      />
+                    </div>
+                    <div>
+                      <Label>Controller No.</Label>
+                      <Input
+                        {...register(`pdi.${idx}.controller_no`)}
+                        disabled
+                      />
+                    </div>
+                    <div>
+                      <Label>Charger No.</Label>
+                      <Input {...register(`pdi.${idx}.charger_no`)} disabled />
+                    </div>
                   </div>
-                )}
-              />
-            </div>
+                </div>
+                <div className="space-y-4">
+                  {Object.entries(item.pdi_check).map(([group, items]) => (
+                    <div key={group} className="space-y-2">
+                      <h2 className="text-lg font-bold capitalize">
+                        {group.replace(/([A-Z])/g, " $1")}
+                      </h2>
+                      <div className="grid grid-cols-2 gap-2 md:grid-cols-3 lg:grid-cols-4">
+                        {Object.entries(items).map(([item, value]) => (
+                          <Label
+                            key={item}
+                            className={cn(
+                              "hover:bg-accent/50 border-input flex items-center gap-2 rounded-lg border p-2 px-3 has-[[aria-checked=true]]:border-blue-600 has-[[aria-checked=true]]:bg-blue-50 dark:has-[[aria-checked=true]]:border-blue-900 dark:has-[[aria-checked=true]]:bg-blue-950",
+                              {
+                                "cursor-not-allowed": type === "view",
+                              },
+                            )}
+                          >
+                            <Controller
+                              control={control}
+                              name={`pdi.${idx}.pdi_check.${group}.${item}`}
+                              render={({ field }) => (
+                                <Checkbox
+                                  onCheckedChange={field.onChange}
+                                  checked={field.value}
+                                  disabled={type === "view"}
+                                />
+                              )}
+                            />
+                            <span className="capitalize">{item}</span>
+                          </Label>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
 
-            <div className="col-span-2">
-              <Label>Remarks</Label>
-              <Textarea
-                {...register("pdi_incharge.remarks")}
-                placeholder="Enter remarks"
-                disabled={type === "view"}
-              />
+          <div>
+            <h2 className="text-lg font-bold capitalize">PDI Incharge</h2>
+            <div className="grid grid-cols-2 gap-2 md:grid-cols-3 lg:grid-cols-4">
+              <div>
+                <Label>Bill No.</Label>
+                <Input
+                  {...register("pdi_incharge.bill_no")}
+                  placeholder="Enter bill no."
+                  disabled={type === "view"}
+                />
+              </div>
+
+              <div>
+                <Label>Bill date</Label>
+                <Controller
+                  control={control}
+                  name="pdi_incharge.bill_date"
+                  render={({ field }) => (
+                    <div>
+                      <Popover open={open} onOpenChange={setOpen}>
+                        <PopoverTrigger asChild disabled={type === "view"}>
+                          <Button
+                            variant={"outline"}
+                            className={cn(
+                              "h-10 w-full pl-3 text-left font-normal",
+                              !field.value && "text-muted-foreground",
+                            )}
+                          >
+                            {field.value ? (
+                              format(field.value, "PPP")
+                            ) : (
+                              <span>Pick a date</span>
+                            )}
+                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={field.value}
+                            onSelect={(value) => {
+                              field.onChange(value);
+                              setOpen(false);
+                            }}
+                            disabled={(date) =>
+                              date > new Date() || date < new Date("1900-01-01")
+                            }
+                            captionLayout="dropdown"
+                          />
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+                  )}
+                />
+              </div>
+
+              <div className="col-span-2">
+                <Label>Remarks</Label>
+                <Textarea
+                  {...register("pdi_incharge.remarks")}
+                  placeholder="Enter remarks"
+                  disabled={type === "view"}
+                />
+              </div>
             </div>
           </div>
         </div>
-      </div>
-      <div className="text-end">
-        <Button type="submit" disabled={isButtonPending}>
-          {isButtonPending && <LoaderCircle className="size-4 animate-spin" />}
-          Submit
+      </MyStepper>
+      <div className="flex justify-end space-x-4">
+        <Button
+          type="button"
+          variant="outline"
+          className="w-32"
+          onClick={() => setCurrentStep((prev) => prev - 1)}
+          disabled={currentStep === 1}
+        >
+          Prev step
         </Button>
+
+        {(currentStep < steps.length || type === "view") && (
+          <Button
+            type="button"
+            variant="outline"
+            className="w-32"
+            onClick={() =>
+              setCurrentStep((prev) => (prev < steps.length ? prev + 1 : prev))
+            }
+            disabled={currentStep >= steps.length}
+          >
+            Next step
+          </Button>
+        )}
+
+        {type !== "view" && currentStep === steps.length && (
+          <Button type="submit" disabled={isButtonPending}>
+            {isButtonPending && (
+              <LoaderCircle className="size-4 animate-spin" />
+            )}
+            Submit
+          </Button>
+        )}
       </div>
     </form>
   );
