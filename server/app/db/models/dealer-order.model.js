@@ -47,7 +47,13 @@ const init = async (sequelize) => {
         allowNull: false,
       },
       status: {
-        type: DataTypes.ENUM("in process", "dispatch", "canceled", "delivered"),
+        type: DataTypes.ENUM(
+          "in process",
+          "pdi",
+          "dispatch",
+          "canceled",
+          "delivered"
+        ),
         allowNull: false,
         defaultValue: "in process",
       },

@@ -41,6 +41,10 @@ const init = async (sequelize) => {
         },
         onDelete: "CASCADE",
       },
+      images: {
+        type: DataTypes.JSONB,
+        defaultValue: [],
+      },
     },
     {
       createdAt: "created_at",
@@ -61,6 +65,7 @@ const create = async (req, dealer_order_id, transaction) => {
       pdi: req.body.pdi,
       pdi_incharge: req.body.pdi_incharge,
       dealer_order_id: dealer_order_id,
+      images: req.body.images,
       pdi_by: req.user_data.id,
     },
     options
@@ -77,7 +82,11 @@ const update = async (req, id, transaction) => {
   };
   if (transaction) options.transaction = transaction;
   return await PDICheckModel.update(
-    { pdi: req.body.pdi, pdi_incharge: req.body.pdi_incharge },
+    {
+      pdi: req.body.pdi,
+      pdi_incharge: req.body.pdi_incharge,
+      images: req.body.images,
+    },
     options
   );
 };

@@ -1,9 +1,13 @@
 // errorHandler.js
 
 import { ZodError } from "zod";
+import { cleanupFiles } from "../helpers/cleanup-files.js";
 
 // Custom error handler function
-export const ErrorHandler = (error, request, reply) => {
+export const ErrorHandler = (error, req, reply) => {
+  if (req.filePaths?.length) {
+    cleanupFiles(req.filePaths);
+  }
   console.log({ error });
   // Check if the error is a Zod validation error
   if (error instanceof ZodError) {

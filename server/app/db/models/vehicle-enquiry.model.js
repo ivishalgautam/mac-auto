@@ -33,6 +33,10 @@ const init = async (sequelize) => {
         },
         onDelete: "CASCADE",
       },
+      battery_type: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
       quantity: {
         type: DataTypes.INTEGER,
         allowNull: false,
@@ -66,6 +70,7 @@ const create = async (req, transaction) => {
       vehicle_color_id: req.body.vehicle_color_id,
       quantity: req.body.quantity,
       message: req.body.message,
+      battery_type: req.body.battery_type,
     },
     options
   );

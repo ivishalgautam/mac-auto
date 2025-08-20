@@ -1,6 +1,8 @@
 "use strict";
 import table from "../../db/models.js";
 import { sequelize } from "../../db/postgres.js";
+import { cleanupFiles } from "../../helpers/cleanup-files.js";
+import { getItemsToDelete } from "../../helpers/filter.js";
 import constants from "../../lib/constants/index.js";
 
 const status = constants.http.status;
@@ -8,6 +10,7 @@ const status = constants.http.status;
 const create = async (req, res) => {
   const transaction = await sequelize.transaction();
   try {
+    // throw new Error("error aa gayi");
     const orderRecord = await table.DealerOrderModel.getById(req);
     if (!orderRecord) {
       return res
@@ -28,7 +31,7 @@ const create = async (req, res) => {
     await table.DealerOrderModel.update(
       {
         body: {
-          status: req.user_data.role === "admin" ? "dispatch" : "delivered",
+          status: req.user_data.role === "admin" ? "pdi" : "delivered",
         },
       },
       orderRecord.id,
@@ -50,6 +53,7 @@ const create = async (req, res) => {
     await transaction.commit();
     res.code(status.OK).send({ status: true, message: "PDI created." });
   } catch (error) {
+    // if (req.filePaths.length) await cleanupFiles(req.filePaths);
     await transaction.rollback();
     throw error;
   }
@@ -72,11 +76,29 @@ const update = async (req, res) => {
         message: "This is not your PDI You can't update it.",
       });
 
+    const documentsToDelete = [];
+    const existingImages = pdiRecord.images;
+    const updatedImages = req.body.image_urls;
+    if (updatedImages) {
+      req.body.images = [...(req.body?.images ?? []), ...updatedImages];
+      documentsToDelete.push(
+        ...getItemsToDelete(existingImages, updatedImages)
+      );
+    }
+
     const data = await table.PDICheckModel.update(
-      { body: { pdi: req.body.pdi, pdi_incharge: req.body.pdi_incharge } },
+      {
+        body: {
+          pdi: req.body.pdi,
+          pdi_incharge: req.body.pdi_incharge,
+          images: req.body.images,
+        },
+      },
       req.params.id,
       transaction
     );
+
+    if (documentsToDelete.length) cleanupFiles(documentsToDelete);
 
     await transaction.commit();
     res.code(status.OK).send({ status: true, message: "PDI Updated." });

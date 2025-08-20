@@ -28,8 +28,6 @@ const create = async (req, res) => {
         .code(status.NOT_FOUND)
         .send({ status: false, message: "Dealer not registered." });
 
-    console.log({ dealerRecord });
-
     req.body.dealer_id = dealerRecord.id;
 
     await table.VehicleEnquiryModel.create(req);
