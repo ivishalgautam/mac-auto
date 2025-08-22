@@ -57,13 +57,13 @@ const create = async (req, res) => {
       maxBodyLength: Infinity,
       url: "https://api.kylas.io/v1/leads/",
       headers: {
+        "Content-Type": "application/json",
         "api-key": process.env.KYLAS_API_KEY,
       },
       data: data,
     };
 
     const response = await axios.request(config);
-    console.log({ response });
     return res.send({
       status: true,
       message: "Lead created",
@@ -71,6 +71,7 @@ const create = async (req, res) => {
     });
   } catch (error) {
     // throw error;
+    console.log(error);
     if (error instanceof AxiosError) {
       throw new HttpError(
         error?.response?.data?.message ?? "Something went wrong!",
