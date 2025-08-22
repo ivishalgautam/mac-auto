@@ -221,7 +221,7 @@ const getColors = async (req, res) => {
         .send({ status: false, message: responseMessage[status.NOT_FOUND] });
 
     const data = await table.VehicleColorModel.getByVehicleId(req, 0, {
-      attributes: ["color_name", "color_hex", "id"],
+      attributes: ["color_name", "color_hex"],
     });
 
     res.code(status.OK).send({ status: true, data: data });

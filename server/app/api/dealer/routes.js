@@ -13,4 +13,14 @@ export default async function routes(fastify, opts) {
     {},
     controller.getInventoryByVehicleId
   );
+  fastify.get(
+    "/inventory/by-vehicle-color/:vehicle_id",
+    {},
+    controller.getInventoryByVehicleId
+  );
+  fastify.get(
+    "/inventory/by-vehicle/:vehicle_id/colors",
+    {},
+    controller.getColors
+  );
 }

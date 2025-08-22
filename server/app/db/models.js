@@ -19,6 +19,7 @@ import customerPurchaseModel from "./models/customer-purchase.model.js";
 import ticketModel from "./models/ticket.model.js";
 import vehicleColorModel from "./models/vehicle-color.model.js";
 import walkinEnquiryModel from "./models/walkin-enquiry.model.js";
+import dealerTicketModel from "./models/dealer-ticket.model.js";
 
 export default {
   UserModel: userModel,
@@ -39,6 +40,7 @@ export default {
   SchemeModel: schemeModel,
   CustomerPurchaseModel: customerPurchaseModel,
   TicketModel: ticketModel,
+  DealerTicketModel: dealerTicketModel,
   VehicleColorModel: vehicleColorModel,
   WalkinEnquiryModel: walkinEnquiryModel,
 };

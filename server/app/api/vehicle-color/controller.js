@@ -36,6 +36,29 @@ const create = async (req, res) => {
   }
 };
 
+const importVehicles = async (req, res) => {
+  try {
+    const vehicles = await table.VehicleModel.getAll([
+      "id",
+      "carousel",
+      "gallery",
+    ]);
+
+    const data = vehicles.map((v) => ({
+      vehicle_id: v.id,
+      color_name: "White",
+      color_hex: "#FFFFFF",
+      carousel: v.carousel,
+      gallery: v.gallery,
+    }));
+
+    return await table.VehicleColorModel.bulkCreate(data);
+  } catch (error) {
+    throw error;
+  }
+};
+
 export default {
   create: create,
+  importVehicles: importVehicles,
 };

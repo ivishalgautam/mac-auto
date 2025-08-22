@@ -23,6 +23,16 @@ const init = async (sequelize) => {
         },
         onDelete: "CASCADE",
       },
+      vehicle_color_id: {
+        type: DataTypes.UUID,
+        allowNull: false,
+        references: {
+          model: constants.models.VEHICLE_COLOR_TABLE,
+          key: "id",
+          deferrable: Deferrable.INITIALLY_IMMEDIATE,
+        },
+        onDelete: "CASCADE",
+      },
       customer_id: {
         type: DataTypes.UUID,
         allowNull: false,
@@ -57,6 +67,9 @@ const init = async (sequelize) => {
           fields: ["vehicle_id"],
         },
         {
+          fields: ["vehicle_color_id"],
+        },
+        {
           fields: ["customer_id"],
         },
         {
@@ -80,6 +93,7 @@ const create = async (req, transaction) => {
   const data = await CustomerPurchaseModel.create(
     {
       vehicle_id: req.body.vehicle_id,
+      vehicle_color_id: req.body.vehicle_color_id,
       customer_id: req.body.customer_id,
       dealer_id: req.body.dealer_id,
       chassis_no: req.body.chassis_no,
@@ -172,12 +186,13 @@ const get = async (req) => {
   const query = `
   SELECT 
       cpt.id, cpt.chassis_no,
-      vh.id as vehicle_id, vh.title, vh.description, vh.category, vh.slug, vh.color, vh.carousel, vh.created_at,
+      vh.id as vehicle_id, vh.title, vh.description, vh.category, vh.slug, vhclr.color_name as color, vhclr.color_hex, vh.carousel, vh.created_at,
       CONCAT(cust_usr.first_name, ' ', cust_usr.last_name) as customer_name, cust_usr.mobile_number as customer_phone,
       deal_usr.mobile_number as dealer_phone,
       CONCAT(deal_usr.first_name, ' ', deal_usr.last_name, ' (', dlr.location, ')') AS dealership
     FROM ${constants.models.CUSTOMER_PURCHASE_TABLE} cpt
     LEFT JOIN ${constants.models.VEHICLE_TABLE} vh ON cpt.vehicle_id = vh.id
+    LEFT JOIN ${constants.models.VEHICLE_COLOR_TABLE} vhclr ON vhclr.vehicle_id = cpt.vehicle_id
     LEFT JOIN ${constants.models.CUSTOMER_TABLE} cstmr ON cstmr.id = cpt.customer_id
     LEFT JOIN ${constants.models.DEALER_TABLE} dlr ON dlr.id = cpt.dealer_id
     LEFT JOIN ${constants.models.USER_TABLE} cust_usr ON cust_usr.id = cstmr.user_id

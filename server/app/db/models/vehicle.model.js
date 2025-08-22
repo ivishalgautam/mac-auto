@@ -263,6 +263,14 @@ const getBySlug = async (req, slug) => {
   });
 };
 
+const getAll = async (attributes) => {
+  const options = {};
+  if (Array.isArray(attributes) && attributes.length > 0) {
+    options.attributes = attributes;
+  }
+  return await VehicleModel.findAll(options);
+};
+
 const get = async (req) => {
   const whereConditions = ["vh.vehicle_id IS null"];
   const queryParams = {};
@@ -368,6 +376,7 @@ export default {
   init: init,
   create: create,
   update: update,
+  getAll: getAll,
   get: get,
   getById: getById,
   getBySlug: getBySlug,

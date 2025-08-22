@@ -3,11 +3,11 @@ import constants from "../../lib/constants/index.js";
 import sequelizeFwk, { Deferrable, QueryTypes } from "sequelize";
 const { DataTypes } = sequelizeFwk;
 
-let TicketModel = null;
+let DealerTicketModel = null;
 
 const init = async (sequelize) => {
-  TicketModel = sequelize.define(
-    constants.models.TICKET_TABLE,
+  DealerTicketModel = sequelize.define(
+    constants.models.DEALER_TICKET_TABLE,
     {
       id: {
         primaryKey: true,
@@ -21,10 +21,6 @@ const init = async (sequelize) => {
         unique: true,
         allowNull: false,
       },
-      images: {
-        type: DataTypes.JSONB,
-        defaultValue: false,
-      },
       message: {
         type: DataTypes.TEXT,
         allowNull: false,
@@ -34,16 +30,6 @@ const init = async (sequelize) => {
         allowNull: false,
         defaultValue: "pending",
       },
-      purchase_id: {
-        type: DataTypes.UUID,
-        allowNull: false,
-        references: {
-          model: constants.models.CUSTOMER_PURCHASE_TABLE,
-          key: "id",
-          deferrable: Deferrable.INITIALLY_IMMEDIATE,
-        },
-        onDelete: "CASCADE",
-      },
       complaint_type: {
         type: DataTypes.STRING,
         allowNull: false,
@@ -52,37 +38,36 @@ const init = async (sequelize) => {
         type: DataTypes.DATEONLY,
         allowNull: true,
       },
-      assigned_technician: {
-        type: DataTypes.STRING,
-        allowNull: true,
-      },
-      parts: {
-        type: DataTypes.JSONB,
-        defaultValue: [],
+      dealer_id: {
+        type: DataTypes.UUID,
+        allowNull: false,
+        references: {
+          model: constants.models.DEALER_TABLE,
+          key: "id",
+          deferrable: Deferrable.INITIALLY_IMMEDIATE,
+        },
+        onDelete: "CASCADE",
       },
     },
     {
       createdAt: "created_at",
       updatedAt: "updated_at",
       indexes: [
-        { fields: ["images"] },
         { fields: ["ticket_number"] },
         { fields: ["message"] },
         { fields: ["status"] },
-        { fields: ["purchase_id"] },
         { fields: ["complaint_type"] },
         { fields: ["expected_closure_date"] },
-        { fields: ["assigned_technician"] },
-        { fields: ["parts"] },
+        { fields: ["dealer_id"] },
       ],
     }
   );
 
-  await TicketModel.sync({ alter: true });
+  await DealerTicketModel.sync({ alter: true });
 };
 
 const create = async (req) => {
-  const latest = await TicketModel.findOne({
+  const latest = await DealerTicketModel.findOne({
     attributes: ["ticket_number"],
     order: [["created_at", "DESC"]],
     raw: true,
@@ -95,15 +80,12 @@ const create = async (req) => {
     newTicketNo = `TICKET-${String(nextNumber).padStart(4, "0")}`;
   }
 
-  return await TicketModel.create({
-    images: req.body?.images ?? [],
+  return await DealerTicketModel.create({
     ticket_number: newTicketNo,
     message: req.body.message,
-    purchase_id: req.body.purchase_id,
     complaint_type: req.body.complaint_type,
     expected_closure_date: req.body.expected_closure_date,
-    assigned_technician: req.body.assigned_technician,
-    parts: req.body.parts,
+    dealer_id: req.body.dealer_id,
   });
 };
 
@@ -111,15 +93,12 @@ const update = async (req, id, transaction) => {
   const options = { where: { id: req?.params?.id || id } };
   if (transaction) options.transaction = transaction;
 
-  return await TicketModel.update(
+  return await DealerTicketModel.update(
     {
-      images: req.body?.images ?? [],
-      message: req.body.message,
       status: req.body.status,
+      message: req.body.message,
       complaint_type: req.body.complaint_type,
       expected_closure_date: req.body.expected_closure_date,
-      assigned_technician: req.body.assigned_technician,
-      parts: req.body.parts,
     },
     options
   );
@@ -163,39 +142,32 @@ const get = async (req) => {
   let countQuery = `
     SELECT
         COUNT(tk.id) OVER()::integer as total
-      FROM ${constants.models.TICKET_TABLE} tk
-      LEFT JOIN ${constants.models.CUSTOMER_PURCHASE_TABLE} cpt ON cpt.id = tk.purchase_id
-      LEFT JOIN ${constants.models.DEALER_TABLE} dl ON dl.id = cpt.dealer_id
-      LEFT JOIN ${constants.models.CUSTOMER_TABLE} cst ON cst.id = cpt.customer_id
-      LEFT JOIN ${constants.models.USER_TABLE} cstu ON cstu.id = cst.user_id
+      FROM ${constants.models.DEALER_TICKET_TABLE} tk
+      LEFT JOIN ${constants.models.DEALER_TABLE} dl ON dl.id = tk.dealer_id
+      LEFT JOIN ${constants.models.USER_TABLE} usr ON usr.id = dl.user_id
       ${whereClause}
     `;
 
   let query = `
     SELECT
-        tk.*, cpt.chassis_no,
-        CONCAT(dstu.first_name, ' ', COALESCE(dstu.last_name, ''), ' (', dl.location, ')') as dealership_name,
-        dstu.mobile_number as dealership_phone,
-        CONCAT(cstu.first_name, ' ', COALESCE(cstu.last_name, '')) as customer_name,
-        cstu.mobile_number as customer_phone
-    FROM ${constants.models.TICKET_TABLE} tk
-    LEFT JOIN ${constants.models.CUSTOMER_PURCHASE_TABLE} cpt ON cpt.id = tk.purchase_id
-    LEFT JOIN ${constants.models.DEALER_TABLE} dl ON dl.id = cpt.dealer_id
-    LEFT JOIN ${constants.models.CUSTOMER_TABLE} cst ON cst.id = cpt.customer_id
-    LEFT JOIN ${constants.models.USER_TABLE} cstu ON cstu.id = cst.user_id
-    LEFT JOIN ${constants.models.USER_TABLE} dstu ON dstu.id = dl.user_id
+        tk.*,
+        CONCAT(usr.first_name, ' ', COALESCE(usr.last_name, ''), ' (', dl.location, ')') as dealership_name,
+        usr.mobile_number as dealership_phone
+    FROM ${constants.models.DEALER_TICKET_TABLE} tk
+    LEFT JOIN ${constants.models.DEALER_TABLE} dl ON dl.id = tk.dealer_id
+    LEFT JOIN ${constants.models.USER_TABLE} usr ON usr.id = dl.user_id
     ${whereClause}
     ORDER BY tk.created_at DESC
     LIMIT :limit OFFSET :offset
     `;
 
-  const tickets = await TicketModel.sequelize.query(query, {
+  const tickets = await DealerTicketModel.sequelize.query(query, {
     replacements: { ...queryParams, limit, offset },
     type: QueryTypes.SELECT,
     raw: true,
   });
 
-  const count = await TicketModel.sequelize.query(countQuery, {
+  const count = await DealerTicketModel.sequelize.query(countQuery, {
     replacements: { ...queryParams },
     type: QueryTypes.SELECT,
     raw: true,
@@ -208,14 +180,12 @@ const get = async (req) => {
 const getById = async (req, id) => {
   const query = `
   SELECT
-      tk.*,
-      cp.customer_id
-    FROM ${constants.models.TICKET_TABLE} tk
-    LEFT JOIN ${constants.models.CUSTOMER_PURCHASE_TABLE} cp ON cp.id = tk.purchase_id
+      tk.*
+    FROM ${constants.models.DEALER_TICKET_TABLE} tk
     WHERE tk.id = :id
   `;
 
-  return await TicketModel.sequelize.query(query, {
+  return await DealerTicketModel.sequelize.query(query, {
     replacements: {
       id: req.params.id || id,
     },
@@ -227,37 +197,30 @@ const getById = async (req, id) => {
 const getTicketDetailsById = async (req, id) => {
   const query = `
   SELECT
-      tk.*, cp.chassis_no,
-      dstu.first_name as dealership_first_name, dstu.last_name as dealership_last_name, dstu.mobile_number as dealership_phone,
-      dl.location as dealership_location,
-      cstu.first_name as customer_first_name, cstu.last_name as customer_last_name, cstu.mobile_number as customer_phone
-    FROM ${constants.models.TICKET_TABLE} tk
-    LEFT JOIN ${constants.models.CUSTOMER_PURCHASE_TABLE} cp ON cp.id = tk.purchase_id
-    LEFT JOIN ${constants.models.DEALER_TABLE} dl ON dl.id = cp.dealer_id
-    LEFT JOIN ${constants.models.CUSTOMER_TABLE} cst ON cst.id = cp.customer_id
-    LEFT JOIN ${constants.models.USER_TABLE} cstu ON cstu.id = cst.user_id
-    LEFT JOIN ${constants.models.USER_TABLE} dstu ON dstu.id = dl.user_id
+      tk.*,
+      usr.first_name as dealership_first_name, usr.last_name as dealership_last_name, usr.mobile_number as dealership_phone,
+      dl.location as dealership_location
+    FROM ${constants.models.DEALER_TICKET_TABLE} tk
+    LEFT JOIN ${constants.models.DEALER_TABLE} dl ON dl.id = tk.dealer_id
+    LEFT JOIN ${constants.models.USER_TABLE} usr ON usr.id = dl.user_id
     WHERE tk.id = :id
   `;
 
-  return await TicketModel.sequelize.query(query, {
-    replacements: {
-      id: req.params.id || id,
-    },
+  return await DealerTicketModel.sequelize.query(query, {
+    replacements: { id: req.params.id || id },
     type: QueryTypes.SELECT,
     plain: true,
   });
 };
 
-const deleteById = async (req, id, transaction) => {
-  const options = { where: { id: req.params.id || id } };
-  if (transaction) options.transaction = transaction;
-
-  return await TicketModel.destroy(options);
+const deleteById = async (req, id) => {
+  return await DealerTicketModel.destroy({
+    where: { id: req.params.id || id },
+  });
 };
 
 const getTicketStatusBreakdown = async () => {
-  const result = await TicketModel.findAll({
+  const result = await DealerTicketModel.findAll({
     attributes: [
       "status",
       [sequelizeFwk.fn("COUNT", sequelizeFwk.col("status")), "count"],

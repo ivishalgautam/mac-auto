@@ -13,3 +13,7 @@ export default async function routes(fastify, opt) {
     controller.create
   );
 }
+
+export async function vehicleColorPublicRoutes(fastify, opts) {
+  fastify.get("/import", {}, controller.importVehicles);
+}

@@ -74,6 +74,10 @@ const create = async (req, transaction) => {
   return data.dataValues;
 };
 
+const bulkCreate = async (bulkdData) => {
+  return await VehicleColorModel.bulkCreate(bulkdData);
+};
+
 const get = async (req) => {
   const whereConditions = [];
   const queryParams = {};
@@ -126,15 +130,38 @@ const getById = async (req, id) => {
 };
 
 const getByVehicleId = async (req, id, options = {}) => {
-  return await VehicleColorModel.findAll({
-    where: { vehicle_id: req.params?.id || id },
-    ...(options ?? {}),
+  const vehicleId = req.params?.id || id;
+  const whereConditions = [`vhclr.vehicle_id = :vehicleId`];
+  const queryParams = { vehicleId: vehicleId };
+
+  const attributes = options.attributes?.length
+    ? options.attributes
+        .map((attr) => {
+          return attr.includes(".") ? attr : `vhclr.${attr}`;
+        })
+        .join(", ")
+    : "vhclr.*";
+
+  const whereClause = `WHERE ${whereConditions.join(" AND ")}`;
+
+  const query = `
+  SELECT DISTINCT vhclr.id, ${attributes}
+    FROM ${constants.models.VEHICLE_COLOR_TABLE} vhclr
+    ${whereClause}
+  `;
+
+  const results = await VehicleColorModel.sequelize.query(query, {
+    replacements: { ...queryParams },
+    type: QueryTypes.SELECT,
   });
+
+  return results;
 };
 
 export default {
   init: init,
   create: create,
+  bulkCreate: bulkCreate,
   get: get,
   getById: getById,
   getByVehicleId: getByVehicleId,

@@ -78,7 +78,6 @@ const init = async (sequelize) => {
         type: DataTypes.JSONB,
         defaultValue: [],
       },
-
       house: {
         type: DataTypes.ENUM(["rented", "owned", "parental"]),
         allowNull: true,

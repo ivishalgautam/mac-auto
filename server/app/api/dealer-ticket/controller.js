@@ -1,7 +1,6 @@
 "use strict";
 import table from "../../db/models.js";
 import { ticketSchema } from "./schema.js";
-import { cleanupFiles } from "../../helpers/cleanup-files.js";
 import constants from "../../lib/constants/index.js";
 import { sequelize } from "../../db/postgres.js";
 
@@ -9,33 +8,29 @@ const status = constants.http.status;
 const responseMessage = constants.error.message;
 
 const create = async (req, res) => {
-  const filePaths = req.filePaths;
   try {
     const validateData = ticketSchema.parse(req.body);
-    const purchaseRecord = await table.CustomerPurchaseModel.getById(
-      validateData.purchase_id
-    );
-    if (!purchaseRecord)
+    const dealerRecord = await table.DealerModel.getByUserId(req.user_data.id);
+    if (!dealerRecord)
       return res
         .code(status.NOT_FOUND)
-        .send({ status: false, message: "Purchase record not found!" });
-
-    await table.TicketModel.create(req);
+        .send({ status: false, message: "Dealer not found!" });
+    console.log({ dealerRecord });
+    await table.DealerTicketModel.create({
+      body: { ...validateData, dealer_id: dealerRecord.id },
+    });
 
     res
       .code(status.CREATED)
       .send({ status: true, message: responseMessage[status.CREATED] });
   } catch (error) {
-    if (filePaths.length) {
-      await cleanupFiles(filePaths);
-    }
     throw error;
   }
 };
 
 const getById = async (req, res) => {
   try {
-    const record = await table.TicketModel.getById(req);
+    const record = await table.DealerTicketModel.getById(req);
     if (!record) return res.code(404).send({ message: "Ticket not found!" });
 
     res.send({ status: true, data: record });
@@ -47,7 +42,7 @@ const getById = async (req, res) => {
 
 const getDetailsById = async (req, res) => {
   try {
-    const record = await table.TicketModel.getTicketDetailsById(req);
+    const record = await table.DealerTicketModel.getTicketDetailsById(req);
     if (!record) return res.code(404).send({ message: "Ticket not found!" });
 
     res.send({ status: true, data: record });
@@ -59,60 +54,37 @@ const getDetailsById = async (req, res) => {
 
 const update = async (req, res) => {
   const transaction = await sequelize.transaction();
-  const filePaths = req.filePaths;
-
   try {
-    const record = await table.TicketModel.getById(req);
+    const record = await table.DealerTicketModel.getById(req);
     if (!record) return res.code(404).send({ message: "Ticket not found!" });
 
-    await table.TicketModel.update(req, 0, transaction);
-
-    const documentsToDelete = [];
-
-    const existingImages = record.images;
-    const updatedImages = req.body.image_urls;
-    if (updatedImages) {
-      req.body.images = [...(req.body?.images ?? []), ...updatedImages];
-      documentsToDelete.push(
-        ...getItemsToDelete(existingImages, updatedImages)
-      );
-    }
-
-    if (documentsToDelete.length) {
-      await cleanupFiles(documentsToDelete);
-    }
-
+    await table.DealerTicketModel.update(req, 0, transaction);
     await transaction.commit();
+
     res.send({ status: true, message: "Updated" });
   } catch (error) {
     await transaction.rollback();
-    if (filePaths.length) {
-      await cleanupFiles(filePaths);
-    }
     throw error;
   }
 };
 
 const deleteById = async (req, res) => {
-  const transaction = await sequelize.transaction();
   try {
-    const record = await table.TicketModel.getById(req);
+    const record = await table.DealerTicketModel.getById(req);
     if (!record) return res.code(404).send({ message: "Ticket not found!" });
 
-    await table.TicketModel.deleteById(req, 0, transaction);
-    await cleanupFiles(record?.images ?? []);
-    await transaction.commit();
+    await table.DealerTicketModel.deleteById(req);
 
     res.send({ status: true, message: "Ticket deleted" });
   } catch (error) {
-    await transaction.rollback();
+    console.error(error);
     throw error;
   }
 };
 
 const get = async (req, res) => {
   try {
-    const data = await table.TicketModel.get(req);
+    const data = await table.DealerTicketModel.get(req);
     res.send({ status: true, data: data, total: data?.[0]?.total });
   } catch (error) {
     console.error(error);

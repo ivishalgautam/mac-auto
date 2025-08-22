@@ -28,16 +28,33 @@ const getInventoryByVehicleId = async (req, res) => {
   try {
     const vehicleId = req.params.vehicle_id;
 
+    const record = await table.VehicleColorModel.getById(0, vehicleId);
+    if (!record)
+      return res
+        .code(status.NOT_FOUND)
+        .send({ status: false, message: "Vehicle not found" });
+
+    const data = await table.DealerInventoryModel.getByVehicleColorId(
+      req,
+      vehicleId
+    );
+
+    res.code(status.OK).send({ status: true, data: data });
+  } catch (error) {
+    throw error;
+  }
+};
+const getColors = async (req, res) => {
+  try {
+    const vehicleId = req.params.vehicle_id;
+
     const record = await table.VehicleModel.getById(0, vehicleId);
     if (!record)
       return res
         .code(status.NOT_FOUND)
         .send({ status: false, message: "Vehicle not found" });
 
-    const data = await table.DealerInventoryModel.getByVehicleId(
-      req,
-      vehicleId
-    );
+    const data = await table.DealerInventoryModel.getColors(req, vehicleId);
 
     res.code(status.OK).send({ status: true, data: data });
   } catch (error) {
@@ -125,4 +142,5 @@ export default {
   getInventoryByVehicleId: getInventoryByVehicleId,
   updateDealerInventory: updateDealerInventory,
   getInventoryItemById: getInventoryItemById,
+  getColors: getColors,
 };

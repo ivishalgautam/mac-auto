@@ -64,6 +64,7 @@ const constants = {
     CUSTOMER_ORDER_TABLE: "customer_orders",
     CUSTOMER_PURCHASE_TABLE: "customer_purchases",
     TICKET_TABLE: "tickets",
+    DEALER_TICKET_TABLE: "dealer_tickets",
     VEHICLE_COLOR_TABLE: "vehicle_colors",
   },
   bcrypt: {

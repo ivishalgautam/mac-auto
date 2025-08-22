@@ -201,11 +201,11 @@ const get = async (req) => {
       (vh.pricing->0->>'base_price')::numeric AS starting_from,
       COALESCE(
         JSON_AGG(
-          JSON_BUILD_OBJECT(
+          DISTINCT JSON_BUILD_OBJECT(
             'id', vhclr.id,
             'color_name', vhclr.color_name,
             'color_hex', vhclr.color_hex
-          )
+          )::jsonb
         ) FILTER (WHERE vh.id IS NOT NULL), '[]') as colors,
       vh.created_at,
       COUNT(DISTINCT CASE WHEN dlrinvn.status = 'active' THEN dlrinvn.id END) as active_quantity,
@@ -245,6 +245,138 @@ const get = async (req) => {
   });
 
   return { inventory, total: count?.total ?? 0 };
+};
+
+const getColors = async (req, vehicleId) => {
+  const { role, id } = req.user_data;
+
+  const whereConditions = [`dlrinvn.vehicle_id = :vehicleId`];
+  const queryParams = { vehicleId: vehicleId };
+
+  if (role === "dealer") {
+    whereConditions.push("dlr.user_id = :user_id");
+    queryParams.user_id = id;
+  }
+
+  const q = req.query.q ? req.query.q : null;
+
+  if (q) {
+    whereConditions.push(`(vh.title ILIKE :query)`);
+    queryParams.query = `%${q}%`;
+  }
+
+  const page = req.query.page ? Number(req.query.page) : 1;
+  const limit = req.query.limit ? Number(req.query.limit) : null;
+  const offset = (page - 1) * limit;
+
+  const whereClause = `WHERE ${whereConditions.join(" AND ")}`;
+
+  const query = `
+  SELECT DISTINCT vhclr.id, vhclr.color_name, vhclr.color_hex
+    FROM ${constants.models.DEALER_INVENTORY_TABLE} dlrinvn
+    LEFT JOIN ${constants.models.VEHICLE_TABLE} vh ON dlrinvn.vehicle_id = vh.id
+    LEFT JOIN ${constants.models.VEHICLE_COLOR_TABLE} vhclr ON dlrinvn.vehicle_color_id = vhclr.id
+    LEFT JOIN ${constants.models.DEALER_TABLE} dlr ON dlr.id = dlrinvn.dealer_id
+    ${whereClause}
+    LIMIT :limit OFFSET :offset
+  `;
+
+  const countQuery = `
+  SELECT 
+      COUNT(dlrinvn.id) OVER()::integer as total
+    FROM ${constants.models.DEALER_INVENTORY_TABLE} dlrinvn
+    LEFT JOIN ${constants.models.VEHICLE_TABLE} vh ON dlrinvn.vehicle_id = vh.id
+    LEFT JOIN ${constants.models.VEHICLE_COLOR_TABLE} vhclr ON dlrinvn.vehicle_color_id = vhclr.id
+    LEFT JOIN ${constants.models.DEALER_TABLE} dlr ON dlr.id = dlrinvn.dealer_id
+    ${whereClause}
+  `;
+
+  const colors = await DealerInventoryModel.sequelize.query(query, {
+    replacements: { ...queryParams, limit, offset },
+    type: QueryTypes.SELECT,
+    raw: true,
+  });
+
+  const count = await DealerInventoryModel.sequelize.query(countQuery, {
+    replacements: { ...queryParams },
+    type: QueryTypes.SELECT,
+    raw: true,
+    plain: true,
+  });
+
+  return { colors, total: count?.total ?? 0 };
+};
+
+const getByVehicleColorId = async (req, vehicleColorId) => {
+  const whereConditions = [
+    "invnt.vehicle_color_id = :vehicle_color_id AND dlr.user_id = :userId",
+  ];
+  const queryParams = {
+    vehicle_color_id: vehicleColorId,
+    userId: req.user_data.id,
+  };
+  const q = req.query.q ? req.query.q : null;
+  const status = req.query?.status?.split(".") ?? null;
+  const colors = req.query?.colors?.split(".") ?? null;
+
+  if (q) {
+    whereConditions.push(`(invnt.chassis_no ILIKE :query)`);
+    queryParams.query = `%${q}%`;
+  }
+
+  if (status && status.length) {
+    whereConditions.push(`invnt.status = ANY(:status)`);
+    queryParams.status = `{${status.join(",")}}`;
+  }
+
+  if (colors && colors.length) {
+    whereConditions.push(`LOWER(vclr.color_hex) = ANY(:colors)`);
+    queryParams.colors = `{${colors.map((color) => String(color).toLowerCase()).join(",")}}`;
+  }
+
+  const page = req.query.page ? Number(req.query.page) : 1;
+  const limit = req.query.limit ? Number(req.query.limit) : null;
+  const offset = (page - 1) * limit;
+
+  const whereClause = `WHERE ${whereConditions.join(" AND ")}`;
+
+  let query = `
+  SELECT
+      invnt.*,
+      vclr.color_hex,
+      vclr.color_name
+    FROM ${constants.models.DEALER_INVENTORY_TABLE} invnt
+    LEFT JOIN ${constants.models.VEHICLE_COLOR_TABLE} as vclr ON vclr.id = invnt.vehicle_color_id 
+    LEFT JOIN ${constants.models.DEALER_TABLE} as dlr ON dlr.id = invnt.dealer_id 
+    ${whereClause}
+    ORDER BY invnt.created_at DESC
+    LIMIT :limit OFFSET :offset
+  `;
+
+  let countQuery = `
+  SELECT
+      COUNT(invnt.id) OVER()::INTEGER as total
+    FROM ${constants.models.DEALER_INVENTORY_TABLE} invnt
+    LEFT JOIN ${constants.models.VEHICLE_COLOR_TABLE} as vclr ON vclr.id = invnt.vehicle_color_id 
+    LEFT JOIN ${constants.models.DEALER_TABLE} as dlr ON dlr.id = invnt.dealer_id 
+    ${whereClause}
+    ORDER BY invnt.created_at DESC
+  `;
+
+  const data = await DealerInventoryModel.sequelize.query(query, {
+    replacements: { ...queryParams, limit, offset },
+    type: QueryTypes.SELECT,
+    raw: true,
+  });
+
+  const count = await DealerInventoryModel.sequelize.query(countQuery, {
+    replacements: queryParams,
+    type: QueryTypes.SELECT,
+    raw: true,
+    plain: true,
+  });
+
+  return { inventory: data, total: count?.total ?? 0 };
 };
 
 const getByVehicleId = async (req, vehicle_id) => {
@@ -336,4 +468,6 @@ export default {
   updateByDealerId: updateByDealerId,
   getByVehicleAndDealer: getByVehicleAndDealer,
   updateStatusByChassisNo: updateStatusByChassisNo,
+  getColors: getColors,
+  getByVehicleColorId: getByVehicleColorId,
 };
