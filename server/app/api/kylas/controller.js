@@ -57,8 +57,7 @@ const create = async (req, res) => {
       maxBodyLength: Infinity,
       url: "https://api.kylas.io/v1/leads/",
       headers: {
-        Authorization: `Bearer ${process.env.KYLAS_API_KEY}`,
-        "Content-Type": "application/json",
+        "api-key": process.env.KYLAS_API_KEY,
       },
       data: data,
     };
