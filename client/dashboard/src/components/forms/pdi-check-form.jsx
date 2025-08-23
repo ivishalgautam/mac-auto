@@ -395,7 +395,7 @@ export default function PDICheckForm({ orderId, type = "create", id }) {
         >
           Prev step
         </Button>
-
+        {/*  */}
         {(currentStep < steps.length || type === "view") && (
           <Button
             type="button"
