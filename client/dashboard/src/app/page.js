@@ -1,5 +1,10 @@
+"use client";
+
+import dynamic from "next/dynamic";
 import LoginForm from "@/components/forms/login";
-import AuthLayout from "@/components/layout/auth-layout";
+const AuthLayout = dynamic(() => import("@/components/layout/auth-layout"), {
+  ssr: false,
+});
 
 export default function Home() {
   return (

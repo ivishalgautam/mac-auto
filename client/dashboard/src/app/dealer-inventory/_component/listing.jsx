@@ -6,7 +6,6 @@ import { DataTableSkeleton } from "@/components/ui/table/data-table-skeleton";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { columns } from "../columns";
-import { useUpdateVehicle } from "@/mutations/vehicle-mutation";
 import {
   useGetDealerInventory,
   useUpdateDealerInventoryItem,
@@ -64,6 +63,7 @@ export default function Listing() {
         setIsOpen={setIsModal}
         createMutation={createMutation}
         vehicleId={id}
+        maxSelect={1}
       />
     </div>
   );

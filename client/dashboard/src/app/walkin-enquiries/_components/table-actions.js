@@ -3,6 +3,7 @@ import { DataTableSearch } from "@/components/ui/table/data-table-search";
 import { useTableFilters } from "./use-table-filters";
 import { DataTableResetFilter } from "@/components/ui/table/data-table-reset-filter";
 import { DataTableFilterBox } from "@/components/ui/table/data-table-filter-box";
+import { purchaseTypes, walkinEnquiriesStatus } from "@/data";
 
 export default function TableActions() {
   const {
@@ -11,8 +12,10 @@ export default function TableActions() {
     searchQuery,
     setPage,
     setSearchQuery,
-    type,
-    setType,
+    mode,
+    setMode,
+    status,
+    setStatus,
   } = useTableFilters();
 
   return (
@@ -23,16 +26,20 @@ export default function TableActions() {
         setSearchQuery={setSearchQuery}
         setPage={setPage}
       />
-      {/* <DataTableFilterBox
-        title={"Type"}
-        filterKey={"type"}
-        options={[
-          { label: "IPO", value: "ipo" },
-          { label: "Share", value: "share" },
-        ]}
-        setFilterValue={setType}
-        filterValue={type}
-      /> */}
+      <DataTableFilterBox
+        title={"Status"}
+        filterKey={"status"}
+        options={walkinEnquiriesStatus}
+        setFilterValue={setStatus}
+        filterValue={status}
+      />
+      <DataTableFilterBox
+        title={"Mode"}
+        filterKey={"mode"}
+        options={purchaseTypes}
+        setFilterValue={setMode}
+        filterValue={mode}
+      />
       <DataTableResetFilter
         isFilterActive={isAnyFilterActive}
         onReset={resetFilters}

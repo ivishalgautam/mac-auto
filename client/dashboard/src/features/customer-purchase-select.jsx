@@ -29,8 +29,9 @@ export default function CustomerPurchaseSelect({
   const [open, setOpen] = useState(false);
   const { data, isLoading, isError, error } =
     useGetFormattedPurchasesByCustomer(customerId);
-
+  console.log({ data });
   if (isError) return <ErrorMessage error={error} />;
+
   return isLoading ? (
     <Skeleton className={"h-9 w-full"} />
   ) : (
@@ -55,20 +56,20 @@ export default function CustomerPurchaseSelect({
         align="start"
       >
         <Command>
-          <CommandInput placeholder="Search purchase..." className="h-9" />
+          <CommandInput placeholder="Search..." className="h-9" />
           <CommandList>
             <CommandEmpty>No purchase found.</CommandEmpty>
             <CommandGroup>
               {data.map((purchase) => (
                 <CommandItem
-                  value={purchase.value}
+                  value={purchase.label}
                   key={purchase.value}
                   onSelect={() => {
                     onChange(purchase.value);
                     setOpen(false);
                   }}
                 >
-                  {purchase.label}
+                  <span>{purchase.label}</span>
                   <Check
                     className={cn("ml-auto opacity-0", {
                       "opacity-100": purchase.value === value,

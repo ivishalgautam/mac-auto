@@ -33,6 +33,7 @@ export const endpoints = {
   vehicleEnquiries: { getAll: "/vehicle-enquiries" },
   financers: { getAll: "/financers" },
   tickets: { getAll: "/tickets" },
+  dealerTickets: { getAll: "/dealer-tickets" },
   reports: { getAll: "/reports" },
   orders: {
     getAll: "/orders",

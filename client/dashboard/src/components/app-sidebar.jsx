@@ -7,7 +7,7 @@ import {
   SidebarFooter,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { sidebarData } from "@/data/routes";
+import { ROLES, sidebarData } from "@/data/routes";
 import { useAuth } from "@/providers/auth-provider";
 import { useMemo } from "react";
 import { NavUser } from "./nav-user";
@@ -30,6 +30,21 @@ export function AppSidebar({ ...props }) {
         };
       });
   }, [user]);
+
+  function getSidebarDataForRole(role) {
+    return filteredRoutes.map((item) => {
+      const newItem = { ...item };
+
+      if (newItem.title === "Customer Tickets" && role === ROLES.CUSTOMER) {
+        newItem.title = "My Tickets";
+      }
+      if (newItem.title === "Dealer Tickets" && role === ROLES.DEALER) {
+        newItem.title = "My Tickets";
+      }
+
+      return newItem;
+    });
+  }
 
   return (
     <Sidebar variant="sidebar" collapsible="icon" {...props}>
@@ -56,7 +71,7 @@ export function AppSidebar({ ...props }) {
       </div>
       <SidebarContent>
         <ScrollArea>
-          <NavMain items={filteredRoutes} />
+          <NavMain items={getSidebarDataForRole(user?.role)} />
         </ScrollArea>
       </SidebarContent>
       <SidebarFooter>

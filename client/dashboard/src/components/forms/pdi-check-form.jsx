@@ -192,7 +192,9 @@ export default function PDICheckForm({ orderId, type = "create", id }) {
                   src={`${config.file_base}/${src}`}
                   width={200}
                   height={200}
-                  className="size-full rounded-[inherit] object-cover"
+                  className={cn("size-full rounded-[inherit] object-cover", {
+                    "border-red-500": errors.images,
+                  })}
                   alt={`image-${index}`}
                 />
                 {type === "edit" && (
@@ -399,9 +401,20 @@ export default function PDICheckForm({ orderId, type = "create", id }) {
             type="button"
             variant="outline"
             className="w-32"
-            onClick={() =>
-              setCurrentStep((prev) => (prev < steps.length ? prev + 1 : prev))
-            }
+            onClick={() => {
+              if (
+                ["create", "edit"].includes(type) &&
+                !fileUrls.image_urls.length &&
+                !files.images.length
+              ) {
+                return setError("images", {
+                  type: "manual",
+                  message: "Images required",
+                });
+              }
+
+              setCurrentStep((prev) => (prev < steps.length ? prev + 1 : prev));
+            }}
             disabled={currentStep >= steps.length}
           >
             Next step

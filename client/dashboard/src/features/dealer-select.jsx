@@ -58,7 +58,7 @@ export default function DealerSelect({
             <CommandGroup>
               {data.map((dealer) => (
                 <CommandItem
-                  value={dealer.value}
+                  value={dealer.label}
                   key={dealer.value}
                   onSelect={() => {
                     onChange(dealer.value);

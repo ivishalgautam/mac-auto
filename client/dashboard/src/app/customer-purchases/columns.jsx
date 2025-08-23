@@ -33,10 +33,10 @@ export const columns = (setId, openModal, user) =>
       },
     },
     {
-      accessorKey: "color",
+      accessorKey: "color_hex",
       header: "COLOR",
       cell: ({ row }) => {
-        const color = row.getValue("color");
+        const color = row.getValue("color_hex");
         return (
           <div className="flex gap-1">
             <span

@@ -46,3 +46,27 @@ export const houseTypes = [
   { label: "Rented", value: "rented" },
   { label: "Parental", value: "parental" },
 ];
+
+export const customerComplaintTypes = [
+  {
+    value: "Vehicle Performance Related",
+    label: "Vehicle Performance Related",
+  },
+  { value: "Spare Parts Related", label: "Spare Parts Related" },
+  { value: "Documentation Related", label: "Documentation Related" },
+  { value: "Service Related", label: "Service Related" },
+  { value: "Dealership Related", label: "Dealership Related" },
+  { value: "Other Complaints", label: "Other Complaints" },
+];
+
+export const dealerComplaintTypes = [
+  { label: "Parts Warranty Related", value: "Parts Warranty Related" },
+  {
+    label: "Homologation or Form 22 related",
+    value: "Homologation or Form 22 related",
+  },
+  { label: "Customer related", value: "Customer related" },
+  { label: "Scheme Related", value: "Scheme Related" },
+  { label: "Vehicle Quality Related", value: "Vehicle Quality Related" },
+  { label: "Invoicing related", value: "Invoicing related" },
+];

@@ -70,6 +70,7 @@ export const walkInEnquirySchema = z
     aadhaar: z.array(z.any()).optional(),
     electricity_bill: z.array(z.any()).optional(),
     rent_agreement: z.array(z.any()).optional(),
+    guarantor_aadhaar: z.array(z.any()).optional(),
 
     house: z.enum(["owned", "rented", "parental"]).optional(),
 

@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CirclePlus, LoaderCircleIcon, Trash2, X } from "lucide-react";
+import { CirclePlus, LoaderCircleIcon, Trash2, XIcon } from "lucide-react";
 import {
   Controller,
   FormProvider,
@@ -13,10 +13,6 @@ import {
 import { cn } from "@/lib/utils";
 import { inventorySchema } from "@/utils/schema/vehicle.schema";
 import {
-  useCreateVehicleInventory,
-  useCreateVehicleVariant,
-} from "@/mutations/vehicle-mutation";
-import {
   Select,
   SelectContent,
   SelectItem,
@@ -25,11 +21,21 @@ import {
 } from "@/components/ui/select";
 import { colors } from "@/data";
 import FileUpload from "../file-uploader";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import {
+  useCreateVehicleVariant,
+  useGetVehicleVariant,
+  useUpdateVehicleVariant,
+} from "@/mutations/vehicle-variant-mutation";
+import Loader from "../loader";
+import ErrorMessage from "../ui/error";
+import config from "@/config";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 const defaultValues = {
-  color_name: "", // NEW
-  color_hex: "", // NEW
+  color_name: "",
+  color_hex: "",
   chassis_numbers: [
     {
       number: "",
@@ -41,7 +47,7 @@ const defaultValues = {
   ],
 };
 
-export default function VariantForm({ vehicleId, type = "create" }) {
+export default function VariantForm({ vehicleId, type = "create", id }) {
   const [fileUrls, setFileUrls] = useState({
     carousel_urls: [],
     gallery_urls: [],
@@ -50,7 +56,7 @@ export default function VariantForm({ vehicleId, type = "create" }) {
     carousel: [],
     gallery: [],
   });
-
+  const router = useRouter();
   const methods = useForm({
     resolver: zodResolver(inventorySchema),
     defaultValues: { ...defaultValues, vehicle_id: vehicleId },
@@ -62,6 +68,7 @@ export default function VariantForm({ vehicleId, type = "create" }) {
     setValue,
     control,
     setError,
+    reset,
   } = methods;
 
   const { fields, append, remove } = useFieldArray({
@@ -69,7 +76,13 @@ export default function VariantForm({ vehicleId, type = "create" }) {
     name: "chassis_numbers",
   });
 
-  const createMutation = useCreateVehicleVariant(() => {});
+  const createMutation = useCreateVehicleVariant(() =>
+    router.push(`/vehicles?page=1&limit=10`),
+  );
+  const { data, isLoading, isError, error } = useGetVehicleVariant(id);
+  const updateMutation = useUpdateVehicleVariant(id, () =>
+    router.push(`/vehicles?page=1&limit=10`),
+  );
 
   const onSubmit = (data) => {
     if (!fileUrls?.carousel_urls?.length && !files.carousel.length) {
@@ -107,10 +120,25 @@ export default function VariantForm({ vehicleId, type = "create" }) {
     }
 
     // return;
-    createMutation.mutate(formData);
+    type === "create"
+      ? createMutation.mutate(formData)
+      : updateMutation.mutate(formData);
   };
 
-  const isFormPending = createMutation.isPending;
+  useEffect(() => {
+    if (type === "edit" && data) {
+      reset({ ...data });
+      setFileUrls((prev) => ({
+        ...prev,
+        gallery_urls: data.gallery,
+        carousel_urls: data.carousel,
+      }));
+    }
+  }, [data, type, reset]);
+
+  const isFormPending =
+    (type === "create" && createMutation.isPending) ||
+    (type === "edit" && updateMutation.isPending);
 
   const handleCarouselChange = useCallback((data) => {
     setFiles((prev) => ({ ...prev, carousel: data }));
@@ -118,6 +146,9 @@ export default function VariantForm({ vehicleId, type = "create" }) {
   const handleGalleryChange = useCallback((data) => {
     setFiles((prev) => ({ ...prev, gallery: data }));
   }, []);
+
+  if (type === "edit" && isLoading) return <Loader />;
+  if (type === "edit" && isError) return <ErrorMessage error={error} />;
 
   return (
     <FormProvider {...methods}>
@@ -224,7 +255,8 @@ export default function VariantForm({ vehicleId, type = "create" }) {
               render={({ field }) => {
                 return (
                   <Select
-                    key={"color_hex"}
+                    key={field.value}
+                    value={field.value}
                     onValueChange={(value) => {
                       field.onChange(value);
                       setValue(
@@ -232,7 +264,6 @@ export default function VariantForm({ vehicleId, type = "create" }) {
                         colors.find((c) => c.value === value).label,
                       );
                     }}
-                    value={field.value}
                   >
                     <SelectTrigger
                       className={cn("w-full", {
@@ -352,7 +383,7 @@ export default function VariantForm({ vehicleId, type = "create" }) {
         <div className="text-end">
           <Button
             type="submit"
-            disabled={isFormPending || !isDirty}
+            disabled={isFormPending}
             className="w-full sm:w-auto"
           >
             {isFormPending && (

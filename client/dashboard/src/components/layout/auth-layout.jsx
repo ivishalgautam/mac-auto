@@ -1,6 +1,9 @@
+"use client";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { Card, CardContent } from "../ui/card";
+import { useSearchParams } from "next/navigation";
+import { H1, H2 } from "../ui/typography";
 
 export default function AuthLayout({
   children,
@@ -10,6 +13,9 @@ export default function AuthLayout({
   title = "Welcome back",
   subtitle = "Enter your credentials to access your account",
 }) {
+  const searchParams = useSearchParams();
+  const role = searchParams.get("r");
+
   return (
     <div
       className={cn(
@@ -23,6 +29,9 @@ export default function AuthLayout({
             {/* Auth Form Section */}
             <div className="flex flex-col justify-center p-8 lg:p-12">
               <div className="mx-auto w-full max-w-sm space-y-6">
+                {role && (
+                  <H1 className={"text-accent text-center"}>{role} portal</H1>
+                )}
                 <div className="space-y-2 text-center lg:text-left">
                   <h1 className="text-3xl font-bold tracking-tight">{title}</h1>
                   <p className="text-muted-foreground">{subtitle}</p>

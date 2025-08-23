@@ -58,7 +58,7 @@ export default function VehicleCategorySelect({
             <CommandGroup>
               {categories.map((category) => (
                 <CommandItem
-                  value={category.value}
+                  value={category.label}
                   key={category.value}
                   onSelect={() => {
                     onChange(category.value);

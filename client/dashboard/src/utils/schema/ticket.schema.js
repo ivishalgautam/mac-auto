@@ -12,6 +12,13 @@ export const ticketSchema = z.object({
   message: z
     .string({ required_error: "Message is required*" })
     .min(1, { message: "Message is required*" }),
+  complaint_type: z.string().min(1, { message: "Complaint type is required" }),
+  expected_closure_date: z.date().nullable(),
+  assigned_technician: z.string().optional().nullable(),
+  parts: z
+    .array(z.object({ id: z.string(), text: z.string() }))
+    .optional()
+    .default([]),
 });
 
 export const customerTicketSchema = z.object({
@@ -22,4 +29,17 @@ export const customerTicketSchema = z.object({
   message: z
     .string({ required_error: "Message is required*" })
     .min(1, { message: "Message is required*" }),
+  complaint_type: z.string().min(1, { message: "Complaint type is required" }),
+  parts: z
+    .array(z.object({ id: z.string(), text: z.string() }))
+    .optional()
+    .default([]),
+});
+
+export const dealerTicketSchema = z.object({
+  message: z
+    .string({ required_error: "Message is required*" })
+    .min(1, { message: "Message is required*" }),
+  complaint_type: z.string().min(1, { message: "Complaint type is required" }),
+  expected_closure_date: z.date().nullable(),
 });

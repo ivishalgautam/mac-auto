@@ -4,19 +4,15 @@ import { useId, useState } from "react";
 import { TagInput as EmblorTagInput } from "emblor";
 import { useFormContext } from "react-hook-form";
 
-export default function TagInput({ inputName }) {
-  const { setValue } = useFormContext();
+export default function TagInput({ onChange, value, ...props }) {
   const id = useId();
-  const [exampleTags, setExampleTags] = useState([]);
   const [activeTagIndex, setActiveTagIndex] = useState(null);
+
   return (
     <EmblorTagInput
       id={id}
-      tags={exampleTags}
-      setTags={(newTags) => {
-        setExampleTags(newTags);
-        setValue(inputName, newTags);
-      }}
+      tags={value ?? []}
+      setTags={onChange}
       placeholder="Add a tag"
       styleClasses={{
         inlineTagsContainer:
@@ -30,6 +26,7 @@ export default function TagInput({ inputName }) {
       }}
       activeTagIndex={activeTagIndex}
       setActiveTagIndex={setActiveTagIndex}
+      {...props}
     />
   );
 }

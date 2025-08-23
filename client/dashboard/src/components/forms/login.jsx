@@ -3,7 +3,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
 import { AtSign, KeyRound, Loader2 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -39,6 +39,8 @@ const loginUser = async (data) => {
 
 export default function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const role = searchParams.get("r");
 
   const {
     register,
@@ -50,7 +52,7 @@ export default function LoginForm() {
     defaultValues: {
       username: "",
       password: "",
-      role: "",
+      role: role ?? "",
     },
   });
 

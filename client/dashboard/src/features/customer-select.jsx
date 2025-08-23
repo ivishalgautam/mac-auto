@@ -27,7 +27,9 @@ export default function CustomerSelect({
 }) {
   const [open, setOpen] = useState(false);
   const { data, isLoading, isError, error } = useGetFormattedCustomers();
+
   if (isError) return <ErrorMessage error={error} />;
+
   return isLoading ? (
     <Skeleton className={"h-9 w-full"} />
   ) : (
@@ -58,7 +60,7 @@ export default function CustomerSelect({
             <CommandGroup>
               {data.map((customer) => (
                 <CommandItem
-                  value={customer.value}
+                  value={customer.label}
                   key={customer.value}
                   onSelect={() => {
                     onChange(customer.value);

@@ -61,7 +61,7 @@ export default function VehicleSelect({
             <CommandGroup>
               {data.map((vehicle) => (
                 <CommandItem
-                  value={vehicle.value}
+                  value={vehicle.label}
                   key={vehicle.value}
                   onSelect={() => {
                     onChange(vehicle.value);

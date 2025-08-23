@@ -6,8 +6,19 @@ export const customerOrderSchema = z.object({
     .uuid()
     .min(1, { message: "Dealer ID is required" }),
   vehicle_id: z
-    .string({ required_error: "Vehicle ID is required" })
+    .string({ required_error: "Vehicle is required" })
     .uuid()
-    .min(1, { message: "Vehicle ID is required" }),
-  chassis_number: z.string().min(1, { message: "Chassis number is required." }),
+    .min(1, { message: "Vehicle is required" }),
+  vehicle_color_id: z
+    .string({ required_error: "Vehicle color is required" })
+    .uuid()
+    .min(1, { message: "Vehicle vehicle is required" }),
+  chassis_number: z
+    .array(
+      z.object({
+        value: z.string().min(1, { message: "Chassis number is required." }),
+        label: z.string().min(1, { message: "Chassis number is required." }),
+      }),
+    )
+    .transform((data) => data[0].value),
 });

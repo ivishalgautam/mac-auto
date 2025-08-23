@@ -11,7 +11,7 @@ import {
   Users,
 } from "lucide-react";
 
-const ROLES = {
+export const ROLES = {
   ADMIN: "admin",
   USER: "user",
   DEALER: "dealer",
@@ -199,25 +199,25 @@ export const sidebarData = [
     title: "Walk In Enquiries",
     url: "/walkin-enquiries?page=1&limit=10",
     icon: ScrollText,
-    roles: [ROLES.DEALER],
+    roles: [ROLES.ADMIN, ROLES.DEALER],
     isVisible: true,
     items: [
       {
         title: "Create",
         url: "/walkin-enquiries/create",
-        roles: [ROLES.DEALER],
+        roles: [ROLES.ADMIN, ROLES.DEALER],
         isVisible: true,
       },
       {
         title: "Edit",
         url: "/walkin-enquiries/:id/edit",
-        roles: [ROLES.DEALER],
+        roles: [ROLES.ADMIN, ROLES.DEALER],
         isVisible: false,
       },
       {
         title: "View",
         url: "/walkin-enquiries/:id/view",
-        roles: [ROLES.DEALER],
+        roles: [ROLES.ADMIN, ROLES.DEALER],
         isVisible: false,
       },
     ],
@@ -272,43 +272,55 @@ export const sidebarData = [
     items: [],
   },
   {
-    title: "Tickets",
-    url: "/tickets?page=1&limit=10",
+    title: "Dealer Tickets",
+    url: "/dealer-tickets?page=1&limit=10",
     icon: Ticket,
     roles: [ROLES.ADMIN, ROLES.DEALER],
     isVisible: true,
     items: [
       {
         title: "Create",
-        url: "/tickets/create",
+        url: "/dealer-tickets/create",
         roles: [ROLES.ADMIN, ROLES.DEALER],
         isVisible: true,
       },
       {
         title: "Edit",
-        url: "/tickets/:id/edit",
+        url: "/dealer-tickets/:id/edit",
+        roles: [ROLES.ADMIN, ROLES.DEALER],
+        isVisible: false,
+      },
+      {
+        title: "View",
+        url: "/dealer-tickets/:id/view",
         roles: [ROLES.ADMIN, ROLES.DEALER],
         isVisible: false,
       },
     ],
   },
   {
-    title: "My Tickets",
+    title: "Customer Tickets",
     url: "/tickets?page=1&limit=10",
     icon: Ticket,
-    roles: [ROLES.CUSTOMER],
+    roles: [ROLES.ADMIN, ROLES.CUSTOMER],
     isVisible: true,
     items: [
       {
         title: "Create",
         url: "/tickets/create",
-        roles: [ROLES.ADMIN, ROLES.DEALER, ROLES.CUSTOMER],
+        roles: [ROLES.ADMIN, ROLES.CUSTOMER],
         isVisible: true,
       },
       {
         title: "Edit",
         url: "/tickets/:id/edit",
-        roles: [ROLES.ADMIN, ROLES.DEALER, ROLES.CUSTOMER],
+        roles: [ROLES.ADMIN, ROLES.CUSTOMER],
+        isVisible: false,
+      },
+      {
+        title: "View",
+        url: "/tickets/:id/view",
+        roles: [ROLES.ADMIN, ROLES.CUSTOMER],
         isVisible: false,
       },
     ],

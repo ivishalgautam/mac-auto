@@ -41,9 +41,9 @@ export const columns = (updateMutation, setId, openModal) => [
       return (
         <div className="flex gap-1">
           {variantColors.length > 0 &&
-            variantColors.map(({ color_hex }) => (
+            variantColors.map(({ color_hex, id: vid }) => (
               <Link
-                href={`/vehicles/${id}/inventory?page=1&limit=10&colors=${color_hex.replace("#", "%23")}`}
+                href={`/vehicles/${id}/variant/edit?vid=${vid}`}
                 key={color_hex}
                 className="size-6 rounded-full"
                 style={{ backgroundColor: color_hex }}

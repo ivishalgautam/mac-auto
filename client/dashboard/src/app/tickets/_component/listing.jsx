@@ -12,8 +12,10 @@ import {
 } from "@/mutations/ticket-mutation";
 import { DeleteDialog } from "./delete-dialog";
 import { ViewPicturesDialog } from "./view-pictures-dialog";
+import { useAuth } from "@/providers/auth-provider";
 
 export default function Listing() {
+  const { user } = useAuth();
   const [isModal, setIsModal] = useState(false);
   const [isViewPicturesModal, setIsViewPicturesModal] = useState(false);
   const [pictures, setPictures] = useState([]);
@@ -48,6 +50,7 @@ export default function Listing() {
           openModal,
           setIsViewPicturesModal,
           setPictures,
+          user,
         )}
         data={data?.tickets ?? []}
         totalItems={data?.total}

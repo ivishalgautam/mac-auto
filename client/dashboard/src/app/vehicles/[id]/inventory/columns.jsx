@@ -11,8 +11,6 @@ import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 
 import { Button } from "@/components/ui/button";
 import moment from "moment";
-import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
 import {
   Select,
   SelectContent,
@@ -30,6 +28,17 @@ export const columns = (openModal, updateMutation, setId) => [
   {
     accessorKey: "color_name",
     header: "Color",
+    cell: ({ row }) => {
+      return (
+        <div className="flex items-center justify-start gap-2">
+          <span
+            className="inline-block size-6 rounded-full"
+            style={{ background: row.original.color_hex }}
+          ></span>
+          <span>{row.getValue("color_name")}</span>
+        </div>
+      );
+    },
   },
   {
     accessorKey: "status",

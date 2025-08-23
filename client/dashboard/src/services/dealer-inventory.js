@@ -14,6 +14,15 @@ const getDealerInventoryByVehicleId = async (vehicleId, searchParams = "") => {
   );
   return data;
 };
+const getDealerInventoryColorsByVehicleId = async (
+  vehicleId,
+  searchParams = "",
+) => {
+  const { data } = await http().get(
+    `${endpoints.dealers.inventory}/by-vehicle/${vehicleId}/colors?${searchParams}`,
+  );
+  return data;
+};
 
 const updateDealerInventoryItem = async (data, id) => {
   return await http().put(`${endpoints.dealers.inventory}/${id}`, data);
@@ -31,6 +40,7 @@ const getDealerInventoryItemById = async (id) => {
 const dealerInventory = {
   getDealerInventory: getDealerInventory,
   getDealerInventoryByVehicleId: getDealerInventoryByVehicleId,
+  getDealerInventoryColorsByVehicleId: getDealerInventoryColorsByVehicleId,
   updateDealerInventoryItem: updateDealerInventoryItem,
   deleteDealerInventoryById: deleteDealerInventoryById,
   getDealerInventoryItemById: getDealerInventoryItemById,

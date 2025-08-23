@@ -36,10 +36,6 @@ const createVehicleInventory = async (id, data) => {
   return await http().post(`${endpoints.inventories.getAll}/${id}`, data);
 };
 
-const createVehicleVariant = async (data) => {
-  return await http().post(endpoints.vehicles.variant, data, true);
-};
-
 const getVehicleInventory = async (id) => {
   const { data } = await http().get(`${endpoints.inventories.getAll}/${id}`);
   return data;
@@ -52,6 +48,20 @@ const getVehicleColors = async (vehicleId) => {
   return data;
 };
 
+const createVehicleVariant = async (data) => {
+  return await http().post(endpoints.vehicles.variant, data, true);
+};
+const updateVehicleVariant = async (id, data) => {
+  return await http().put(`${endpoints.vehicles.variant}/${id}`, data, true);
+};
+const deleteVehicleVariant = async (id) => {
+  return await http().put(`${endpoints.vehicles.variant}/${id}`);
+};
+const getVehicleVariant = async (id) => {
+  const { data } = await http().get(`${endpoints.vehicles.variant}/${id}`);
+  return data;
+};
+
 const vehicle = {
   create: create,
   update: update,
@@ -60,9 +70,12 @@ const vehicle = {
   getById: getById,
   get: get,
   createVehicleInventory: createVehicleInventory,
-  createVehicleVariant: createVehicleVariant,
   getVehicleInventory: getVehicleInventory,
   getVehicleColors: getVehicleColors,
+  createVehicleVariant: createVehicleVariant,
+  getVehicleVariant: getVehicleVariant,
+  updateVehicleVariant: updateVehicleVariant,
+  deleteVehicleVariant: deleteVehicleVariant,
 };
 
 export default vehicle;

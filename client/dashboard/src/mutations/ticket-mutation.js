@@ -18,6 +18,14 @@ export const useGetTicket = (id) => {
   });
 };
 
+export const useGetTicketDetails = (id) => {
+  return useQuery({
+    queryKey: ["tickets", id],
+    queryFn: () => ticket.getByDetailsId(id),
+    enabled: !!id,
+  });
+};
+
 export const useCreateTicket = (handleSuccess) => {
   const queryClient = useQueryClient();
 

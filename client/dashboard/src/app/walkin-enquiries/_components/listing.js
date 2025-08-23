@@ -12,7 +12,7 @@ import {
   fetchWalkinEnquiries,
 } from "@/services/enquiry";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Download, Plus } from "lucide-react";
 import { useAuth } from "@/providers/auth-provider";
 import ErrorMessage from "@/components/ui/error";
 import { DeleteDialog } from "./delete-dialog";
@@ -22,14 +22,16 @@ import {
   useUpdateWalkInEnquiryMutation,
 } from "@/mutations/walkin-enquiries-mutation";
 
+import { saveAs } from "file-saver";
+import Papa from "papaparse";
+import { flattenEnquiry } from "@/helpers/flatten-walking-enquiry";
+
 export default function Listing() {
   const { user } = useAuth();
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-  const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isConvertModal, setIsConvertModal] = useState(false);
   const [isInquiryAssignModal, setIsInquiryAssignModal] = useState(false);
   const [id, setId] = useState(null);
-  const queryClient = useQueryClient();
   const searchParams = useSearchParams();
   const searchParamStr = searchParams.toString();
   const router = useRouter();
@@ -54,6 +56,14 @@ export default function Listing() {
     setIsDeleteOpen(false),
   );
 
+  function downloadCSV() {
+    const csvData = data.enquiries.map(flattenEnquiry);
+    const csvString = Papa.unparse(csvData);
+
+    const blob = new Blob([csvString], { type: "text/csv;charset=utf-8;" });
+    saveAs(blob, `walkin-enquiries-page-${searchParams.get("page") ?? 1}.csv`);
+  }
+
   useEffect(() => {
     if (!searchParamStr) {
       const params = new URLSearchParams();
@@ -67,7 +77,13 @@ export default function Listing() {
   if (isError) return <ErrorMessage error={error} />;
 
   return (
-    <div className="border-input rounded-lg">
+    <div className="border-input space-y-2 rounded-lg">
+      <div className="text-end">
+        <Button type="button" onClick={downloadCSV} variant="outline">
+          <Download size={15} className="mr-1" />
+          Export CSV
+        </Button>
+      </div>
       <DataTable
         columns={columns(openModal, setId, user, updateMutation)}
         data={data.enquiries}

@@ -13,10 +13,6 @@ import {
 import { cn } from "@/lib/utils";
 import { inventorySchema } from "@/utils/schema/vehicle.schema";
 import {
-  useCreateVehicleInventory,
-  useCreateVehicleVariant,
-} from "@/mutations/vehicle-mutation";
-import {
   Select,
   SelectContent,
   SelectItem,
@@ -24,8 +20,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { colors } from "@/data";
-import FileUpload from "../file-uploader";
-import { useCallback, useState } from "react";
+import { useState } from "react";
+import { useCreateVehicleVariant } from "@/mutations/vehicle-variant-mutation";
 
 const defaultValues = {
   color_name: "", // NEW

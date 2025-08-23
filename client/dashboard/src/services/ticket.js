@@ -31,12 +31,21 @@ async function getById(id) {
   return data;
 }
 
+async function getByDetailsId(id) {
+  const { data } = await http().get(
+    `${endpoints.tickets.getAll}/${id}/details`,
+  );
+
+  return data;
+}
+
 const ticket = {
   create: create,
   update: update,
   deleteById: deleteById,
   get: get,
   getById: getById,
+  getByDetailsId: getByDetailsId,
 };
 
 export default ticket;

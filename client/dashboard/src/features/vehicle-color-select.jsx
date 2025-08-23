@@ -14,7 +14,6 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Skeleton } from "@/components/ui/skeleton";
-import useGetDealers from "@/hooks/use-get-dealers";
 import { cn } from "@/lib/utils";
 import { useGetVehicleColors } from "@/mutations/vehicle-mutation";
 import { Check, ChevronsUpDown } from "lucide-react";
@@ -71,7 +70,7 @@ export default function VehicleColorSelect({
             <CommandGroup>
               {data.map((color) => (
                 <CommandItem
-                  value={color.value}
+                  value={color.label}
                   key={color.value}
                   onSelect={() => {
                     onChange(color.value);

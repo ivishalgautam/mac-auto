@@ -45,12 +45,15 @@ export default function WalkInEnquiryForm({ onSuccess, type = "create", id }) {
     aadhaar: [],
     electricity_bill: [],
     rent_agreement: [],
+    guarantor_aadhaar: [],
   });
+
   const [fileUrls, setFileUrls] = useState({
     pan_urls: [],
     aadhaar_urls: [],
     electricity_bill_urls: [],
     rent_agreement_urls: [],
+    guarantor_aadhaar_urls: [],
   });
 
   const {
@@ -71,13 +74,13 @@ export default function WalkInEnquiryForm({ onSuccess, type = "create", id }) {
       phone: "",
       location: "",
       purchase_type: "",
-
       house: undefined,
 
       pan: [],
       aadhaar: [],
       electricity_bill: [],
       rent_agreement: [],
+      guarantor_aadhaar: [],
 
       landmark: undefined,
       alt_phone: undefined,
@@ -135,8 +138,14 @@ export default function WalkInEnquiryForm({ onSuccess, type = "create", id }) {
     ]);
     if (!isValid) return;
 
-    const { pan, aadhaar, electricity_bill, rent_agreement, ...rest } =
-      formDataValues;
+    const {
+      pan,
+      aadhaar,
+      electricity_bill,
+      rent_agreement,
+      guarantor_aadhaar,
+      ...rest
+    } = formDataValues;
     const payload = { ...rest };
 
     const formData = new FormData();
@@ -181,13 +190,15 @@ export default function WalkInEnquiryForm({ onSuccess, type = "create", id }) {
     setFiles((prev) => ({ ...prev, rent_agreement: data }));
     setValue("rent_agreement", data);
   }, []);
+  const handleGuarantorAadhaarChange = useCallback((data) => {
+    setFiles((prev) => ({ ...prev, guarantor_aadhaar: data }));
+    setValue("guarantor_aadhaar", data);
+  }, []);
 
   useEffect(() => {
     const currentReferences = getValues("references");
     const currentGuarantor = getValues("guarantor");
     const currentCoApplicant = getValues("co_applicant");
-    console.log({ currentReferences, currentGuarantor, currentCoApplicant });
-    console.log({ purchaseType, houseType });
 
     // ✅ Set references only if finance and not already populated
     if (purchaseType === "finance") {
@@ -209,7 +220,7 @@ export default function WalkInEnquiryForm({ onSuccess, type = "create", id }) {
       setValue("references", undefined);
     }
 
-    // ✅ Set guarantor only if rented and not already populated
+    //  Set guarantor only if rented and not already populated
     if (purchaseType === "finance" && houseType === "rented") {
       if (!currentGuarantor || !currentGuarantor.name) {
         setValue("guarantor", {
@@ -222,7 +233,7 @@ export default function WalkInEnquiryForm({ onSuccess, type = "create", id }) {
       setValue("guarantor", undefined);
     }
 
-    // ✅ Set co-applicant only if owned or parental and not already populated
+    //  Set co-applicant only if owned or parental and not already populated
     if (
       purchaseType === "finance" &&
       ["owned", "parental"].includes(houseType)
@@ -249,12 +260,12 @@ export default function WalkInEnquiryForm({ onSuccess, type = "create", id }) {
         alt_phone: data.alt_phone || undefined,
       };
 
-      console.log({ data, safeData });
       setFileUrls({
         pan_urls: data.pan,
         aadhaar_urls: data.aadhaar,
         electricity_bill_urls: data.electricity_bill,
         rent_agreement_urls: data.rent_agreement,
+        guarantor_aadhaar_urls: data.guarantor_aadhaar,
       });
       reset(safeData);
     }
@@ -266,8 +277,6 @@ export default function WalkInEnquiryForm({ onSuccess, type = "create", id }) {
 
   if (["edit", "view"].includes(type) && isLoading) return <Loader />;
   if (type === "edit" && isError) return <ErrorMessage error={error} />;
-
-  console.log(watch());
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -667,38 +676,79 @@ export default function WalkInEnquiryForm({ onSuccess, type = "create", id }) {
             </div>
 
             {/* Rent Agreement */}
-            <div className="space-y-2">
-              <Label>Rent agreement</Label>
-              {fileUrls.rent_agreement_urls?.length ? (
-                fileUrls.rent_agreement_urls.map((file, index) => (
-                  <FileCard
-                    key={index}
-                    type={type}
-                    file={file}
-                    onRemove={() =>
-                      type !== "view" &&
-                      setFileUrls((prev) => ({
-                        ...prev,
-                        rent_agreement_urls: prev.rent_agreement_urls.filter(
-                          (i) => i !== file,
-                        ),
-                      }))
-                    }
-                    config={config}
+            {houseType === "rented" && (
+              <div className="space-y-2">
+                <Label>Rent agreement</Label>
+                {fileUrls.rent_agreement_urls?.length ? (
+                  fileUrls.rent_agreement_urls.map((file, index) => (
+                    <FileCard
+                      key={index}
+                      type={type}
+                      file={file}
+                      onRemove={() =>
+                        type !== "view" &&
+                        setFileUrls((prev) => ({
+                          ...prev,
+                          rent_agreement_urls: prev.rent_agreement_urls.filter(
+                            (i) => i !== file,
+                          ),
+                        }))
+                      }
+                      config={config}
+                    />
+                  ))
+                ) : (
+                  <FileUpload
+                    onFileChange={handleRentAgreementChange}
+                    inputName={"rent_agreement"}
+                    className={cn({ "border-red-500": errors.rent_agreement })}
+                    initialFiles={[]}
+                    multiple={true}
+                    maxFiles={5}
+                    grid="grid-cols-[repeat(auto-fill,minmax(100px,1fr))]"
                   />
-                ))
-              ) : (
-                <FileUpload
-                  onFileChange={handleRentAgreementChange}
-                  inputName={"rent_agreement"}
-                  className={cn({ "border-red-500": errors.rent_agreement })}
-                  initialFiles={[]}
-                  multiple={true}
-                  maxFiles={5}
-                  grid="grid-cols-[repeat(auto-fill,minmax(100px,1fr))]"
-                />
-              )}
-            </div>
+                )}
+              </div>
+            )}
+
+            {/* Guarantor Aadhaar Card */}
+            {houseType && (
+              <div className="space-y-2">
+                <Label>Guarantor Aadhaar Card</Label>
+                {fileUrls.guarantor_aadhaar_urls?.length ? (
+                  fileUrls.guarantor_aadhaar_urls.map((file, index) => (
+                    <FileCard
+                      key={index}
+                      type={type}
+                      file={file}
+                      onRemove={() =>
+                        type !== "view" &&
+                        setFileUrls((prev) => ({
+                          ...prev,
+                          guarantor_aadhaar_urls:
+                            prev.guarantor_aadhaar_urls.filter(
+                              (i) => i !== file,
+                            ),
+                        }))
+                      }
+                      config={config}
+                    />
+                  ))
+                ) : (
+                  <FileUpload
+                    onFileChange={handleGuarantorAadhaarChange}
+                    inputName={"guarantor_aadhaar"}
+                    className={cn({
+                      "border-red-500": errors.guarantor_aadhaar,
+                    })}
+                    initialFiles={[]}
+                    multiple={true}
+                    maxFiles={2}
+                    grid="grid-cols-[repeat(auto-fill,minmax(100px,1fr))]"
+                  />
+                )}
+              </div>
+            )}
           </div>
         </div>
       )}

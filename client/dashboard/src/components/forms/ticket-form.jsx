@@ -18,9 +18,7 @@ import Image from "next/image";
 import config from "@/config";
 import { useCallback } from "react";
 import {
-  adminTicketSchema,
   customerTicketSchema,
-  dealerTicketSchema,
   ticketSchema,
 } from "@/utils/schema/ticket.schema";
 import {
@@ -32,9 +30,17 @@ import CustomerSelect from "@/features/customer-select";
 import { useAuth } from "@/providers/auth-provider";
 import { useGetFormattedPurchasesByCustomer } from "@/mutations/customer-mutation";
 import CustomerPurchaseSelect from "@/features/customer-purchase-select";
+import CustomSelect from "../ui/custom-select";
+import { customerComplaintTypes } from "@/data";
+import { DatePicker } from "../ui/date-picker";
+import { Input } from "../ui/input";
+import TagInput from "../tag-input";
 
 const defaultValues = {
   images: [],
+  expected_closure_date: null,
+  assigned_technician: "",
+  parts: [],
 };
 
 export default function TicketForm({ id, type }) {
@@ -65,7 +71,6 @@ export default function TicketForm({ id, type }) {
   } = methods;
 
   const customerId = watch("customer_id");
-  console.log({ customerId });
   const createMutation = useCreateTicket(() => {
     reset();
     router.push("/tickets?page=1&limit=10");
@@ -76,13 +81,6 @@ export default function TicketForm({ id, type }) {
   });
   const { data, isLoading, isError, error } = useGetTicket(id);
   const onSubmit = (data) => {
-    if (!fileUrls?.images_urls?.length && !files.images.length) {
-      return setError("images", {
-        type: "manual",
-        message: "Atleat 1 images is required*",
-      });
-    }
-
     const formData = new FormData();
     files.images?.forEach((file) => {
       formData.append("images", file);
@@ -124,8 +122,11 @@ export default function TicketForm({ id, type }) {
   const handleImagesChange = useCallback((data) => {
     setFiles((prev) => ({ ...prev, images: data }));
   }, []);
-  if (type === "edit" && isLoading) return <Loader />;
-  if (type === "edit" && isError) return <ErrorMessage error={error} />;
+
+  if (["edit", "view"].includes(type) && isLoading) return <Loader />;
+  if (["edit", "view"].includes(type) && isError)
+    return <ErrorMessage error={error} />;
+
   return (
     <FormProvider {...methods}>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
@@ -226,11 +227,32 @@ export default function TicketForm({ id, type }) {
                     onChange={field.onChange}
                     value={field.value}
                     customerId={customerId}
+                    disabled={type === "view"}
                   />
                 )}
               />
             </div>
           )}
+
+          {/* complaint type */}
+          <div className="space-y-2">
+            <Label htmlFor="complaint_type">Complaint type *</Label>
+            <Controller
+              name="complaint_type"
+              control={control}
+              render={({ field }) => (
+                <CustomSelect
+                  onChange={field.onChange}
+                  value={field.value}
+                  placeholder="Select complaint"
+                  className=""
+                  disabled={type === "view"}
+                  key={"complaint_type"}
+                  options={customerComplaintTypes}
+                />
+              )}
+            />
+          </div>
 
           {/* message */}
           <div className="col-span-full space-y-2">
@@ -241,6 +263,60 @@ export default function TicketForm({ id, type }) {
               className={cn({ "border-red-500": errors.message })}
               placeholder="Enter message"
               disabled={type === "view"}
+            />
+          </div>
+
+          {/* expected closure date */}
+          {["dealer", "admin"].includes(user?.role) && (
+            <div>
+              <Label>Expected closure date</Label>
+              <div>
+                <Controller
+                  name="expected_closure_date"
+                  control={control}
+                  render={({ field }) => (
+                    <DatePicker
+                      onChange={field.onChange}
+                      value={field.value}
+                      disabled={type === "view"}
+                    />
+                  )}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* assigned technician */}
+          {["dealer", "admin"].includes(user?.role) && (
+            <div className="space-y-2">
+              <Label htmlFor="assigned_technician">Assigned technician</Label>
+              <Input
+                id="assigned_technician"
+                {...register("assigned_technician")}
+                className={cn({ "border-red-500": errors.assigned_technician })}
+                placeholder="Enter assigned technician"
+                disabled={type === "view"}
+              />
+            </div>
+          )}
+
+          {/* parts */}
+          <div className="col-span-full space-y-1">
+            <Label className="block text-sm font-medium">Parts</Label>
+            <Controller
+              name="parts"
+              control={control}
+              render={({ field }) => (
+                <TagInput
+                  value={field.value ?? []}
+                  onChange={field.onChange}
+                  placeholder="Add a tag"
+                  inlineTags={true}
+                  inputFieldPosition="top"
+
+                  // activeIndex, setActiveIndex
+                />
+              )}
             />
           </div>
         </div>

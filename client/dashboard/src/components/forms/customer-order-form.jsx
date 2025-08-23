@@ -13,11 +13,15 @@ import ChassisSelect from "@/features/chassis-select";
 import { toast } from "sonner";
 import CustomerSelect from "@/features/customer-select";
 import { customerOrderSchema } from "@/utils/schema/customer-order.schema";
+import VehicleColorSelect from "@/features/vehicle-color-select";
+import ChassisSelectByColor from "@/features/chassis-select-by-color";
+import DealerVehicleColorSelect from "@/features/dealer-vehicle-color-select";
 
 export default function CustomerOrderForm({
   createMutation,
   vehicleId,
   customerId = null,
+  maxSelect = 1,
 }) {
   const methods = useForm({
     resolver: zodResolver(customerOrderSchema),
@@ -25,6 +29,7 @@ export default function CustomerOrderForm({
       customer_id: customerId ?? "",
       vehicle_id: vehicleId,
       chassis_number: "",
+      vehicle_color_id: "",
     },
   });
   const {
@@ -36,6 +41,7 @@ export default function CustomerOrderForm({
   const onSubmit = (data) => {
     createMutation.mutate(data);
   };
+  const vehicleColorId = watch("vehicle_color_id");
 
   const formErrors = getFormErrors(errors);
   const hasErrors = formErrors.length > 0;
@@ -45,9 +51,9 @@ export default function CustomerOrderForm({
     <FormProvider {...methods}>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
         <div className="space-y-4">
-          {/* dealer id */}
+          {/* customer id */}
           <div className="space-y-2">
-            <Label>Dealer</Label>
+            <Label>Customer</Label>
             <Controller
               name="customer_id"
               control={control}
@@ -63,27 +69,55 @@ export default function CustomerOrderForm({
             />
           </div>
 
-          {/* Chassis No. */}
+          {/* vehicle color id */}
           <div className="space-y-2">
-            <Label>Chassis No.</Label>
+            <Label>Color</Label>
             <Controller
-              name="chassis_number"
+              name="vehicle_color_id"
               control={control}
               render={({ field }) => (
-                <ChassisSelect
+                <DealerVehicleColorSelect
                   vehicleId={vehicleId}
-                  onChange={(data) => {
-                    field.onChange(data[0].value);
-                  }}
-                  className={cn({ "border-red-500": errors.chassis_number })}
-                  maxSelected={1}
-                  onMaxSelected={(maxLimit) => {
-                    toast.warning(`You have reached max selected: ${maxLimit}`);
-                  }}
+                  value={field.value}
+                  onChange={field.onChange}
+                  className={cn({
+                    "border-red-500 dark:border-red-500":
+                      errors.vehicle_color_id,
+                  })}
                 />
               )}
             />
           </div>
+
+          {/* Chassis No. */}
+          {vehicleColorId && (
+            <div className="space-y-2">
+              <Label>Chassis No.</Label>
+              <Controller
+                name="chassis_number"
+                control={control}
+                render={({ field }) => (
+                  <ChassisSelectByColor
+                    vehicleColorId={vehicleColorId}
+                    onChange={(data) => {
+                      field.onChange(data);
+                    }}
+                    className={cn({ "border-red-500": errors.chassis_number })}
+                    {...(maxSelect
+                      ? {
+                          maxSelected: maxSelect,
+                          onMaxSelected: (maxLimit) => {
+                            toast.warning(
+                              `You have reached max selected: ${maxLimit}`,
+                            );
+                          },
+                        }
+                      : {})}
+                  />
+                )}
+              />
+            </div>
+          )}
         </div>
 
         {/* errors print */}

@@ -14,7 +14,7 @@ const get = async (searchParams = "") => {
 
 const getDealerInventoryByVehicleId = async (vehicleId, searchParams = "") => {
   const { data } = await http().get(
-    `${endpoints.dealers.inventory}/by-vehicle/${vehicleId}?${searchParams}`,
+    `${endpoints.dealers.inventory}/by-vehicle-color/${vehicleId}?${searchParams}`,
   );
   return data;
 };
