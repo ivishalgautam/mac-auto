@@ -78,6 +78,23 @@ const bulkCreate = async (bulkdData) => {
   return await VehicleColorModel.bulkCreate(bulkdData);
 };
 
+const update = async (req, id, transaction) => {
+  const options = { where: { id: req.params?.id || id } };
+  if (transaction) options.transaction = transaction;
+
+  const data = await VehicleColorModel.update(
+    {
+      color_name: req.body.color_name,
+      color_hex: req.body.color_hex,
+      carousel: req.body.carousel,
+      gallery: req.body.gallery,
+    },
+    options
+  );
+
+  return data.dataValues;
+};
+
 const get = async (req) => {
   const whereConditions = [];
   const queryParams = {};
@@ -129,6 +146,13 @@ const getById = async (req, id) => {
   });
 };
 
+const getByColorAndVehicleId = async (colorHex, vehicleId) => {
+  return await VehicleColorModel.findOne({
+    where: { color_hex: colorHex, vehicle_id: vehicleId },
+    raw: true,
+  });
+};
+
 const getByVehicleId = async (req, id, options = {}) => {
   const vehicleId = req.params?.id || id;
   const whereConditions = [`vhclr.vehicle_id = :vehicleId`];
@@ -161,8 +185,10 @@ const getByVehicleId = async (req, id, options = {}) => {
 export default {
   init: init,
   create: create,
+  update: update,
   bulkCreate: bulkCreate,
   get: get,
   getById: getById,
   getByVehicleId: getByVehicleId,
+  getByColorAndVehicleId: getByColorAndVehicleId,
 };

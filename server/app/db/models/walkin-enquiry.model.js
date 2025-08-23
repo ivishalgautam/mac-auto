@@ -110,6 +110,10 @@ const init = async (sequelize) => {
         type: DataTypes.JSONB,
         allowNull: true,
       },
+      guarantor_aadhaar: {
+        type: DataTypes.JSONB,
+        defaultValue: [],
+      },
     },
     {
       createdAt: "created_at",
@@ -173,6 +177,7 @@ const create = async (req) => {
     present_address: req.body.present_address,
     guarantor: req.body.guarantor,
     co_applicant: req.body.co_applicant,
+    guarantor_aadhaar: req.body.guarantor_aadhaar,
   });
 };
 
@@ -191,6 +196,18 @@ const get = async (req) => {
       `(enq.name ILIKE :query OR enq.enquiry_code ILIKE :query OR enq.location ILIKE :query OR enq.phone ILIKE :query)`
     );
     queryParams.query = `%${q}%`;
+  }
+
+  const status = req.query.status ? req.query.status.split(".") : null;
+  if (status?.length) {
+    whereConditions.push(`enq.status = any(:status)`);
+    queryParams.status = `{${status.join(",")}}`;
+  }
+
+  const mode = req.query.mode ? req.query.mode.split(".") : null;
+  if (mode?.length) {
+    whereConditions.push(`enq.purchase_type = any(:mode)`);
+    queryParams.mode = `{${mode.join(",")}}`;
   }
 
   const page = req.query.page ? Number(req.query.page) : 1;
@@ -273,6 +290,7 @@ const update = async (req, id, transaction) => {
       present_address: req.body.present_address,
       guarantor: req.body.guarantor,
       co_applicant: req.body.co_applicant,
+      guarantor_aadhaar: req.body.guarantor_aadhaar,
     },
     options
   );

@@ -1,77 +1,13 @@
 "use strict";
-import { z } from "zod";
 import table from "../../db/models.js";
 import { sequelize } from "../../db/postgres.js";
-import { convertToCustomerSchema, inquiryAssignToDealer } from "./schema.js";
-import { isValidPhoneNumber } from "libphonenumber-js";
+import {
+  convertToCustomerSchema,
+  inquiryAssignToDealer,
+  walkInEnquirySchema,
+} from "./schema.js";
 import { cleanupFiles } from "../../helpers/cleanup-files.js";
 import { getItemsToDelete } from "../../helpers/filter.js";
-
-export const walkInEnquirySchema = z
-  .object({
-    vehicle_id: z.string().min(1, "Vehicle ID is required").trim(),
-    name: z
-      .string()
-      .min(1, "Name is required")
-      .min(2, "Name must be at least 2 characters")
-      .max(50, "Name cannot exceed 50 characters")
-      .regex(/^[a-zA-Z\s]+$/, "Name can only contain letters and spaces")
-      .trim(),
-    phone: z
-      .string({ required_error: "Mobile number is required." })
-      .min(1, { message: "Mobile number is required." }),
-    location: z
-      .string()
-      .min(1, "Location is required")
-      .min(2, "Location must be at least 2 characters")
-      .max(100, "Location cannot exceed 100 characters")
-      .trim(),
-    purchase_type: z.enum(["finance", "cash"], {
-      message: "Purchase type is required",
-    }),
-    pan: z.array(z.any()).optional().or(z.literal(undefined)),
-    aadhaar: z.array(z.any()).optional().or(z.literal(undefined)),
-    electricity_bill: z.array(z.any()).optional().or(z.literal(undefined)),
-    rent_agreement: z.array(z.any()).optional().or(z.literal(undefined)),
-  })
-  .refine((data) => isValidPhoneNumber(data.phone), {
-    path: ["phone"],
-    message: "Invalid phone number",
-  })
-  .superRefine((data, ctx) => {
-    if (data.purchase_type === "finance") {
-      if (!data.pan || data.pan.length === 0) {
-        ctx.addIssue({
-          path: ["pan"],
-          code: z.ZodIssueCode.custom,
-          message: "PAN is required*",
-        });
-      }
-      if (!data.aadhaar || data.aadhaar.length === 0) {
-        ctx.addIssue({
-          path: ["aadhaar"],
-          code: z.ZodIssueCode.custom,
-          message: "Aadhaar is required*",
-        });
-      }
-      if (!data.electricity_bill || data.electricity_bill.length === 0) {
-        ctx.addIssue({
-          path: ["electricity_bill"],
-          code: z.ZodIssueCode.custom,
-          message: "Electricity bill is required*",
-        });
-      }
-      if (!data.rent_agreement || data.rent_agreement.length === 0) {
-        ctx.addIssue({
-          path: ["rent_agreement"],
-          code: z.ZodIssueCode.custom,
-          message: "Rent agreement is required*",
-        });
-      }
-    }
-  });
-
-// Optional: Create a type from the schema for TypeScript
 
 const create = async (req, res) => {
   try {
@@ -150,7 +86,22 @@ const update = async (req, res) => {
         ...getItemsToDelete(existingRentAgreementDocs, updatedRentAgreementDocs)
       );
     }
-    console.log(req.body);
+
+    const existingGuarantorAadhaarDocs = record.guarantor_aadhaar;
+    const updatedGuarantorAadhaarDocs = req.body.guarantor_aadhaar_urls;
+    if (updatedGuarantorAadhaarDocs) {
+      req.body.guarantor_aadhaar = [
+        ...(req.body?.guarantor_aadhaar ?? []),
+        ...updatedGuarantorAadhaarDocs,
+      ];
+      documentsToDelete.push(
+        ...getItemsToDelete(
+          existingGuarantorAadhaarDocs,
+          updatedGuarantorAadhaarDocs
+        )
+      );
+    }
+
     if (documentsToDelete.length) await cleanupFiles(documentsToDelete);
 
     await table.WalkinEnquiryModel.update(req, 0, transaction);

@@ -12,6 +12,20 @@ export default async function routes(fastify, opt) {
     },
     controller.create
   );
+  fastify.get("/:id", {}, controller.getById);
+  fastify.put(
+    "/:id",
+    {
+      preHandler: (req, res) =>
+        multipartPreHandler(req, res, [
+          "chassis_numbers",
+          "carousel_urls",
+          "gallery_urls",
+        ]),
+    },
+    controller.update
+  );
+  fastify.delete("/:id", {}, controller.deleteById);
 }
 
 export async function vehicleColorPublicRoutes(fastify, opts) {

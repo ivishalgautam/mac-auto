@@ -28,6 +28,7 @@ export default async function routes(fastify, options) {
           "aadhaar_urls",
           "electricity_bill_urls",
           "rent_agreement_urls",
+          "guarantor_aadhaar_urls",
         ]),
     },
     controller.update
