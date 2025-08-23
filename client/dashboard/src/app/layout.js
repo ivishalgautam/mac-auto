@@ -2,13 +2,13 @@ import "./globals.css";
 import Layout from "@/components/layout";
 import { Toaster } from "sonner";
 import { ThemeProvider } from "@/providers/theme-provider";
-import { Manrope } from "next/font/google";
+// import { Manrope } from "next/font/google";
 
-const manrope = Manrope({
-  subsets: ["latin"],
-  weight: ["200", "300", "400", "500", "600", "700", "800"],
-  variable: "--font-manrope",
-});
+// const manrope = Manrope({
+//   subsets: ["latin"],
+//   weight: ["200", "300", "400", "500", "600", "700", "800"],
+//   variable: "--font-manrope",
+// });
 
 export const metadata = {
   title: "Dashboard",
@@ -19,7 +19,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
       <body
-        className={`${manrope.className} antialiased`}
+        className={`${"manrope.className"} antialiased`}
         suppressHydrationWarning
       >
         <ThemeProvider
