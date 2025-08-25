@@ -17,7 +17,12 @@ export default async function routes(fastify, opts) {
     "/:id",
     {
       preHandler: (req, res) =>
-        multipartPreHandler(req, res, ["pdi", "pdi_incharge", "image_urls"]),
+        multipartPreHandler(req, res, [
+          "pdi",
+          "pdi_incharge",
+          "image_urls",
+          "invoice_urls",
+        ]),
     },
     controller.update
   );

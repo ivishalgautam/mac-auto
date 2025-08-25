@@ -116,7 +116,7 @@ const deleteById = async (req, res) => {
         .send({ status: false, message: "Order not found." });
 
     await table.DealerOrderModel.deleteById(req, 0, transaction);
-    if (data.status === "in process") {
+    if (["in process", "pdi"].includes(data.status)) {
       await table.InventoryModel.bulkUpdateStatus(
         data.chassis_nos,
         "active",

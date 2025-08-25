@@ -174,16 +174,23 @@ const get = async (req) => {
   const whereConditions = [];
   const queryParams = {};
 
+  // Handle dealer-specific filtering via JOIN instead of WHERE
+  let dealerJoin = "";
   if (role === "dealer") {
-    whereConditions.push("dlr.user_id = :user_id");
+    dealerJoin = `AND dlr.user_id = :user_id`;
     queryParams.user_id = id;
   }
 
   const q = req.query.q ? req.query.q : null;
-
   if (q) {
     whereConditions.push(`(vh.title ILIKE :query)`);
     queryParams.query = `%${q}%`;
+  }
+
+  const category = req.query.category ? req.query.category.split(".") : null;
+  if (category?.length) {
+    whereConditions.push(`vh.category = any(:category)`);
+    queryParams.category = `{${category.join(",")}}`;
   }
 
   const page = req.query.page ? Number(req.query.page) : 1;
@@ -196,38 +203,39 @@ const get = async (req) => {
   }
 
   const query = `
-  SELECT 
-      vh.id, vh.title, vh.description, vh.category, vh.slug, vh.carousel,
-      (vh.pricing->0->>'base_price')::numeric AS starting_from,
-      COALESCE(
-        JSON_AGG(
-          DISTINCT JSON_BUILD_OBJECT(
-            'id', vhclr.id,
-            'color_name', vhclr.color_name,
-            'color_hex', vhclr.color_hex
-          )::jsonb
-        ) FILTER (WHERE vh.id IS NOT NULL), '[]') as colors,
-      vh.created_at,
-      COUNT(DISTINCT CASE WHEN dlrinvn.status = 'active' THEN dlrinvn.id END) as active_quantity,
-      COUNT(DISTINCT CASE WHEN dlrinvn.status = 'inactive' THEN dlrinvn.id END) as inactive_quantity,
-      COUNT(DISTINCT CASE WHEN dlrinvn.status = 'sold' THEN dlrinvn.id END) as sold_quantity,
-      COUNT(DISTINCT CASE WHEN dlrinvn.status = 'scrapped' THEN dlrinvn.id END) as scrapped_quantity
-    FROM ${constants.models.DEALER_INVENTORY_TABLE} dlrinvn
-    LEFT JOIN ${constants.models.VEHICLE_TABLE} vh ON dlrinvn.vehicle_id = vh.id
+    SELECT 
+        vh.id, vh.title, vh.specifications, vh.category, vh.slug, vh.carousel, vh.dealer_price,
+        (vh.pricing->0->>'base_price')::numeric AS starting_from,
+        COALESCE(
+          JSON_AGG(
+            DISTINCT JSON_BUILD_OBJECT(
+              'id', vhclr.id,
+              'color_name', vhclr.color_name,
+              'color_hex', vhclr.color_hex
+            )::jsonb
+          ) FILTER (WHERE vhclr.id IS NOT NULL), '[]'
+        ) AS colors,
+        vh.created_at,
+        COUNT(DISTINCT CASE WHEN dlrinvn.status = 'active' THEN dlrinvn.id END) AS active_quantity,
+        COUNT(DISTINCT CASE WHEN dlrinvn.status = 'inactive' THEN dlrinvn.id END) AS inactive_quantity,
+        COUNT(DISTINCT CASE WHEN dlrinvn.status = 'sold' THEN dlrinvn.id END) AS sold_quantity,
+        COUNT(DISTINCT CASE WHEN dlrinvn.status = 'scrapped' THEN dlrinvn.id END) AS scrapped_quantity
+    FROM ${constants.models.VEHICLE_TABLE} vh
+    LEFT JOIN ${constants.models.DEALER_INVENTORY_TABLE} dlrinvn ON vh.id = dlrinvn.vehicle_id
     LEFT JOIN ${constants.models.VEHICLE_COLOR_TABLE} vhclr ON dlrinvn.vehicle_color_id = vhclr.id
-    LEFT JOIN ${constants.models.DEALER_TABLE} dlr ON dlr.id = dlrinvn.dealer_id
+    LEFT JOIN ${constants.models.DEALER_TABLE} dlr ON dlr.id = dlrinvn.dealer_id ${dealerJoin}
     ${whereClause}
     GROUP BY vh.id
-    ORDER BY vh.updated_at DESC
+    ORDER BY vh.created_at DESC
     LIMIT :limit OFFSET :offset
   `;
 
   const countQuery = `
-  SELECT 
-      COUNT(dlrinvn.id) OVER()::integer as total
-    FROM ${constants.models.DEALER_INVENTORY_TABLE} dlrinvn
-    LEFT JOIN ${constants.models.VEHICLE_TABLE} vh ON dlrinvn.vehicle_id = vh.id
-    LEFT JOIN ${constants.models.DEALER_TABLE} dlr ON dlr.id = dlrinvn.dealer_id
+    SELECT COUNT(DISTINCT vh.id) AS total
+    FROM ${constants.models.VEHICLE_TABLE} vh
+    LEFT JOIN ${constants.models.DEALER_INVENTORY_TABLE} dlrinvn ON dlrinvn.vehicle_id = vh.id
+    LEFT JOIN ${constants.models.VEHICLE_COLOR_TABLE} vhclr ON dlrinvn.vehicle_color_id = vhclr.id
+    LEFT JOIN ${constants.models.DEALER_TABLE} dlr ON dlr.id = dlrinvn.dealer_id ${dealerJoin}
     ${whereClause}
   `;
 
@@ -244,7 +252,10 @@ const get = async (req) => {
     plain: true,
   });
 
-  return { inventory, total: count?.total ?? 0 };
+  return {
+    inventory,
+    total: count?.total ?? 0,
+  };
 };
 
 const getColors = async (req, vehicleId) => {

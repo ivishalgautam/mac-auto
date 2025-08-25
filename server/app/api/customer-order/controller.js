@@ -9,6 +9,7 @@ const status = constants.http.status;
 const create = async (req, res) => {
   const transaction = await sequelize.transaction();
   try {
+    console.log("body", req.body);
     const validateData = customerOrderSchema.parse(req.body);
     const customerRecord = await table.CustomerModel.getById(
       0,
@@ -43,6 +44,7 @@ const create = async (req, res) => {
           customer_id: validateData.customer_id,
           dealer_id: dealerRecord.id,
           chassis_no: validateData.chassis_number,
+          invoices_bills: req.body.invoices_bills,
         },
       },
       transaction
@@ -60,6 +62,41 @@ const create = async (req, res) => {
   }
 };
 
+const update = async (req, res) => {
+  const transaction = await sequelize.transaction();
+  try {
+    const record = await table.CustomerPurchaseModel.getById(req.params.id);
+    if (!record)
+      return res
+        .code(status.NOT_FOUND)
+        .send({ status: false, message: "Customer purchase not found." });
+
+    const existing = record.invoices_bills;
+    const updated = req.body.invoices_bills_urls;
+    if (updated) {
+      req.body.invoices_bills = [
+        ...(req.body?.invoices_bills ?? []),
+        ...updated,
+      ];
+      documentsToDelete.push(...getItemsToDelete(existing, updated));
+    }
+
+    await table.CustomerPurchaseModel.update(req, 0, transaction);
+
+    await table.DealerInventoryModel.updateStatusByChassisNo(
+      validateData.chassis_number,
+      "sold",
+      transaction
+    );
+
+    await transaction.commit();
+  } catch (error) {
+    await transaction.rollback();
+    throw error;
+  }
+};
+
 export default {
   create: create,
+  update: update,
 };

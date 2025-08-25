@@ -86,12 +86,20 @@ const update = async (req, res) => {
       );
     }
 
+    const existing = pdiRecord.invoices;
+    const updatedInvoices = req.body.invoice_urls;
+    if (updatedInvoices) {
+      req.body.invoices = [...(req.body?.invoices ?? []), ...updatedInvoices];
+      documentsToDelete.push(...getItemsToDelete(existing, updatedInvoices));
+    }
+
     const data = await table.PDICheckModel.update(
       {
         body: {
           pdi: req.body.pdi,
           pdi_incharge: req.body.pdi_incharge,
           images: req.body.images,
+          invoices: req.body.invoices,
         },
       },
       req.params.id,

@@ -45,6 +45,10 @@ const init = async (sequelize) => {
         type: DataTypes.JSONB,
         defaultValue: [],
       },
+      invoices: {
+        type: DataTypes.JSONB,
+        defaultValue: [],
+      },
     },
     {
       createdAt: "created_at",
@@ -67,6 +71,7 @@ const create = async (req, dealer_order_id, transaction) => {
       dealer_order_id: dealer_order_id,
       images: req.body.images,
       pdi_by: req.user_data.id,
+      invoices: req.body.invoices,
     },
     options
   );
@@ -86,6 +91,7 @@ const update = async (req, id, transaction) => {
       pdi: req.body.pdi,
       pdi_incharge: req.body.pdi_incharge,
       images: req.body.images,
+      invoices: req.body.invoices,
     },
     options
   );

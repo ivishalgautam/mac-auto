@@ -14,9 +14,9 @@ export default async function routes(fastify, opts) {
     controller.getInventoryByVehicleId
   );
   fastify.get(
-    "/inventory/by-vehicle-color/:vehicle_id",
+    "/inventory/by-vehicle-color/:vehicle_color_id",
     {},
-    controller.getInventoryByVehicleId
+    controller.getInventoryByVehicleColorId
   );
   fastify.get(
     "/inventory/by-vehicle/:vehicle_id/colors",

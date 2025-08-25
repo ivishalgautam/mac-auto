@@ -58,6 +58,10 @@ const init = async (sequelize) => {
         allowNull: false,
         unique: { args: true, msg: "Chassis no. exist" },
       },
+      invoices_bills: {
+        type: DataTypes.JSONB,
+        defaultValue: [],
+      },
     },
     {
       createdAt: "created_at",
@@ -97,6 +101,7 @@ const create = async (req, transaction) => {
       customer_id: req.body.customer_id,
       dealer_id: req.body.dealer_id,
       chassis_no: req.body.chassis_no,
+      invoices_bills: req.body.invoices_bills,
     },
     options
   );
@@ -113,13 +118,13 @@ const bulkCreate = async (data, transaction) => {
 
 const update = async (req, id, transaction) => {
   const options = {
-    where: { id: id },
+    where: { id: req.params?.id || id },
     returning: true,
     raw: true,
   };
   if (transaction) options.transaction = transaction;
   return await CustomerPurchaseModel.update(
-    { quantity: req.body.quantity },
+    { invoices_bills: req.body.invoices_bills },
     options
   );
 };
@@ -164,7 +169,17 @@ const get = async (req) => {
 
   const q = req.query.q ? req.query.q : null;
   if (q) {
-    whereConditions.push(`(vh.title ILIKE :query)`);
+    whereConditions.push(
+      `(
+        vh.title ILIKE :query OR 
+        cust_usr.first_name ILIKE :query OR 
+        cust_usr.last_name ILIKE :query OR 
+        cust_usr.mobile_number ILIKE :query OR 
+        deal_usr.first_name ILIKE :query OR 
+        deal_usr.last_name ILIKE :query OR 
+        deal_usr.mobile_number ILIKE :query
+      )`
+    );
     queryParams.query = `%${q}%`;
   }
 
@@ -185,14 +200,19 @@ const get = async (req) => {
 
   const query = `
   SELECT 
-      cpt.id, cpt.chassis_no,
+      cpt.id, cpt.chassis_no, cpt.invoices_bills,
       vh.id as vehicle_id, vh.title, vh.description, vh.category, vh.slug, vhclr.color_name as color, vhclr.color_hex, vh.carousel, vh.created_at,
       CONCAT(cust_usr.first_name, ' ', cust_usr.last_name) as customer_name, cust_usr.mobile_number as customer_phone,
       deal_usr.mobile_number as dealer_phone,
       CONCAT(deal_usr.first_name, ' ', deal_usr.last_name, ' (', dlr.location, ')') AS dealership
     FROM ${constants.models.CUSTOMER_PURCHASE_TABLE} cpt
     LEFT JOIN ${constants.models.VEHICLE_TABLE} vh ON cpt.vehicle_id = vh.id
-    LEFT JOIN ${constants.models.VEHICLE_COLOR_TABLE} vhclr ON vhclr.vehicle_id = cpt.vehicle_id
+    LEFT JOIN LATERAL (
+      SELECT color_name, color_hex 
+      FROM ${constants.models.VEHICLE_COLOR_TABLE} vc 
+      WHERE vc.vehicle_id = cpt.vehicle_id 
+      LIMIT 1
+    ) vhclr ON true
     LEFT JOIN ${constants.models.CUSTOMER_TABLE} cstmr ON cstmr.id = cpt.customer_id
     LEFT JOIN ${constants.models.DEALER_TABLE} dlr ON dlr.id = cpt.dealer_id
     LEFT JOIN ${constants.models.USER_TABLE} cust_usr ON cust_usr.id = cstmr.user_id
@@ -207,8 +227,16 @@ const get = async (req) => {
       COUNT(cpt.id) OVER()::integer as total
     FROM ${constants.models.CUSTOMER_PURCHASE_TABLE} cpt
     LEFT JOIN ${constants.models.VEHICLE_TABLE} vh ON cpt.vehicle_id = vh.id
+    LEFT JOIN LATERAL (
+      SELECT color_name, color_hex 
+      FROM ${constants.models.VEHICLE_COLOR_TABLE} vc 
+      WHERE vc.vehicle_id = cpt.vehicle_id 
+      LIMIT 1
+    ) vhclr ON true
     LEFT JOIN ${constants.models.CUSTOMER_TABLE} cstmr ON cstmr.id = cpt.customer_id
     LEFT JOIN ${constants.models.DEALER_TABLE} dlr ON dlr.id = cpt.dealer_id
+    LEFT JOIN ${constants.models.USER_TABLE} cust_usr ON cust_usr.id = cstmr.user_id
+    LEFT JOIN ${constants.models.USER_TABLE} deal_usr ON deal_usr.id = dlr.user_id
     ${whereClause}
   `;
 

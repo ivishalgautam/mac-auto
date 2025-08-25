@@ -173,7 +173,7 @@ const get = async (req) => {
     plain: true,
   });
 
-  return { enquiries: data, total: count.total ?? 0 };
+  return { enquiries: data, total: count?.total ?? 0 };
 };
 
 const getById = async (req, id) => {
