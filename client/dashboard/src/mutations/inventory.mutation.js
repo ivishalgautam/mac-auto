@@ -32,7 +32,10 @@ export const useGetInventoryByVehicleColorId = (
     queryFn: () =>
       user?.role === "admin"
         ? inventory.getInventoryByVehicleColorId(vehicleColorId, searchParams)
-        : dealer.getDealerInventoryByVehicleId(vehicleColorId, searchParams),
+        : dealer.getDealerInventoryByVehicleColorId(
+            vehicleColorId,
+            searchParams,
+          ),
     enabled: !!vehicleColorId && !!user,
   });
 };

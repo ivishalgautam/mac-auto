@@ -12,7 +12,7 @@ import CustomerOrderForm from "@/components/forms/customer-order-form";
 export function CustomerOrderCreateDialog({
   isOpen,
   setIsOpen,
-  createMutation,
+  callback,
   vehicleId,
   customerId = null,
   maxSelect = null,
@@ -29,7 +29,7 @@ export function CustomerOrderCreateDialog({
           </DialogDescription>
           <div>
             <CustomerOrderForm
-              createMutation={createMutation}
+              callback={callback}
               vehicleId={vehicleId}
               customerId={customerId}
               maxSelect={maxSelect}

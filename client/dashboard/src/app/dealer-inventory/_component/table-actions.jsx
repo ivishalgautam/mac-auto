@@ -3,6 +3,8 @@ import { DataTableResetFilter } from "@/components/ui/table/data-table-reset-fil
 import { DataTableSearch } from "@/components/ui/table/data-table-search";
 import { useTableFilters } from "./use-table-filters";
 import { DataTableFilterBox } from "@/components/ui/table/data-table-filter-box";
+import { vehicleCategories } from "@/data";
+import { DataTableFilterCheckBox } from "@/components/ui/table/data-table-filter-checkbox";
 
 export default function TableActions() {
   const {
@@ -23,17 +25,13 @@ export default function TableActions() {
         setSearchQuery={setSearchQuery}
         setPage={setPage}
       />
-      <DataTableFilterBox
+      {/* <DataTableFilterCheckBox
         filterKey="category"
         title="Category"
-        options={[
-          { label: "Passenger", value: "passenger" },
-          { label: "Cargo", value: "cargo" },
-          { label: "Garbage", value: "garbage" },
-        ]}
+        options={vehicleCategories}
         setFilterValue={setCategoryFilter}
         filterValue={categoryFilter}
-      />
+      /> */}
       <DataTableResetFilter
         isFilterActive={isAnyFilterActive}
         onReset={resetFilters}

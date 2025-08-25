@@ -42,7 +42,7 @@ import {
 } from "@/mutations/vehicle-mutation";
 import { Textarea } from "../ui/textarea";
 import { useRouter } from "next/navigation";
-import { colors } from "@/data";
+import { colors, vehicleCategories } from "@/data";
 import useFetchVehicles from "@/hooks/use-fetch-vehicles";
 import FileUpload from "@/components/file-uploader";
 import { useState } from "react";
@@ -512,13 +512,11 @@ export default function VehicleForm({ id, type }) {
                       <SelectValue placeholder="Select a category" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="passenger">Passenger</SelectItem>
-                      <SelectItem value="cargo">Cargo</SelectItem>
-                      <SelectItem value="garbage">Garbage</SelectItem>
-                      <SelectItem value="loader">Loader</SelectItem>
-                      <SelectItem value="e-cycle">E-Cycle</SelectItem>
-                      <SelectItem value="e-scooter">E-Scooter</SelectItem>
-                      <SelectItem value="golf">Golf</SelectItem>
+                      {vehicleCategories.map((cat) => (
+                        <SelectItem key={cat.value} value={cat.value}>
+                          {cat.label}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 )}

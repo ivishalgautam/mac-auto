@@ -50,6 +50,7 @@ export default function PDICheckForm({ orderId, type = "create", id }) {
     reset,
     errors,
     setError,
+    trigger,
   } = useForm({
     defaultValues: {
       pdi: [],
@@ -58,9 +59,11 @@ export default function PDICheckForm({ orderId, type = "create", id }) {
   });
   const [files, setFiles] = useState({
     images: [],
+    invoices: [],
   });
   const [fileUrls, setFileUrls] = useState({
     image_urls: [],
+    invoice_urls: [],
   });
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -84,9 +87,12 @@ export default function PDICheckForm({ orderId, type = "create", id }) {
     }
 
     const formData = new FormData();
-    files.images?.forEach((file) => {
-      formData.append("images", file);
+    Object.entries(files).forEach(([key, value]) => {
+      value.forEach((val) => {
+        formData.append(key, val);
+      });
     });
+
     Object.entries(data).forEach(([key, value]) => {
       typeof value === "object"
         ? formData.append(key, JSON.stringify(value))
@@ -103,6 +109,7 @@ export default function PDICheckForm({ orderId, type = "create", id }) {
       ? updateMutation.mutate(formData)
       : createMutation.mutate(formData);
   };
+
   const { fields } = useFieldArray({ control, name: "pdi" });
   useEffect(() => {
     if (data) {
@@ -127,6 +134,7 @@ export default function PDICheckForm({ orderId, type = "create", id }) {
     if (["view", "edit"].includes(type) && pdiData) {
       reset({ pdi: pdiData.pdi, pdi_incharge: pdiData.pdi_incharge });
       setFileUrls((prev) => ({ ...prev, image_urls: pdiData.images }));
+      setFileUrls((prev) => ({ ...prev, invoice_urls: pdiData.invoices }));
     }
   }, [pdiData, reset, type]);
 
@@ -137,13 +145,15 @@ export default function PDICheckForm({ orderId, type = "create", id }) {
   const handleImagesChange = useCallback((data) => {
     setFiles((prev) => ({ ...prev, images: data }));
   }, []);
+  const handleInvoicesChange = useCallback((data) => {
+    setFiles((prev) => ({ ...prev, invoices: data }));
+  }, []);
 
   if (
     (type === "create" && isLoading) ||
     (["edit", "view"].includes(type) && isPdiDataLoading)
   )
     return <Loader />;
-
   if (
     (type === "create" && isError) ||
     (["edit", "view"].includes(type) && isPdiDataError)
@@ -170,51 +180,104 @@ export default function PDICheckForm({ orderId, type = "create", id }) {
             hidden: currentStep === 2,
           })}
         >
-          <Label>Images</Label>
-          {["edit", "create"].includes(type) && (
-            <FileUpload
-              onFileChange={handleImagesChange}
-              inputName={"images"}
-              className={cn({ "border-red-500": errors?.images })}
-              initialFiles={files.images}
-              multiple={true}
-              maxFiles={50}
-            />
-          )}
+          {/* images */}
+          <div>
+            <Label>Images</Label>
+            {["edit", "create"].includes(type) && (
+              <FileUpload
+                onFileChange={handleImagesChange}
+                inputName={"images"}
+                className={cn({ "border-red-500": errors?.images })}
+                initialFiles={files.images}
+                multiple={true}
+                maxFiles={50}
+              />
+            )}
 
-          <div className="grid grid-cols-[repeat(auto-fill,minmax(100px,1fr))] gap-4">
-            {fileUrls.image_urls?.map((src, index) => (
-              <div
-                className="bg-accent relative aspect-square w-24 rounded-md"
-                key={index}
-              >
-                <Image
-                  src={`${config.file_base}/${src}`}
-                  width={200}
-                  height={200}
-                  className={cn("size-full rounded-[inherit] object-cover", {
-                    "border-red-500": errors.images,
-                  })}
-                  alt={`image-${index}`}
-                />
-                {type === "edit" && (
-                  <Button
-                    onClick={() =>
-                      setFileUrls((prev) => ({
-                        ...prev,
-                        image_urls: prev.image_urls.filter((i) => i !== src),
-                      }))
-                    }
-                    size="icon"
-                    className="border-background focus-visible:border-background absolute -top-2 -right-2 size-6 rounded-full border-2 shadow-none"
-                    aria-label="Remove image"
-                    type="button"
-                  >
-                    <XIcon className="size-3.5" />
-                  </Button>
-                )}
-              </div>
-            ))}
+            <div className="grid grid-cols-[repeat(auto-fill,minmax(100px,1fr))] gap-4">
+              {fileUrls.image_urls?.map((src, index) => (
+                <div
+                  className="bg-accent relative aspect-square w-24 rounded-md"
+                  key={index}
+                >
+                  <Image
+                    src={`${config.file_base}/${src}`}
+                    width={200}
+                    height={200}
+                    className={cn("size-full rounded-[inherit] object-cover", {
+                      "border-red-500": errors?.images,
+                    })}
+                    alt={`image-${index}`}
+                  />
+                  {type === "edit" && (
+                    <Button
+                      onClick={() =>
+                        setFileUrls((prev) => ({
+                          ...prev,
+                          image_urls: prev.image_urls.filter((i) => i !== src),
+                        }))
+                      }
+                      size="icon"
+                      className="border-background focus-visible:border-background absolute -top-2 -right-2 size-6 rounded-full border-2 shadow-none"
+                      aria-label="Remove image"
+                      type="button"
+                    >
+                      <XIcon className="size-3.5" />
+                    </Button>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* invoices */}
+          <div>
+            <Label>Invoices</Label>
+            {["edit", "create"].includes(type) && (
+              <FileUpload
+                onFileChange={handleInvoicesChange}
+                inputName={"invoices"}
+                className={cn({ "border-red-500": errors?.invoices })}
+                initialFiles={files.invoices}
+                multiple={true}
+                maxFiles={50}
+              />
+            )}
+
+            <div className="grid grid-cols-[repeat(auto-fill,minmax(100px,1fr))] gap-4">
+              {fileUrls.invoice_urls?.map((src, index) => (
+                <div
+                  className="bg-accent relative aspect-square w-24 rounded-md"
+                  key={index}
+                >
+                  <Image
+                    src={`${config.file_base}/${src}`}
+                    width={200}
+                    height={200}
+                    className={cn("size-full rounded-[inherit] object-cover")}
+                    alt={`image-${index}`}
+                  />
+                  {type === "edit" && (
+                    <Button
+                      onClick={() =>
+                        setFileUrls((prev) => ({
+                          ...prev,
+                          invoice_urls: prev.invoice_urls.filter(
+                            (i) => i !== src,
+                          ),
+                        }))
+                      }
+                      size="icon"
+                      className="border-background focus-visible:border-background absolute -top-2 -right-2 size-6 rounded-full border-2 shadow-none"
+                      aria-label="Remove image"
+                      type="button"
+                    >
+                      <XIcon className="size-3.5" />
+                    </Button>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
@@ -401,18 +464,19 @@ export default function PDICheckForm({ orderId, type = "create", id }) {
             variant="outline"
             className="w-32"
             onClick={() => {
-              if (
-                ["create", "edit"].includes(type) &&
-                !fileUrls.image_urls.length &&
-                !files.images.length
-              ) {
-                return setError("images", {
-                  type: "manual",
-                  message: "Images required",
-                });
-              }
+              if (currentStep >= steps.length) return;
 
-              setCurrentStep((prev) => (prev < steps.length ? prev + 1 : prev));
+              const needsImages = ["create", "edit"].includes(type);
+              const hasImages =
+                fileUrls.image_urls.length > 0 || files.images.length > 0;
+              const hasInvoices =
+                fileUrls.invoice_urls.length > 0 || files.invoices.length > 0;
+
+              console.log({ needsImages, hasImages, hasInvoices });
+
+              if (needsImages && (!hasImages || !hasInvoices)) return;
+
+              setCurrentStep((prev) => prev + 1);
             }}
             disabled={currentStep >= steps.length}
           >

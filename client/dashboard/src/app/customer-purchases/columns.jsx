@@ -55,6 +55,14 @@ export const columns = (setId, openModal, user) =>
       accessorKey: "dealer_phone",
       header: "Dealer Contact",
     },
+    ["dealer", "admin"].includes(user?.role) && {
+      accessorKey: "customer_name",
+      header: "Customer name",
+    },
+    ["dealer", "admin"].includes(user?.role) && {
+      accessorKey: "customer_phone",
+      header: "Customer Contact",
+    },
     {
       accessorKey: "created_at",
       header: ({ column }) => {

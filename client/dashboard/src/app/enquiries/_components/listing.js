@@ -4,7 +4,12 @@ import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { DataTable } from "@/components/ui/table/data-table";
-import { useRouter, useSearchParams } from "next/navigation";
+import {
+  useParams,
+  usePathname,
+  useRouter,
+  useSearchParams,
+} from "next/navigation";
 import { DataTableSkeleton } from "@/components/ui/table/data-table-skeleton";
 import { DeleteDialog } from "../followups/_components/delete-dialog";
 import { deleteEnquiry, fetchEnquiries } from "@/services/enquiry";
@@ -14,8 +19,11 @@ import { Plus } from "lucide-react";
 import { ConvertDialog } from "./dialog/convert-dialog";
 import { InquiryAssignDialog } from "./dialog/inquiry-assign-dialog";
 import { useAuth } from "@/providers/auth-provider";
+import Link from "next/link";
+import { cn } from "@/lib/utils";
 
 export default function Listing() {
+  const pathname = usePathname();
   const { user } = useAuth();
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -68,14 +76,33 @@ export default function Listing() {
   }, [searchParamStr, router]);
 
   if (isLoading) return <DataTableSkeleton columnCount={5} rowCount={10} />;
-
   if (isError) error?.message ?? "error";
+
   return (
     <div className="border-input rounded-lg">
       <div className="mb-2 text-end">
         <Button type="button" size="sm" onClick={() => setIsCreateOpen(true)}>
           <Plus /> Create
         </Button>
+      </div>
+
+      <div className="mb-4 flex w-max gap-2 rounded-full border p-1 text-sm">
+        <Link
+          href={"/enquiries?page=1&limit=10"}
+          className={cn("rounded-full p-4 py-1", {
+            "bg-primary": pathname === "/enquiries",
+          })}
+        >
+          Mac Auto Enquiries
+        </Link>
+        <Link
+          href={"/walkin-enquiries?page=1&limit=10"}
+          className={cn("rounded-full p-4 py-1", {
+            "bg-primary": pathname === "/walkin-enquiries",
+          })}
+        >
+          Walk In Enquiries
+        </Link>
       </div>
 
       <DataTable

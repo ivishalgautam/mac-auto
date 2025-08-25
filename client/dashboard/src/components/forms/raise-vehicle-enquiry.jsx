@@ -65,7 +65,7 @@ export default function RaiseVehicleEnquiryForm({
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       {/* battery type */}
       <div className="space-y-2">
-        <Label>Color</Label>
+        <Label>Battery type</Label>
         <Controller
           name="battery_type"
           control={control}

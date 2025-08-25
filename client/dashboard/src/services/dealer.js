@@ -14,6 +14,16 @@ const get = async (searchParams = "") => {
 
 const getDealerInventoryByVehicleId = async (vehicleId, searchParams = "") => {
   const { data } = await http().get(
+    `${endpoints.dealers.inventory}/by-vehicle/${vehicleId}?${searchParams}`,
+  );
+  return data;
+};
+
+const getDealerInventoryByVehicleColorId = async (
+  vehicleId,
+  searchParams = "",
+) => {
+  const { data } = await http().get(
     `${endpoints.dealers.inventory}/by-vehicle-color/${vehicleId}?${searchParams}`,
   );
   return data;
@@ -23,6 +33,7 @@ const dealer = {
   createInventory: createInventory,
   get: get,
   getDealerInventoryByVehicleId: getDealerInventoryByVehicleId,
+  getDealerInventoryByVehicleColorId: getDealerInventoryByVehicleColorId,
 };
 
 export default dealer;

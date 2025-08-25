@@ -7,22 +7,16 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import ErrorMessage from "@/components/ui/error";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Skeleton } from "@/components/ui/skeleton";
+import { vehicleCategories } from "@/data";
 import { cn } from "@/lib/utils";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { useState } from "react";
 
-const categories = [
-  { label: "Passenger", value: "passenger" },
-  { label: "Cargo", value: "cargo" },
-  { label: "Garbage", value: "garbage" },
-];
 export default function VehicleCategorySelect({
   onChange,
   className = "",
@@ -42,7 +36,8 @@ export default function VehicleCategorySelect({
           )}
         >
           {value
-            ? categories.find((category) => category.value === value)?.label
+            ? vehicleCategories.find((category) => category.value === value)
+                ?.label
             : "Select category"}
           <ChevronsUpDown className="opacity-50" />
         </Button>
@@ -56,7 +51,7 @@ export default function VehicleCategorySelect({
           <CommandList>
             <CommandEmpty>No category found.</CommandEmpty>
             <CommandGroup>
-              {categories.map((category) => (
+              {vehicleCategories.map((category) => (
                 <CommandItem
                   value={category.label}
                   key={category.value}

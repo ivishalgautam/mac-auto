@@ -1,5 +1,4 @@
 "use client";
-import "../../app/globals.css";
 import AuthProvider from "@/providers/auth-provider";
 import QueryProvider from "@/providers/query-client-provider";
 import { useParams, usePathname } from "next/navigation";

@@ -2,27 +2,41 @@
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AlertCircle, LoaderCircleIcon } from "lucide-react";
+import { AlertCircle, LoaderCircleIcon, XIcon } from "lucide-react";
 import { Controller, FormProvider, useForm } from "react-hook-form";
 import { cn } from "@/lib/utils";
 import { Alert, AlertDescription } from "../ui/alert";
 import { getFormErrors } from "@/lib/get-form-errors";
-import DealerSelect from "@/features/dealer-select";
-import { dealerInventorySchema } from "@/utils/schema/dealer-inventory.schema";
-import ChassisSelect from "@/features/chassis-select";
 import { toast } from "sonner";
 import CustomerSelect from "@/features/customer-select";
 import { customerOrderSchema } from "@/utils/schema/customer-order.schema";
-import VehicleColorSelect from "@/features/vehicle-color-select";
 import ChassisSelectByColor from "@/features/chassis-select-by-color";
 import DealerVehicleColorSelect from "@/features/dealer-vehicle-color-select";
+import { useCallback, useState } from "react";
+import Image from "next/image";
+import config from "@/config";
+import FileUpload from "../file-uploader";
+import { Input } from "../ui/input";
+import {
+  useCreateCustomerOrder,
+  useUpdateCustomerOrder,
+} from "@/mutations/customer-order-mutation";
 
 export default function CustomerOrderForm({
-  createMutation,
+  callback,
   vehicleId,
   customerId = null,
   maxSelect = 1,
+  type = "create",
+  id,
 }) {
+  const [files, setFiles] = useState({
+    invoices_bills: [],
+  });
+  const [fileUrls, setFileUrls] = useState({
+    invoices_bills_urls: [],
+  });
+
   const methods = useForm({
     resolver: zodResolver(customerOrderSchema),
     defaultValues: {
@@ -38,7 +52,38 @@ export default function CustomerOrderForm({
     control,
     watch,
   } = methods;
+
+  const createMutation = useCreateCustomerOrder(() => {
+    typeof callback === "function" && callback();
+  });
+  const updateMutation = useUpdateCustomerOrder(id, () => {
+    typeof callback === "function" && callback();
+  });
+
   const onSubmit = (data) => {
+    const formData = new FormData();
+    Object.entries(files).forEach(([key, value]) => {
+      value.forEach((val) => {
+        formData.append(key, val);
+      });
+    });
+
+    Object.entries(data).forEach(([key, value]) => {
+      typeof value === "object"
+        ? formData.append(key, JSON.stringify(value))
+        : formData.append(key, value);
+    });
+
+    if (type === "edit") {
+      Object.entries(fileUrls).forEach(([key, value]) => {
+        formData.append(key, JSON.stringify(value));
+      });
+    }
+
+    type === "edit"
+      ? updateMutation.mutate(formData)
+      : createMutation.mutate(formData);
+
     createMutation.mutate(data);
   };
   const vehicleColorId = watch("vehicle_color_id");
@@ -46,6 +91,13 @@ export default function CustomerOrderForm({
   const formErrors = getFormErrors(errors);
   const hasErrors = formErrors.length > 0;
   const isFormPending = createMutation.isPending;
+
+  const handleInvoicesChange = (e) => {
+    setFiles((prev) => ({
+      ...prev,
+      invoices_bills: Array.from(e.target.files),
+    }));
+  };
 
   return (
     <FormProvider {...methods}>
@@ -118,6 +170,54 @@ export default function CustomerOrderForm({
               />
             </div>
           )}
+
+          {/* Invoices / Bills */}
+          <div>
+            <Label>Invoices/Bills</Label>
+            {["edit", "create"].includes(type) && (
+              <Input
+                type="file"
+                multiple
+                onChange={handleInvoicesChange}
+                accept={".pdf"}
+              />
+            )}
+
+            <div className="grid grid-cols-[repeat(auto-fill,minmax(100px,1fr))] gap-4">
+              {fileUrls.invoices_bills_urls?.map((src, index) => (
+                <div
+                  className="bg-accent relative aspect-square w-24 rounded-md"
+                  key={index}
+                >
+                  <Image
+                    src={`${config.file_base}/${src}`}
+                    width={200}
+                    height={200}
+                    className={cn("size-full rounded-[inherit] object-cover")}
+                    alt={`image-${index}`}
+                  />
+                  {type === "edit" && (
+                    <Button
+                      onClick={() =>
+                        setFileUrls((prev) => ({
+                          ...prev,
+                          invoices_bills_urls: prev.invoices_bills_urls.filter(
+                            (i) => i !== src,
+                          ),
+                        }))
+                      }
+                      size="icon"
+                      className="border-background focus-visible:border-background absolute -top-2 -right-2 size-6 rounded-full border-2 shadow-none"
+                      aria-label="Remove image"
+                      type="button"
+                    >
+                      <XIcon className="size-3.5" />
+                    </Button>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
 
         {/* errors print */}

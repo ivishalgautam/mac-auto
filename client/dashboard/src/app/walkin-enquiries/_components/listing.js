@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { DataTable } from "@/components/ui/table/data-table";
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { DataTableSkeleton } from "@/components/ui/table/data-table-skeleton";
 import {
   deleteEnquiry,
@@ -25,6 +25,8 @@ import {
 import { saveAs } from "file-saver";
 import Papa from "papaparse";
 import { flattenEnquiry } from "@/helpers/flatten-walking-enquiry";
+import Link from "next/link";
+import { cn } from "@/lib/utils";
 
 export default function Listing() {
   const { user } = useAuth();
@@ -35,6 +37,7 @@ export default function Listing() {
   const searchParams = useSearchParams();
   const searchParamStr = searchParams.toString();
   const router = useRouter();
+  const pathname = usePathname();
 
   function openModal(type) {
     if (!type) return toast.warning("Please provide which modal should open!");
@@ -84,6 +87,26 @@ export default function Listing() {
           Export CSV
         </Button>
       </div>
+
+      <div className="mb-4 flex w-max gap-2 rounded-full border p-1 text-sm">
+        <Link
+          href={"/enquiries?page=1&limit=10"}
+          className={cn("rounded-full p-4 py-1", {
+            "bg-primary": pathname === "/enquiries",
+          })}
+        >
+          Mac Auto Enquiries
+        </Link>
+        <Link
+          href={"/walkin-enquiries?page=1&limit=10"}
+          className={cn("rounded-full p-4 py-1", {
+            "bg-primary": pathname === "/walkin-enquiries",
+          })}
+        >
+          Walk In Enquiries
+        </Link>
+      </div>
+
       <DataTable
         columns={columns(openModal, setId, user, updateMutation)}
         data={data.enquiries}

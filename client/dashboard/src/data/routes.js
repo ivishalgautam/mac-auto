@@ -158,7 +158,7 @@ export const sidebarData = [
   },
   {
     title: "Inventory",
-    url: "/dealer-inventory?page=1&limit=10",
+    url: "/dealer-inventory?page=1",
     icon: CarFront,
     roles: [ROLES.DEALER],
     isVisible: true,
@@ -176,14 +176,6 @@ export const sidebarData = [
     url: "/vehicle-enquiries?page=1&limit=10",
     icon: ScrollText,
     roles: [ROLES.ADMIN],
-    isVisible: true,
-    items: [],
-  },
-  {
-    title: "Vehicles",
-    url: "/vehicle-listing?page=1&limit=10",
-    icon: ScrollText,
-    roles: [ROLES.DEALER],
     isVisible: true,
     items: [],
   },
