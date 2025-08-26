@@ -53,9 +53,10 @@ export const columns = (openModal, setId, user, updateMutation) =>
       },
       cell: ({ row }) => {
         const status = row.getValue("status");
+        const purchaseType = row.getValue("purchase_type");
         const id = row.original.id;
 
-        return (
+        return purchaseType === "finance" ? (
           <Select
             value={status}
             onValueChange={(value) => {
@@ -81,6 +82,8 @@ export const columns = (openModal, setId, user, updateMutation) =>
               ))}
             </SelectContent>
           </Select>
+        ) : (
+          "N/a"
         );
       },
     },

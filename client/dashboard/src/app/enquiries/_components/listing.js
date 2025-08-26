@@ -34,7 +34,7 @@ export default function Listing() {
   const searchParams = useSearchParams();
   const searchParamStr = searchParams.toString();
   const router = useRouter();
-
+  console.log({ user });
   function openModal(type) {
     if (!type) return toast.warning("Please provide which modal should open!");
     if (type === "delete") {
@@ -53,6 +53,8 @@ export default function Listing() {
     queryKey: ["enquiries", searchParamStr],
     enabled: !!searchParamStr,
   });
+
+  console.log({ data });
 
   const deleteMutation = useMutation({
     mutationFn: () => deleteEnquiry(id),
@@ -80,11 +82,13 @@ export default function Listing() {
 
   return (
     <div className="border-input rounded-lg">
-      <div className="mb-2 text-end">
-        <Button type="button" size="sm" onClick={() => setIsCreateOpen(true)}>
-          <Plus /> Create
-        </Button>
-      </div>
+      {user?.role === "admin" && (
+        <div className="mb-2 text-end">
+          <Button type="button" size="sm" onClick={() => setIsCreateOpen(true)}>
+            <Plus /> Create
+          </Button>
+        </div>
+      )}
 
       <div className="mb-4 flex w-max gap-2 rounded-full border p-1 text-sm">
         <Link

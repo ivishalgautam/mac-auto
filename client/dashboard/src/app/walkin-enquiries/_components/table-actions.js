@@ -27,7 +27,7 @@ export default function TableActions() {
         setPage={setPage}
       />
       <DataTableFilterBox
-        title={"Status"}
+        title={"Finance Status"}
         filterKey={"status"}
         options={walkinEnquiriesStatus}
         setFilterValue={setStatus}
