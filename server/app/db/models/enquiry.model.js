@@ -37,6 +37,11 @@ const init = async (sequelize) => {
         },
         onDelete: "CASCADE",
       },
+      enquiry_code: {
+        type: DataTypes.STRING,
+        unique: true,
+        allowNull: false,
+      },
       quantity: {
         type: DataTypes.INTEGER,
         allowNull: false,
@@ -47,7 +52,11 @@ const init = async (sequelize) => {
       },
       message: {
         type: DataTypes.TEXT,
-        allowNull: false,
+        allowNull: true,
+      },
+      purchase_type: {
+        type: DataTypes.ENUM(["pending", "cash", "finance"]),
+        defaultValue: "pending",
       },
       name: {
         type: DataTypes.STRING,
@@ -55,7 +64,7 @@ const init = async (sequelize) => {
       },
       email: {
         type: DataTypes.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       phone: {
         type: DataTypes.STRING,
@@ -63,7 +72,7 @@ const init = async (sequelize) => {
       },
       location: {
         type: DataTypes.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       status: {
         type: DataTypes.ENUM([
@@ -81,6 +90,7 @@ const init = async (sequelize) => {
       indexes: [
         { fields: ["dealer_id"] },
         { fields: ["vehicle_id"] },
+        { fields: ["enquiry_code"] },
         { fields: ["quantity"] },
         { fields: ["message"] },
         { fields: ["name"] },
@@ -92,11 +102,25 @@ const init = async (sequelize) => {
     }
   );
 
-  await EnquiryModel.sync({ alter: true });
+  await EnquiryModel.sync({ force: true });
 };
 
 const create = async (req) => {
+  const latest = await EnquiryModel.findOne({
+    attributes: ["enquiry_code"],
+    order: [["created_at", "DESC"]],
+    raw: true,
+  });
+
+  let newEnqCode = "ENQ-0001";
+  if (latest?.enquiry_code) {
+    const number = parseInt(latest.enquiry_code.split("-")[1]);
+    const nextNumber = number + 1;
+    newEnqCode = `ENQ-${String(nextNumber).padStart(4, "0")}`;
+  }
+
   return await EnquiryModel.create({
+    enquiry_code: newEnqCode,
     dealer_id: req.body.dealer_id,
     vehicle_id: req.body.vehicle_id,
     quantity: req.body.quantity,

@@ -3,30 +3,53 @@ import { z } from "zod";
 import table from "../../db/models.js";
 import { sequelize } from "../../db/postgres.js";
 import { convertToCustomerSchema, inquiryAssignToDealer } from "./schema.js";
+import { isValidPhoneNumber } from "libphonenumber-js";
 
-const enquirySchema = z.object({
-  vehicle_id: z.string({ required_error: "Vehicle id is required." }).uuid(),
-  quantity: z
-    .number({
-      required_error: "Quantity is required.",
-      invalid_type_error: "Quantity must be a number.",
-    })
-    .positive("Quantity must be positive."),
-  name: z
-    .string({ required_error: "Name is required." })
-    .min(1, { message: "Name is required." }),
-  email: z
-    .string({ required_error: "Email is required." })
-    .email()
-    .min(1, { message: "Email is required." }),
-  phone: z
-    .string({ required_error: "Phone number is required." })
-    .min(10, { message: "Invalid phone number." }),
-  message: z
-    .string()
-    .max(500, "Details must not exceed 500 characters.")
-    .optional(),
-});
+const enquirySchema = z
+  .object({
+    vehicle_id: z.string().min(1, "Vehicle ID is required").trim(),
+
+    quantity: z
+      .number()
+      .min(0, "Quantity must be at least 1")
+      .max(100, "Quantity cannot exceed 100")
+      .int("Quantity must be a whole number")
+      .optional(),
+
+    message: z
+      .string()
+      .max(1000, "Message cannot exceed 1000 characters")
+      .optional()
+      .or(z.literal("")),
+
+    name: z
+      .string()
+      .min(1, "Name is required")
+      .min(2, "Name must be at least 2 characters")
+      .max(50, "Name cannot exceed 50 characters")
+      .regex(/^[a-zA-Z\s]+$/, "Name can only contain letters and spaces")
+      .trim(),
+
+    email: z.preprocess((val) => {
+      if (val === null || val === undefined || val === "") return null;
+      if (typeof val === "string") return val.trim().toLowerCase();
+      return val;
+    }, z.string().email("Please enter a valid email address").nullable().optional()),
+
+    phone: z
+      .string({ required_error: "Mobile number is required." })
+      .min(1, { message: "Mobile number is required." }),
+
+    location: z
+      .string()
+      .max(100, "Location cannot exceed 100 characters")
+      .trim()
+      .optional(),
+  })
+  .refine((data) => isValidPhoneNumber(data.phone), {
+    path: ["phone"],
+    message: "Invalid phone number",
+  });
 
 const create = async (req, res) => {
   try {
