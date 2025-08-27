@@ -20,7 +20,7 @@ import Link from "next/link";
 export const columns = (setUserId, openModal) => [
   {
     accessorKey: "name",
-    header: "NAME",
+    header: "Name",
     cell: ({ row }) => {
       const name = row.getValue("name");
       return <div className="capitalize">{name}</div>;
@@ -29,7 +29,7 @@ export const columns = (setUserId, openModal) => [
   {
     accessorKey: "created_at",
     header: ({ column }) => {
-      return <Button variant="ghost">REGISTERED ON</Button>;
+      return <Button variant="ghost">Registered on</Button>;
     },
     cell: ({ row }) => {
       return (

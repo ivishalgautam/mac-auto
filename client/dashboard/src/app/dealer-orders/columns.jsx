@@ -34,7 +34,7 @@ export const columns = (
   [
     {
       accessorKey: "vehicle_title",
-      header: "TITLE",
+      header: "Model name",
       cell: ({ row }) => {
         const title = row.getValue("vehicle_title");
         return <div className="capitalize">{title}</div>;
@@ -50,7 +50,7 @@ export const columns = (
     },
     {
       accessorKey: "color",
-      header: "COLOR",
+      header: "Color",
       cell: ({ row }) => {
         const color = row.getValue("color");
         return (
@@ -65,7 +65,7 @@ export const columns = (
     },
     {
       accessorKey: "chassis_nos",
-      header: "CHASSIS",
+      header: "Chassis",
       cell: ({ row }) => {
         const nos = row.getValue("chassis_nos");
         return (

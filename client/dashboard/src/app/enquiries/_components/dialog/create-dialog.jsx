@@ -13,7 +13,7 @@ export function CreateDialog({ isOpen, setIsOpen }) {
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Assign dealer?</DialogTitle>
+          <DialogTitle>Create Enquiry</DialogTitle>
           <DialogDescription className={"sr-only"}>
             Create Inquiry
           </DialogDescription>

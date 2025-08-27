@@ -7,13 +7,11 @@ export const vehicleInquirySchema = z
     vehicle_id: z.string().min(1, "Vehicle ID is required").trim(),
 
     quantity: z
-      .number({
-        required_error: "Quantity is required",
-        invalid_type_error: "Quantity must be a number",
-      })
-      .min(1, "Quantity must be at least 1")
+      .number()
+      .min(0, "Quantity must be at least 1")
       .max(100, "Quantity cannot exceed 100")
-      .int("Quantity must be a whole number"),
+      .int("Quantity must be a whole number")
+      .optional(),
 
     message: z
       .string()
@@ -29,13 +27,11 @@ export const vehicleInquirySchema = z
       .regex(/^[a-zA-Z\s]+$/, "Name can only contain letters and spaces")
       .trim(),
 
-    email: z
-      .string()
-      .min(1, "Email is required")
-      .email("Please enter a valid email address")
-      .max(100, "Email cannot exceed 100 characters")
-      .trim()
-      .toLowerCase(),
+    email: z.preprocess((val) => {
+      if (val === null || val === undefined || val === "") return null;
+      if (typeof val === "string") return val.trim().toLowerCase();
+      return val;
+    }, z.string().email("Please enter a valid email address").nullable().optional()),
 
     phone: z
       .string({ required_error: "Mobile number is required." })
@@ -43,10 +39,9 @@ export const vehicleInquirySchema = z
 
     location: z
       .string()
-      .min(1, "Location is required")
-      .min(2, "Location must be at least 2 characters")
       .max(100, "Location cannot exceed 100 characters")
-      .trim(),
+      .trim()
+      .optional(),
   })
   .refine((data) => isValidPhoneNumber(data.phone), {
     path: ["phone"],

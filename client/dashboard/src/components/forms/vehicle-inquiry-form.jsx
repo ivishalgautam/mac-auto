@@ -29,7 +29,7 @@ export default function VehicleInquiryForm({ onSuccess }) {
     defaultValues: {
       battery_type: "",
       vehicle_id: "",
-      quantity: 1,
+      quantity: 0,
       message: "",
       name: "",
       email: "",
@@ -93,7 +93,7 @@ export default function VehicleInquiryForm({ onSuccess }) {
 
         {/* Email */}
         <div className="space-y-2">
-          <Label htmlFor="email">Email *</Label>
+          <Label htmlFor="email">Email</Label>
           <Input
             id="email"
             type="email"
@@ -135,11 +135,10 @@ export default function VehicleInquiryForm({ onSuccess }) {
 
         {/* Quantity */}
         <div className="space-y-2">
-          <Label htmlFor="quantity">Quantity *</Label>
+          <Label htmlFor="quantity">Quantity </Label>
           <Input
             id="quantity"
             type="number"
-            min="1"
             placeholder="Enter quantity"
             {...register("quantity", { valueAsNumber: true })}
             className={cn({ "border-red-500": errors.quantity })}

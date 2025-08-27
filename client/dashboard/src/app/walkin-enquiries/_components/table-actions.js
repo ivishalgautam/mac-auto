@@ -34,7 +34,7 @@ export default function TableActions() {
         filterValue={status}
       />
       <DataTableFilterBox
-        title={"Mode"}
+        title={"Purchase type"}
         filterKey={"mode"}
         options={purchaseTypes}
         setFilterValue={setMode}

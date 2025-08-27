@@ -34,7 +34,6 @@ export default function Listing() {
   const searchParams = useSearchParams();
   const searchParamStr = searchParams.toString();
   const router = useRouter();
-  console.log({ user });
   function openModal(type) {
     if (!type) return toast.warning("Please provide which modal should open!");
     if (type === "delete") {
@@ -53,8 +52,6 @@ export default function Listing() {
     queryKey: ["enquiries", searchParamStr],
     enabled: !!searchParamStr,
   });
-
-  console.log({ data });
 
   const deleteMutation = useMutation({
     mutationFn: () => deleteEnquiry(id),
@@ -92,20 +89,21 @@ export default function Listing() {
 
       <div className="mb-4 flex w-max gap-2 rounded-full border p-1 text-sm">
         <Link
-          href={"/enquiries?page=1&limit=10"}
-          className={cn("rounded-full p-4 py-1", {
-            "bg-primary": pathname === "/enquiries",
-          })}
-        >
-          Mac Auto Enquiries
-        </Link>
-        <Link
           href={"/walkin-enquiries?page=1&limit=10"}
           className={cn("rounded-full p-4 py-1", {
             "bg-primary": pathname === "/walkin-enquiries",
           })}
         >
           Walk In Enquiries
+        </Link>
+
+        <Link
+          href={"/enquiries?page=1&limit=10"}
+          className={cn("rounded-full p-4 py-1", {
+            "bg-primary": pathname === "/enquiries",
+          })}
+        >
+          Mac Auto Enquiries
         </Link>
       </div>
 

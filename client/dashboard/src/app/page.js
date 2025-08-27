@@ -1,18 +1,13 @@
-"use client";
-
-import dynamic from "next/dynamic";
 import LoginForm from "@/components/forms/login";
-const AuthLayout = dynamic(() => import("@/components/layout/auth-layout"), {
-  ssr: false,
-});
+import AuthLayoutWrapper from "@/components/layout/auth-layout-wrapper";
 
 export default function Home() {
   return (
     <div className="bg-muted flex min-h-svh flex-col items-center justify-center">
       <div className="w-full">
-        <AuthLayout>
+        <AuthLayoutWrapper>
           <LoginForm />
-        </AuthLayout>
+        </AuthLayoutWrapper>
       </div>
     </div>
   );

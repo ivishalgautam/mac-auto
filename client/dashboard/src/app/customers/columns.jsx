@@ -19,7 +19,7 @@ import { ExternalLink } from "lucide-react";
 export const columns = (setUserId, openModal) => [
   {
     accessorKey: "fullname",
-    header: "FULLNAME",
+    header: "Fullname",
     cell: ({ row }) => {
       const fullname = row.getValue("fullname");
       const role = row.original.role;
@@ -34,11 +34,11 @@ export const columns = (setUserId, openModal) => [
   },
   {
     accessorKey: "mobile_number",
-    header: "PHONE",
+    header: "Phone",
   },
   {
     accessorKey: "email",
-    header: "EMAIL",
+    header: "Email",
   },
   {
     accessorKey: "total_purchases",
@@ -58,7 +58,7 @@ export const columns = (setUserId, openModal) => [
   {
     accessorKey: "created_at",
     header: ({ column }) => {
-      return <Button variant="ghost">REGISTERED ON</Button>;
+      return <Button variant="ghost">Registered on</Button>;
     },
     cell: ({ row }) => {
       return (

@@ -23,11 +23,11 @@ export const columns = (
 ) => [
   {
     accessorKey: "title",
-    header: "VEHICLE",
+    header: "Model name",
   },
   {
     accessorKey: "color_hex",
-    header: "COLOR",
+    header: "Color",
     cell: ({ row }) => {
       const color = row.getValue("color_hex");
       return (
@@ -42,7 +42,7 @@ export const columns = (
   },
   {
     accessorKey: "quantity",
-    header: "QUANTITY",
+    header: "Quantity",
   },
   {
     accessorKey: "dealership_name",
@@ -50,12 +50,12 @@ export const columns = (
   },
   {
     accessorKey: "message",
-    header: "MESSAGE",
+    header: "Message",
   },
   {
     accessorKey: "created_at",
     header: ({ column }) => {
-      return <Button variant="ghost">DATE</Button>;
+      return <Button variant="ghost">Date</Button>;
     },
     cell: ({ row }) => {
       return (

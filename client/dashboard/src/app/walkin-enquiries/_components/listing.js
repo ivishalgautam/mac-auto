@@ -81,22 +81,14 @@ export default function Listing() {
 
   return (
     <div className="border-input space-y-2 rounded-lg">
-      <div className="text-end">
+      {/* <div className="text-end">
         <Button type="button" onClick={downloadCSV} variant="outline">
           <Download size={15} className="mr-1" />
           Export CSV
         </Button>
-      </div>
+      </div> */}
 
       <div className="mb-4 flex w-max gap-2 rounded-full border p-1 text-sm">
-        <Link
-          href={"/enquiries?page=1&limit=10"}
-          className={cn("rounded-full p-4 py-1", {
-            "bg-primary": pathname === "/enquiries",
-          })}
-        >
-          Mac Auto Enquiries
-        </Link>
         <Link
           href={"/walkin-enquiries?page=1&limit=10"}
           className={cn("rounded-full p-4 py-1", {
@@ -104,6 +96,14 @@ export default function Listing() {
           })}
         >
           Walk In Enquiries
+        </Link>
+        <Link
+          href={"/enquiries?page=1&limit=10"}
+          className={cn("rounded-full p-4 py-1", {
+            "bg-primary": pathname === "/enquiries",
+          })}
+        >
+          Mac Auto Enquiries
         </Link>
       </div>
 

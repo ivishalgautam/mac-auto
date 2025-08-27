@@ -31,9 +31,17 @@ export function VehicleCard({ vehicle, onOrderVehicle, onAssignToCustomer }) {
       "/landscape-placeholder.svg",
   );
 
-  const totalActiveQuantity = Number.parseInt(vehicle.active_quantity) || 0;
-  const isLowStock = totalActiveQuantity < 5;
+  const totalActiveQuantity = Number(vehicle.active_quantity) ?? 0;
 
+  const isNoStock = totalActiveQuantity === 0;
+  const isLowStock = totalActiveQuantity > 0 && totalActiveQuantity < 3;
+
+  console.log({
+    name: vehicle.title,
+    isLowStock,
+    isNoStock,
+    totalActiveQuantity,
+  });
   return (
     <Card className="bg-card border-border overflow-hidden transition-shadow duration-300 hover:shadow-lg">
       <CardContent className="p-4">
@@ -48,29 +56,47 @@ export function VehicleCard({ vehicle, onOrderVehicle, onAssignToCustomer }) {
               onError={() => setImage("/landscape-placeholder.svg")}
               className="aspect-video h-full w-full object-contain object-center"
             />
-            {isLowStock && (
+
+            {isNoStock ? (
               <Badge
                 variant="destructive"
                 className="absolute top-3 left-3 flex items-center gap-1"
               >
                 <AlertTriangle className="h-3 w-3" />
+                No Stock
+              </Badge>
+            ) : isLowStock ? (
+              <Badge className="absolute top-3 left-3 flex items-center gap-1 bg-yellow-500 text-white hover:bg-yellow-500/90">
+                <AlertTriangle className="h-3 w-3" />
                 Low Stock
               </Badge>
-            )}
+            ) : null}
           </div>
 
           {/* Right side - Content */}
           <div className="flex flex-col justify-between px-2 md:col-span-2">
             <div className="space-y-4">
               {/* Vehicle Name and Price */}
-              <div>
-                <h3 className="text-card-foreground mb-2 text-xl font-semibold">
-                  {vehicle.title}
-                </h3>
-                <div className="space-y-1">
-                  <p className="text-primary text-2xl font-bold">
-                    {rupee.format(vehicle.dealer_price)}
-                  </p>
+              <div className="flex justify-between">
+                <div className="flex flex-col text-lg">
+                  <span className="font-medium">Active Units:</span>
+                  <Link
+                    href={`/dealer-inventory/${vehicle.id}/inventory?page=1&limit=10&status=active`}
+                  >
+                    <span className="text-accent hover:text-primary font-bold">
+                      {vehicle.active_quantity} available
+                    </span>
+                  </Link>
+                </div>
+                <div>
+                  <h3 className="text-card-foreground mb-2 text-xl font-semibold">
+                    {vehicle.title}
+                  </h3>
+                  <div className="space-y-1">
+                    <p className="text-primary text-2xl font-bold">
+                      {rupee.format(vehicle.dealer_price)}
+                    </p>
+                  </div>
                 </div>
               </div>
 
@@ -92,43 +118,59 @@ export function VehicleCard({ vehicle, onOrderVehicle, onAssignToCustomer }) {
 
               {/* Stock Information */}
               <div className="space-y-2">
-                <Label className="text-muted-foreground text-sm font-medium">
+                <Label className="text-muted-foreground text-base font-semibold">
                   Stock Information
                 </Label>
-                <div className="grid grid-cols-2 gap-2 text-xs">
+                <div className="grid grid-cols-2 gap-2 text-sm font-medium">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Active:</span>
-                    <span className="font-medium text-green-600">
-                      {vehicle.active_quantity}
-                    </span>
+                    <Link
+                      href={`/dealer-inventory/${vehicle.id}/inventory?page=1&limit=10&status=active`}
+                    >
+                      <span className="font-medium text-green-600">
+                        {vehicle.active_quantity}
+                      </span>
+                    </Link>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Inactive:</span>
-                    <span className="font-medium text-orange-600">
-                      {vehicle.inactive_quantity}
-                    </span>
+                    <Link
+                      href={`/dealer-inventory/${vehicle.id}/inventory?page=1&limit=10&status=inactive`}
+                    >
+                      <span className="font-medium text-orange-600">
+                        {vehicle.inactive_quantity}
+                      </span>
+                    </Link>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Sold:</span>
-                    <span className="font-medium text-blue-600">
-                      {vehicle.sold_quantity}
-                    </span>
+                    <Link
+                      href={`/dealer-inventory/${vehicle.id}/inventory?page=1&limit=10&status=sold`}
+                    >
+                      <span className="font-medium text-blue-600">
+                        {vehicle.sold_quantity}
+                      </span>
+                    </Link>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Scrapped:</span>
-                    <span className="font-medium text-red-600">
-                      {vehicle.scrapped_quantity}
-                    </span>
+                    <Link
+                      href={`/dealer-inventory/${vehicle.id}/inventory?page=1&limit=10&status=scrapped`}
+                    >
+                      <span className="font-medium text-red-600">
+                        {vehicle.scrapped_quantity}
+                      </span>
+                    </Link>
                   </div>
                 </div>
-                <div className="border-border border-t pt-1">
+                {/* <div className="border-border border-t pt-1">
                   <div className="flex justify-between text-sm">
                     <span className="font-medium">Active Units:</span>
                     <span className="font-bold">
                       {vehicle.active_quantity} available
                     </span>
                   </div>
-                </div>
+                </div> */}
               </div>
             </div>
           </div>

@@ -12,10 +12,8 @@ export default function AuthLayout({
   imageAlt = "Authentication illustration",
   title = "Welcome back",
   subtitle = "Enter your credentials to access your account",
+  role,
 }) {
-  const searchParams = useSearchParams();
-  const role = searchParams.get("r");
-
   return (
     <div
       className={cn(

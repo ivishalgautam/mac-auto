@@ -26,7 +26,7 @@ export const columns = (updateMutation, setId, openModal) => [
   },
   {
     accessorKey: "category",
-    header: "CATEGORY",
+    header: "Category",
     cell: ({ row }) => {
       const category = row.getValue("category");
       return <Badge className={"capitalize"}>{category}</Badge>;
@@ -34,7 +34,7 @@ export const columns = (updateMutation, setId, openModal) => [
   },
   {
     accessorKey: "color",
-    header: "COLOR",
+    header: "Color",
     cell: ({ row }) => {
       const variantColors = row.original.colors ?? [];
       const id = row.original.id;

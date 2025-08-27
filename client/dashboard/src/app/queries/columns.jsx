@@ -13,32 +13,32 @@ import moment from "moment";
 export const columns = (openModal, setId) => [
   {
     accessorKey: "name",
-    header: "NAME",
+    header: "Name",
   },
   {
     accessorKey: "email",
-    header: "EMAIL",
+    header: "Email",
   },
   {
     accessorKey: "phone",
-    header: "PHONE",
+    header: "Phone",
   },
   {
     accessorKey: "subject",
-    header: "SUBJECT",
+    header: "Subject",
   },
   {
     accessorKey: "source",
-    header: "SOURCE",
+    header: "Source",
   },
   {
     accessorKey: "message",
-    header: "MESSAGE",
+    header: "Message",
   },
   {
     accessorKey: "created_at",
     header: ({ column }) => {
-      return <Button variant="ghost">DATE</Button>;
+      return <Button variant="ghost">Date</Button>;
     },
     cell: ({ row }) => {
       return (

@@ -10,10 +10,11 @@ export const AuthContext = createContext(null);
 export async function handleLogout() {
   try {
     const resp = await axios.post("/api/logout");
-    const user = JSON.parse(localStorage.getItem("user"));
+    // const user = JSON.parse(localStorage.getItem("user"));
 
     if (resp.statusText === "OK") {
-      window.location.href = `/?r=${user.role}`;
+      window.location.href = `/`;
+      // window.location.href = `/?r=${user.role}`;
     }
   } catch (error) {
     console.log(error?.response?.data?.message ?? error?.message ?? "Error");

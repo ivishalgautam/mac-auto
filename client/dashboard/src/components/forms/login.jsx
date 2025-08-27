@@ -4,21 +4,15 @@ import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
 import { AtSign, KeyRound, Loader2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Controller, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../ui/select";
 import { cn } from "@/lib/utils";
+import { useRole } from "@/lib/role-context";
 
 // Form validation schema
 const loginSchema = z.object({
@@ -37,10 +31,10 @@ const loginUser = async (data) => {
   });
 };
 
-export default function LoginForm() {
+export default function LoginForm({}) {
+  const role = useRole();
+  console.log(role);
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const role = searchParams.get("r");
 
   const {
     register,
@@ -52,7 +46,7 @@ export default function LoginForm() {
     defaultValues: {
       username: "",
       password: "",
-      role: role ?? "",
+      role: role ?? "admin",
     },
   });
 
@@ -78,7 +72,7 @@ export default function LoginForm() {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       {/* role */}
-      <div className="space-y-2">
+      {/* <div className="space-y-2">
         <Controller
           name="role"
           control={control}
@@ -102,7 +96,7 @@ export default function LoginForm() {
         {errors.role && (
           <p className="text-destructive text-sm">{errors.role.message}</p>
         )}
-      </div>
+      </div> */}
 
       <div className="space-y-2">
         <Label htmlFor="username">Username</Label>
@@ -149,11 +143,7 @@ export default function LoginForm() {
         )}
       </div>
 
-      <Button
-        type="submit"
-        className="w-full"
-        disabled={loginMutation.isPending}
-      >
+      <Button className="w-full" disabled={loginMutation.isPending}>
         {loginMutation.isPending && (
           <Loader2 className="h-4 w-4 animate-spin" />
         )}

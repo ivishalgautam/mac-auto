@@ -31,25 +31,36 @@ export const columns = (openModal, setId, user, updateMutation) =>
       },
     },
     {
-      accessorKey: "vehicle_name",
-      header: "VEHICLE NAME",
+      accessorKey: "created_at",
+      header: ({ column }) => {
+        return <Button variant="ghost">Date</Button>;
+      },
+      cell: ({ row }) => {
+        return (
+          <div>{moment(row.getValue("created_at")).format("DD/MM/YYYY")}</div>
+        );
+      },
     },
     {
       accessorKey: "name",
-      header: "NAME",
+      header: "Customer name",
     },
     {
       accessorKey: "phone",
-      header: "PHONE",
+      header: "Phone",
     },
     {
       accessorKey: "location",
-      header: "LOCATION",
+      header: "Location",
+    },
+    {
+      accessorKey: "vehicle_name",
+      header: "Model name",
     },
     {
       accessorKey: "status",
       header: ({ column }) => {
-        return <Button variant="ghost">Status</Button>;
+        return <Button variant="ghost">Finance status</Button>;
       },
       cell: ({ row }) => {
         const status = row.getValue("status");
@@ -95,17 +106,6 @@ export const columns = (openModal, setId, user, updateMutation) =>
           <Badge className={"capitalize"} variant={"outline"}>
             {row.getValue("purchase_type")}
           </Badge>
-        );
-      },
-    },
-    {
-      accessorKey: "created_at",
-      header: ({ column }) => {
-        return <Button variant="ghost">DATE</Button>;
-      },
-      cell: ({ row }) => {
-        return (
-          <div>{moment(row.getValue("created_at")).format("DD/MM/YYYY")}</div>
         );
       },
     },
