@@ -82,10 +82,11 @@ const constants = {
   allowedOrigins: [
     "http://localhost:3000",
     "http://localhost:4000",
-    "https://dashboard.brandingwaale.com",
     "https://macautoindia.com",
     "https://www.macautoindia.com",
     "https://dashboard.macautoindia.com",
+    "https://dms.macautoindia.com",
+    "https://customer.macautoindia.com",
   ],
 };
 
