@@ -222,7 +222,7 @@ const get = async (req) => {
         COUNT(DISTINCT CASE WHEN dlrinvn.status = 'scrapped' THEN dlrinvn.id END) AS scrapped_quantity
     FROM ${constants.models.VEHICLE_TABLE} vh
     LEFT JOIN ${constants.models.DEALER_INVENTORY_TABLE} dlrinvn ON vh.id = dlrinvn.vehicle_id
-    LEFT JOIN ${constants.models.VEHICLE_COLOR_TABLE} vhclr ON dlrinvn.vehicle_color_id = vhclr.id
+    LEFT JOIN ${constants.models.VEHICLE_COLOR_TABLE} vhclr ON vhclr.vehicle_id = vh.id
     LEFT JOIN ${constants.models.DEALER_TABLE} dlr ON dlr.id = dlrinvn.dealer_id ${dealerJoin}
     ${whereClause}
     GROUP BY vh.id

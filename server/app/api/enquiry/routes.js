@@ -2,6 +2,7 @@
 import controller from "./controller.js";
 
 export default async function routes(fastify, options) {
+  fastify.post("/my-enquiry", {}, controller.create);
   fastify.get("/:id", {}, controller.getById);
   fastify.delete("/:id", {}, controller.deleteById);
   fastify.get("/", {}, controller.get);

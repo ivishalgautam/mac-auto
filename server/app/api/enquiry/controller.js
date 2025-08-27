@@ -54,6 +54,18 @@ const enquirySchema = z
 const create = async (req, res) => {
   try {
     const validateData = enquirySchema.parse(req.body);
+
+    const { role, id } = req.user_data;
+    if (role === "dealer") {
+      const dealerRecord = await table.DealerModel.getByUserId(id);
+      if (!dealerRecord)
+        return res
+          .code(404)
+          .send({ status: false, message: "Dealer not found." });
+
+      req.body.dealer_id = dealerRecord.iid;
+    }
+
     res.send({ status: true, data: await table.EnquiryModel.create(req) });
   } catch (error) {
     throw error;
