@@ -2,7 +2,10 @@ import { endpoints } from "@/utils/endpoints";
 import http from "@/utils/http";
 
 export async function createEnquiry(data) {
-  const resp = await http().post(endpoints.enquiries.getAll, data);
+  const resp = await http().post(
+    `${endpoints.enquiries.getAll}/my-enquiry`,
+    data,
+  );
   return resp.data;
 }
 

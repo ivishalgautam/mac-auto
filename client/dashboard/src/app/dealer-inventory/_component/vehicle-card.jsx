@@ -24,6 +24,7 @@ import config from "@/config";
 import { rupee } from "@/lib/Intl";
 import Image from "next/image";
 import Link from "next/link";
+import { Muted } from "@/components/ui/typography";
 
 export function VehicleCard({ vehicle, onOrderVehicle, onAssignToCustomer }) {
   const [image, setImage] = useState(
@@ -36,12 +37,6 @@ export function VehicleCard({ vehicle, onOrderVehicle, onAssignToCustomer }) {
   const isNoStock = totalActiveQuantity === 0;
   const isLowStock = totalActiveQuantity > 0 && totalActiveQuantity < 3;
 
-  console.log({
-    name: vehicle.title,
-    isLowStock,
-    isNoStock,
-    totalActiveQuantity,
-  });
   return (
     <Card className="bg-card border-border overflow-hidden transition-shadow duration-300 hover:shadow-lg">
       <CardContent className="p-4">
@@ -106,13 +101,17 @@ export function VehicleCard({ vehicle, onOrderVehicle, onAssignToCustomer }) {
                   Available Colors
                 </Label>
                 <div className="flex flex-wrap gap-2">
-                  {vehicle.colors.map((color, ind) => (
-                    <div
-                      key={ind}
-                      className="border-border size-8 rounded-full border"
-                      style={{ backgroundColor: color.color_hex }}
-                    />
-                  ))}
+                  {vehicle.colors.length === 0 ? (
+                    <Muted>Not available</Muted>
+                  ) : (
+                    vehicle.colors.map((color, ind) => (
+                      <div
+                        key={ind}
+                        className="border-border size-8 rounded-full border"
+                        style={{ backgroundColor: color.color_hex }}
+                      />
+                    ))
+                  )}
                 </div>
               </div>
 

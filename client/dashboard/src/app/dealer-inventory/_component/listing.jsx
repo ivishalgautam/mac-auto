@@ -1,11 +1,8 @@
 "use client";
 
 import ErrorMessage from "@/components/ui/error";
-import { DataTable } from "@/components/ui/table/data-table";
-import { DataTableSkeleton } from "@/components/ui/table/data-table-skeleton";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { columns } from "../columns";
 import {
   useGetDealerInventory,
   useUpdateDealerInventoryItem,
@@ -83,7 +80,7 @@ export default function Listing() {
 
               return Object.entries(groupedData)?.map(([key, value]) => {
                 return (
-                  <div className="space-y-4">
+                  <div className="space-y-4" key={key}>
                     <H2 className={"border-none"}>{key}</H2>
                     <div className="grid grid-cols-2 gap-4">
                       {value.map((inv) => {

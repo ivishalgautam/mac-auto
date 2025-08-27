@@ -1,6 +1,6 @@
 "use client";
 import { createContext, useState, useContext, useEffect } from "react";
-import { redirect, usePathname } from "next/navigation";
+import { usePathname } from "next/navigation";
 import axios from "axios";
 import http from "@/utils/http";
 import { endpoints } from "@/utils/endpoints";

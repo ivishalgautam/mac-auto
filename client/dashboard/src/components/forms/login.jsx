@@ -3,8 +3,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
 import { AtSign, KeyRound, Loader2 } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { useRouter } from "next/navigation";
+import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,13 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useRole } from "@/lib/role-context";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
 
 // Form validation schema
 const loginSchema = z.object({
@@ -72,31 +79,33 @@ export default function LoginForm({}) {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       {/* role */}
-      {/* <div className="space-y-2">
-        <Controller
-          name="role"
-          control={control}
-          render={({ field }) => (
-            <Select onValueChange={field.onChange} defaultValue={field.value}>
-              <SelectTrigger
-                className={cn("w-full border-gray-700", {
-                  "border-red-500": errors.role,
-                })}
-              >
-                <SelectValue placeholder="Role" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="admin">Admin</SelectItem>
-                <SelectItem value="dealer">Dealer</SelectItem>
-                <SelectItem value="customer">Customer</SelectItem>
-              </SelectContent>
-            </Select>
+      {process.env.NODE_ENV === "development" && (
+        <div className="space-y-2">
+          <Controller
+            name="role"
+            control={control}
+            render={({ field }) => (
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <SelectTrigger
+                  className={cn("w-full border-gray-700", {
+                    "border-red-500": errors.role,
+                  })}
+                >
+                  <SelectValue placeholder="Role" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="admin">Admin</SelectItem>
+                  <SelectItem value="dealer">Dealer</SelectItem>
+                  <SelectItem value="customer">Customer</SelectItem>
+                </SelectContent>
+              </Select>
+            )}
+          />
+          {errors.role && (
+            <p className="text-destructive text-sm">{errors.role.message}</p>
           )}
-        />
-        {errors.role && (
-          <p className="text-destructive text-sm">{errors.role.message}</p>
-        )}
-      </div> */}
+        </div>
+      )}
 
       <div className="space-y-2">
         <Label htmlFor="username">Username</Label>
