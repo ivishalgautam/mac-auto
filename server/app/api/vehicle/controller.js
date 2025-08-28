@@ -212,6 +212,16 @@ const getById = async (req, res) => {
   }
 };
 
+const getMarketingMaterials = async (req, res) => {
+  try {
+    const data = await table.VehicleModel.getMarketingMaterials(req);
+
+    res.code(status.OK).send({ status: false, data: data });
+  } catch (error) {
+    throw error;
+  }
+};
+
 const getColors = async (req, res) => {
   try {
     const record = await table.VehicleModel.getById(req);
@@ -321,4 +331,5 @@ export default {
   get: get,
   getBySlug: getBySlug,
   updatePrice: updatePrice,
+  getMarketingMaterials: getMarketingMaterials,
 };

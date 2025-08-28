@@ -236,6 +236,42 @@ const getById = async (req, id) => {
   });
 };
 
+const getMarketingMaterials = async (req, id) => {
+  const whereConditions = [];
+  const queryParams = {};
+
+  const category = req.query?.category ?? null;
+  const model = req.query?.model ?? null;
+
+  if (category) {
+    whereConditions.push("vh.category = :category");
+    queryParams.category = category;
+  }
+
+  if (model) {
+    whereConditions.push("vh.id = :model");
+    queryParams.model = model;
+  }
+
+  let whereClause = "";
+
+  if (whereConditions.length)
+    whereClause = `WHERE ${whereConditions.join(" AND ")}`;
+
+  let query = `
+  SELECT
+      vh.id, vh.brochure, vh.category, vh.marketing_material
+    FROM ${constants.models.VEHICLE_TABLE} vh
+    ${whereClause}
+  `;
+
+  return await VehicleModel.sequelize.query(query, {
+    type: QueryTypes.SELECT,
+    replacements: queryParams,
+    raw: true,
+  });
+};
+
 const getBySlug = async (req, slug) => {
   let query = `
   SELECT
@@ -382,4 +418,5 @@ export default {
   getBySlug: getBySlug,
   deleteByMobileNumber: deleteByMobileNumber,
   deleteById: deleteById,
+  getMarketingMaterials: getMarketingMaterials,
 };
