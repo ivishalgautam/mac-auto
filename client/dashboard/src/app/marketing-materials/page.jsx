@@ -15,7 +15,7 @@ export default async function MarketingMaterialsPage({ searchParams }) {
         />
       </div>
       <OrderBrochureDialog />
-      <MarketingMaterials category={category} vehicleId={vid} />
+      <MarketingMaterials />
     </PageContainer>
   );
 }

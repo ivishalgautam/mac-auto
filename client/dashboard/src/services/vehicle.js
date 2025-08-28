@@ -25,6 +25,13 @@ const getById = async (id) => {
   return data;
 };
 
+const getByMarketingData = async (searchParams = "") => {
+  const { data } = await http().get(
+    `${endpoints.vehicles.getAll}/marketing-materials?${searchParams}`,
+  );
+  return data;
+};
+
 const get = async (searchParams = "") => {
   const { data } = await http().get(
     `${endpoints.vehicles.getAll}?${searchParams}`,
@@ -66,6 +73,7 @@ const vehicle = {
   create: create,
   update: update,
   updatePrice: updatePrice,
+  getByMarketingData: getByMarketingData,
   deleteById: deleteById,
   getById: getById,
   get: get,

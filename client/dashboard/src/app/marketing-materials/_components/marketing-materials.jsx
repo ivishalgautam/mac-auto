@@ -11,20 +11,42 @@ import {
 } from "@/components/ui/card";
 import ErrorMessage from "@/components/ui/error";
 import { Label } from "@/components/ui/label";
+import { H2 } from "@/components/ui/typography";
 import config from "@/config";
 import VehicleCategorySelect from "@/features/vehicle-category-select";
 import VehicleSelect from "@/features/vehicle-select";
-import { useGetVehicle } from "@/mutations/vehicle-mutation";
-import { Download, Eye, FileText } from "lucide-react";
+import { useGetVehicleMarketingData } from "@/mutations/vehicle-mutation";
+import { Download, Eye, FileText, ImageIcon, Video } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import { useQueryState } from "nuqs";
+import { useCallback, useMemo } from "react";
 import { Controller, useForm } from "react-hook-form";
 
-export default function MarketingMaterials({ category, vehicleId }) {
+export default function MarketingMaterials({ vehicleId }) {
+  const [category, setCategory] = useQueryState("category");
+  const [model, setModel] = useQueryState("model");
+
   const { control, watch, setValue } = useForm({
-    defaultValues: { category: category ?? "", vehicle_id: vehicleId ?? "" },
+    defaultValues: { category: category, vehicle_id: model ?? "" },
   });
+
+  const searchParams = useSearchParams();
+  const searchParamsStr = searchParams.toString();
+
   const selectedCategory = watch("category") ?? null;
   const selectedVehicleId = watch("vehicle_id");
-  const { data, isLoading, isError, error } = useGetVehicle(selectedVehicleId);
+
+  const isAnyFilterActive = useMemo(() => {
+    return !!category || !!model;
+  }, [category, model]);
+
+  const resetFilters = useCallback(() => {
+    setCategory(null);
+    setModel(null);
+  }, [setCategory, setModel]);
+
+  const { data, isLoading, isError, error } =
+    useGetVehicleMarketingData(searchParamsStr);
 
   return (
     <div className="space-y-8">
@@ -39,6 +61,7 @@ export default function MarketingMaterials({ category, vehicleId }) {
                 onChange={(value) => {
                   field.onChange(value);
                   setValue("vehicle_id", "");
+                  setCategory(value);
                 }}
                 value={field.value}
               />
@@ -52,75 +75,46 @@ export default function MarketingMaterials({ category, vehicleId }) {
             control={control}
             render={({ field }) => (
               <VehicleSelect
-                onChange={field.onChange}
+                onChange={(value) => {
+                  field.onChange(value);
+                  setModel(value);
+                }}
                 value={field.value}
-                searchParams={`category=${selectedCategory}`}
+                searchParams={searchParamsStr}
               />
             )}
           />
         </div>
+        {isAnyFilterActive ? (
+          <Button
+            variant="destructive"
+            onClick={resetFilters}
+            className={"mt-auto w-max"}
+          >
+            Reset Filters
+          </Button>
+        ) : null}
       </div>
 
-      {selectedCategory && selectedVehicleId && (
-        <div>
-          {isLoading ? (
-            <Loader />
-          ) : isError ? (
-            <ErrorMessage error={error} />
-          ) : (
-            <MarketingMaterialData
-              brochure={data.brochure}
-              marketingMaterialData={data.marketing_material}
-            />
-          )}
-        </div>
-      )}
+      <div>
+        {isLoading ? (
+          <Loader />
+        ) : isError ? (
+          <ErrorMessage error={error} />
+        ) : (
+          <MarketingMaterialData data={data || []} />
+        )}
+      </div>
     </div>
   );
 }
 
-function MarketingMaterialData({ marketingMaterialData = [], brochure = [] }) {
-  const getFileIcon = (type) => {
-    switch (type) {
-      case "brochure":
-      case "document":
-        return <FileText className="h-5 w-5" />;
-      case "images":
-        return <ImageIcon className="h-5 w-5" />;
-      case "video":
-        return <Video className="h-5 w-5" />;
-      default:
-        return <FileText className="h-5 w-5" />;
-    }
-  };
-
-  const getTypeColor = (type) => {
-    switch (type) {
-      case "brochure":
-        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300";
-      case "document":
-        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300";
-      case "images":
-        return "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300";
-      case "video":
-        return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300";
-      default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300";
-    }
-  };
-
-  // Helper function to parse file path and extract information
+function MarketingMaterialData({ data = [] }) {
   const parseFilePath = (filePath, type) => {
-    // Convert Windows path to web path
     const webPath = filePath.replace(/\\/g, "/");
-
-    // Extract filename from path
     const fileName = webPath.split("/").pop() || "";
-
-    // Extract file extension
     const fileExtension = fileName.split(".").pop()?.toUpperCase() || "PDF";
 
-    // Create a clean title by removing timestamp and cleaning up the name
     const cleanTitle = fileName
       .replace(/^\d+_/, "") // Remove timestamp prefix
       .replace(/\.[^/.]+$/, "") // Remove file extension
@@ -142,15 +136,52 @@ function MarketingMaterialData({ marketingMaterialData = [], brochure = [] }) {
     };
   };
 
-  // Process the actual data
-  const processedMaterials = [
-    ...marketingMaterialData.map((filePath) =>
-      parseFilePath(filePath, "marketing_material"),
-    ),
-    ...brochure.map((filePath) => parseFilePath(filePath, "brochure")),
-  ];
+  const groupedData = data.reduce((acc, item) => {
+    const category = item.category || "Other";
+    if (!acc[category]) {
+      acc[category] = [];
+    }
 
-  if (processedMaterials.length === 0) {
+    // Process brochures for this item
+    item.brochure?.forEach((filePath) => {
+      acc[category].push(parseFilePath(filePath, "brochure"));
+    });
+
+    // Process marketing materials for this item
+    item.marketing_material?.forEach((filePath) => {
+      acc[category].push(parseFilePath(filePath, "marketing_material"));
+    });
+
+    return acc;
+  }, {});
+
+  const totalMaterials =
+    Object.values(groupedData)?.flatMap((i) => i)?.length ?? 0;
+  const totalBrochures =
+    Object.values(groupedData)
+      ?.flatMap((i) => i)
+      .filter((i) => i.type === "brochure")?.length ?? 0;
+  const totalMarketingMaterials =
+    Object.values(groupedData)
+      ?.flatMap((i) => i)
+      .filter((i) => i.type === "marketing_material")?.length ?? 0;
+
+  const getFileIcon = (type) => {
+    switch (type) {
+      case "brochure":
+      case "document":
+      case "marketing_material":
+        return <FileText className="h-5 w-5" />;
+      case "images":
+        return <ImageIcon className="h-5 w-5" />;
+      case "video":
+        return <Video className="h-5 w-5" />;
+      default:
+        return <FileText className="h-5 w-5" />;
+    }
+  };
+
+  if (Object.keys(groupedData).length === 0) {
     return (
       <div className="py-12 text-center">
         <FileText className="text-muted-foreground mx-auto mb-4 h-12 w-12" />
@@ -164,16 +195,6 @@ function MarketingMaterialData({ marketingMaterialData = [], brochure = [] }) {
       </div>
     );
   }
-
-  // Group materials by category
-  const groupedMaterials = processedMaterials.reduce((acc, material) => {
-    const category = material.category || "Other";
-    if (!acc[category]) {
-      acc[category] = [];
-    }
-    acc[category].push(material);
-    return acc;
-  }, {});
 
   const handleDownload = (downloadUrl, fileName) => {
     const link = document.createElement("a");
@@ -195,9 +216,7 @@ function MarketingMaterialData({ marketingMaterialData = [], brochure = [] }) {
               <FileText className="h-5 w-5 text-blue-600" />
               <div>
                 <p className="text-sm font-medium">Total Materials</p>
-                <p className="text-2xl font-bold">
-                  {processedMaterials.length}
-                </p>
+                <p className="text-2xl font-bold">{totalMaterials}</p>
               </div>
             </div>
           </CardContent>
@@ -208,7 +227,7 @@ function MarketingMaterialData({ marketingMaterialData = [], brochure = [] }) {
               <FileText className="h-5 w-5 text-green-600" />
               <div>
                 <p className="text-sm font-medium">Brochures</p>
-                <p className="text-2xl font-bold">{brochure.length}</p>
+                <p className="text-2xl font-bold">{totalBrochures}</p>
               </div>
             </div>
           </CardContent>
@@ -219,70 +238,85 @@ function MarketingMaterialData({ marketingMaterialData = [], brochure = [] }) {
               <FileText className="h-5 w-5 text-purple-600" />
               <div>
                 <p className="text-sm font-medium">Marketing Materials</p>
-                <p className="text-2xl font-bold">
-                  {marketingMaterialData.length}
-                </p>
+                <p className="text-2xl font-bold">{totalMarketingMaterials}</p>
               </div>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Materials by Category */}
-      {Object.entries(groupedMaterials).map(([categoryName, materials]) => (
+      {/* Materials by Category - using the corrected groupedData */}
+      {Object.entries(groupedData).map(([categoryName, materials]) => (
         <div key={categoryName} className="space-y-4">
           <div className="flex items-center space-x-2">
-            <h3 className="text-lg font-semibold">{categoryName}</h3>
+            <h3 className="text-lg font-semibold capitalize">{categoryName}</h3>
             <Badge variant="secondary">{materials.length}</Badge>
           </div>
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {materials.map((material) => (
-              <Card
-                key={material.id}
-                className="transition-shadow hover:shadow-md"
-              >
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center space-x-2">
-                      {getFileIcon(material.type)}
-                      <Badge variant={"outline"}>{material.format}</Badge>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() =>
-                        window.open(material.downloadUrl, "_blank")
-                      }
-                    >
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                  </div>
-                  <CardTitle className="text-base">{material.title}</CardTitle>
-                  <CardDescription className="text-sm">
-                    {material.description}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <div className="text-muted-foreground mb-4 flex items-center justify-between text-sm">
-                    <div className="flex items-center space-x-1">
-                      <FileText className="h-3 w-3" />
-                      <span>{material.format} Document</span>
-                    </div>
-                  </div>
-                  <Button
-                    className="w-full"
-                    size="sm"
-                    onClick={() =>
-                      handleDownload(material.downloadUrl, material.fileName)
-                    }
+            {materials.length === 0
+              ? "No data found."
+              : materials.map((material) => (
+                  <Card
+                    key={material.id}
+                    className="transition-shadow hover:shadow-md"
                   >
-                    <Download className="mr-2 h-4 w-4" />
-                    Download
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
+                    <CardHeader className="pb-3">
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-center space-x-2">
+                          {getFileIcon(material.type)}
+                          <Badge
+                            variant={
+                              material.type === "brochure"
+                                ? "default"
+                                : "secondary"
+                            }
+                            className={"capitalize"}
+                          >
+                            {material.type.split("_").join(" ")}
+                          </Badge>
+                          <Badge variant="outline">{material.format}</Badge>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() =>
+                            window.open(material.downloadUrl, "_blank")
+                          }
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      <CardTitle className="text-base">
+                        {material.title}
+                      </CardTitle>
+                      <CardDescription className="text-sm">
+                        {material.description}
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="text-muted-foreground mb-4 flex items-center justify-between text-sm">
+                        <div className="flex items-center space-x-1">
+                          <FileText className="h-3 w-3" />
+                          <span>{material.format} Document</span>
+                        </div>
+                      </div>
+                      <Button
+                        className="w-full"
+                        size="sm"
+                        onClick={() =>
+                          handleDownload(
+                            material.downloadUrl,
+                            material.fileName,
+                          )
+                        }
+                      >
+                        <Download className="mr-2 h-4 w-4" />
+                        Download
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ))}
           </div>
         </div>
       ))}

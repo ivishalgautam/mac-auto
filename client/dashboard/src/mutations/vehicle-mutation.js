@@ -31,6 +31,13 @@ export const useGetVehicle = (id) => {
   });
 };
 
+export const useGetVehicleMarketingData = (searchParams = "") => {
+  return useQuery({
+    queryKey: ["vehicles-materials", searchParams],
+    queryFn: () => vehicle.getByMarketingData(searchParams),
+  });
+};
+
 export const useCreateVehicle = (handleSuccess) => {
   const queryClient = useQueryClient();
 

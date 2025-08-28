@@ -29,7 +29,6 @@ export default function VehicleSelect({
   const [open, setOpen] = useState(false);
   const { data, isLoading, isError, error } =
     useGetFormattedVehicles(searchParams);
-
   if (isError) return <ErrorMessage error={error} />;
   return isLoading ? (
     <Skeleton className={"h-9 w-full"} />
@@ -59,7 +58,7 @@ export default function VehicleSelect({
           <CommandList>
             <CommandEmpty>No vehicle found.</CommandEmpty>
             <CommandGroup>
-              {data.map((vehicle) => (
+              {data?.map((vehicle) => (
                 <CommandItem
                   value={vehicle.label}
                   key={vehicle.value}
