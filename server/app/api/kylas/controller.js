@@ -7,7 +7,7 @@ const schema = z.object({
   firstName: z.string().min(1, "First name is required"),
   lastName: z.string().optional(),
   city: z.string().min(1, "City is required"),
-  // state: z.string().min(1, "State is required"),
+  state: z.string().min(1, "State is required"),
   phoneNumber: z.string().regex(/^[6-9]\d{9}$/, {
     message:
       "Phone number must be a valid 10-digit Indian number starting with 6-9",
@@ -27,8 +27,8 @@ const create = async (req, res) => {
     let data = JSON.stringify({
       firstName: validateData.firstName,
       lastName: validateData.lastName,
-      // city: validateData.state,
-      state: validateData.city,
+      city: validateData.city,
+      state: validateData.state,
       phoneNumbers: [
         {
           type: "MOBILE",
