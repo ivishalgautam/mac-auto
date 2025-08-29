@@ -13,10 +13,10 @@ const schema = z.object({
       "Phone number must be a valid 10-digit Indian number starting with 6-9",
   }),
   // companyName: z.string().min(1, "Company name is required"),
-  cfDoYouHaveShowroomSpace: z.enum(["Yes", "No"], {
-    message: "Do You Have Showroom Space is required, select 'Yes' OR 'No'",
-  }),
-  cfInvestmentCapacity: z.string().min(1),
+  // cfDoYouHaveShowroomSpace: z.enum(["Yes", "No"], {
+  //   message: "Do You Have Showroom Space is required, select 'Yes' OR 'No'",
+  // }),
+  // cfInvestmentCapacity: z.string().min(1),
   // email: z.string().email("Invalid email address"),
 });
 
