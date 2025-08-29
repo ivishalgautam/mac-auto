@@ -39,8 +39,9 @@ const create = async (req, res) => {
       ],
       // companyName: validateData.companyName,
       customFieldValues: {
-        cfDoYouHaveShowroomSpace: validateData.cfDoYouHaveShowroomSpace,
-        cfInvestmentCapacity: validateData.cfInvestmentCapacity,
+        cfLeadType: 2561916,
+        // cfDoYouHaveShowroomSpace: validateData.cfDoYouHaveShowroomSpace,
+        // cfInvestmentCapacity: validateData.cfInvestmentCapacity,
       },
       source: 2561913,
       // emails: [
