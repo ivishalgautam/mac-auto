@@ -27,10 +27,8 @@ export default function TableActions() {
         filterKey="role"
         title="Role"
         options={[
-          // { label: "Dealer", value: "dealer" },
-          // { label: "Customer", value: "customer" },
-          { label: "CRE", value: "cre" },
-          { label: "Manager", value: "manager" },
+          { label: "Dealer", value: "dealer" },
+          { label: "Customer", value: "customer" },
         ]}
         setFilterValue={setRoleFilter}
         filterValue={roleFilter}

@@ -13,14 +13,7 @@ export const userFormSchema = z
       .regex(/^[a-zA-Z0-9_]+$/, {
         message: "Username can only contain letters, numbers, and underscores",
       }),
-    dealer_code: z
-      .string()
-      .min(1, "Dealer code is required")
-      .max(50)
-      .regex(/^[a-zA-Z0-9]+$/, {
-        message:
-          "Dealer code can only contain letters, numbers, and underscores",
-      }),
+    dealer_code: z.string().optional(),
     email: z.string().email("Please enter a valid email address"),
     mobile_number: z
       .string({ required_error: "Mobile number is required." })
@@ -44,15 +37,35 @@ export const userFormSchema = z
     message: "Passwords do not match",
   })
   .superRefine((data, ctx) => {
-    if (
-      data.role === "dealer" &&
-      (!data.location || data.location.trim() === "")
-    ) {
-      ctx.addIssue({
-        path: ["location"],
-        code: z.ZodIssueCode.custom,
-        message: "Location is required for dealers",
-      });
+    if (data.role === "dealer") {
+      if (
+        data.role === "dealer" &&
+        (!data.location || data.location.trim() === "")
+      ) {
+        ctx.addIssue({
+          path: ["location"],
+          code: z.ZodIssueCode.custom,
+          message: "Location is required for dealers",
+        });
+      }
+
+      if (!data.dealer_code || data.dealer_code.trim() === "") {
+        ctx.addIssue({
+          path: ["dealer_code"],
+          code: z.ZodIssueCode.custom,
+          message: "Dealer code is required for dealers",
+        });
+      } else {
+        // Dealer code regex validation
+        if (!/^[a-zA-Z0-9_]+$/.test(data.dealer_code)) {
+          ctx.addIssue({
+            path: ["dealer_code"],
+            code: z.ZodIssueCode.custom,
+            message:
+              "Dealer code can only contain letters, numbers, and underscores",
+          });
+        }
+      }
     }
   });
 
@@ -68,14 +81,7 @@ export const userUpdateSchema = z
       .regex(/^[a-zA-Z0-9_]+$/, {
         message: "Username can only contain letters, numbers, and underscores",
       }),
-    dealer_code: z
-      .string()
-      .min(1, "Dealer code is required")
-      .max(50)
-      .regex(/^[a-zA-Z0-9]+$/, {
-        message:
-          "Dealer code can only contain letters, numbers, and underscores",
-      }),
+    dealer_code: z.string().optional(),
     email: z.string().email("Please enter a valid email address"),
     mobile_number: z
       .string({ required_error: "Mobile number is required." })
@@ -91,15 +97,35 @@ export const userUpdateSchema = z
     message: "Invalid phone number",
   })
   .superRefine((data, ctx) => {
-    if (
-      data.role === "dealer" &&
-      (!data.location || data.location.trim() === "")
-    ) {
-      ctx.addIssue({
-        path: ["location"],
-        code: z.ZodIssueCode.custom,
-        message: "Location is required for dealers",
-      });
+    console.log({ data });
+    if (data.role === "dealer") {
+      if (
+        data.role === "dealer" &&
+        (!data.location || data.location.trim() === "")
+      ) {
+        ctx.addIssue({
+          path: ["location"],
+          code: z.ZodIssueCode.custom,
+          message: "Location is required for dealers",
+        });
+      }
+      if (!data.dealer_code || data.dealer_code.trim() === "") {
+        ctx.addIssue({
+          path: ["dealer_code"],
+          code: z.ZodIssueCode.custom,
+          message: "Dealer code is required for dealers",
+        });
+      } else {
+        // Dealer code regex validation
+        if (!/^[a-zA-Z0-9_]+$/.test(data.dealer_code)) {
+          ctx.addIssue({
+            path: ["dealer_code"],
+            code: z.ZodIssueCode.custom,
+            message:
+              "Dealer code can only contain letters, numbers, and underscores",
+          });
+        }
+      }
     }
   });
 

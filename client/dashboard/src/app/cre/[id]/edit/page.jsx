@@ -3,15 +3,17 @@ import PageContainer from "@/components/layout/page-container";
 import { Heading } from "@/components/ui/heading";
 
 export const metadata = {
-  title: "Create dealer",
-  description: "Create dealer",
+  title: "Edit User",
+  description: "Edit User",
 };
 
-export default function CreatePage() {
+export default async function UserEditPage({ params }) {
+  const { id } = await params;
+
   return (
     <PageContainer className="mx-auto max-w-lg">
-      <Heading title="Create dealer" description="Create dealer." />
-      <UserForm type={"create"} role="dealer" />
+      <Heading title="Edit User" description="Edit user." />
+      <UserForm id={id} type="edit" />
     </PageContainer>
   );
 }

@@ -54,7 +54,9 @@ export default function UserForm({ id, type, role = "" }) {
   const router = useRouter();
 
   const selectedRole = watch("role");
-  const createMutation = useCreateUser();
+  const createMutation = useCreateUser(function () {
+    router.push("/users?page=1&limit=10");
+  });
   const updateMutation = useUpdateUser(id, function () {
     router.back();
   });
@@ -93,34 +95,40 @@ export default function UserForm({ id, type, role = "" }) {
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
         {/* Role */}
-        {/* <div className="col-span-full space-y-2">
-          <Label htmlFor="role">Role *</Label>
-          <Controller
-            control={control}
-            name="role"
-            render={({ field }) => {
-              return (
-                <Select
-                  key={field.value}
-                  onValueChange={field.onChange}
-                  value={field.value}
-                >
-                  <SelectTrigger
-                    className={cn("w-full", { "border-red-500": errors.role })}
-                    id="role"
+        {!role && (
+          <div className="col-span-full space-y-2">
+            <Label htmlFor="role">Role *</Label>
+            <Controller
+              control={control}
+              name="role"
+              render={({ field }) => {
+                return (
+                  <Select
+                    key={field.value}
+                    onValueChange={field.onChange}
+                    value={field.value}
                   >
-                    <SelectValue placeholder="Select a role" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="admin">Admin</SelectItem>
-                    <SelectItem value="dealer">Dealer</SelectItem>
-                    <SelectItem value="customer">Customer</SelectItem>
-                  </SelectContent>
-                </Select>
-              );
-            }}
-          />
-        </div> */}
+                    <SelectTrigger
+                      className={cn("w-full", {
+                        "border-red-500": errors.role,
+                      })}
+                      id="role"
+                    >
+                      <SelectValue placeholder="Select a role" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {/* <SelectItem value="admin">Admin</SelectItem> */}
+                      {/* <SelectItem value="dealer">Dealer</SelectItem>
+                    <SelectItem value="customer">Customer</SelectItem> */}
+                      <SelectItem value="cre">CRE</SelectItem>
+                      <SelectItem value="manager">Manager</SelectItem>
+                    </SelectContent>
+                  </Select>
+                );
+              }}
+            />
+          </div>
+        )}
 
         {/* location */}
         {selectedRole === "dealer" && (

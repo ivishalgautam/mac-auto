@@ -1,40 +1,40 @@
 "use client";
+
 import ErrorMessage from "@/components/ui/error";
 import { DataTable } from "@/components/ui/table/data-table";
 import { DataTableSkeleton } from "@/components/ui/table/data-table-skeleton";
-import {
-  useDeleteUser,
-  useGetUsers,
-  useUpdateUser,
-} from "@/mutations/user-mutation";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { columns } from "../columns";
-import { UserDeleteDialog } from "./delete-dialog";
-import { useGetDealers } from "@/mutations/dealer-mutation";
+import { AssignDealerDialog } from "./assign-dealer-dialog";
+import {
+  useAssignCustomerToDealer,
+  useGetCustomers,
+} from "@/mutations/customer-mutation";
 
 export default function Listing() {
-  const [isDeleteModal, setIsDeleteModal] = useState(false);
   const [isAssignDealerModal, setIsAssignDealerModal] = useState(false);
-  const [userId, setUserId] = useState("");
+  const [id, setId] = useState("");
+  const [customerId, setCustomerId] = useState(null);
   const searchParams = useSearchParams();
   const searchParamsStr = searchParams.toString();
   const router = useRouter();
 
   const openModal = (type) => {
-    if (type === "delete") {
-      setIsDeleteModal(true);
+    if (type === "assign-dealer") {
+      setIsAssignDealerModal(true);
     }
   };
   const closeModal = (type) => {
-    if (type === "delete") {
-      setIsDeleteModal(false);
+    if (type === "assign-dealer") {
+      setIsAssignDealerModal(false);
     }
   };
 
-  const { data, isLoading, isError, error } = useGetDealers(searchParamsStr);
-  const deleteMutation = useDeleteUser(userId, () => closeModal("delete"));
-  const updateMutation = useUpdateUser(userId);
+  const { data, isLoading, isError, error } = useGetCustomers(searchParamsStr);
+  const assignToDealerMutation = useAssignCustomerToDealer(() =>
+    closeModal("assign-dealer"),
+  );
 
   useEffect(() => {
     if (!searchParamsStr) {
@@ -51,14 +51,15 @@ export default function Listing() {
   return (
     <div className="border-input w-full rounded-lg">
       <DataTable
-        columns={columns(updateMutation, setUserId, openModal)}
-        data={data?.dealers ?? []}
+        columns={columns(setCustomerId, openModal)}
+        data={data?.customers ?? []}
         totalItems={data?.total}
       />
-      <UserDeleteDialog
-        deleteMutation={deleteMutation}
-        isOpen={isDeleteModal}
-        setIsOpen={setIsDeleteModal}
+      <AssignDealerDialog
+        mutation={assignToDealerMutation}
+        isOpen={isAssignDealerModal}
+        setIsOpen={setIsAssignDealerModal}
+        customerId={customerId}
       />
     </div>
   );

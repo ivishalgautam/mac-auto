@@ -25,7 +25,7 @@ import {
 const loginSchema = z.object({
   username: z.string().min(1, "Username is required"),
   password: z.string().min(6, "Password must be at least 6 characters"),
-  role: z.enum(["admin", "dealer", "customer"], {
+  role: z.enum(["admin", "dealer", "customer", "cre", "manager"], {
     message: "Please select role.",
   }),
 });
@@ -40,7 +40,6 @@ const loginUser = async (data) => {
 
 export default function LoginForm({}) {
   const role = useRole();
-  console.log(role);
   const router = useRouter();
 
   const {
@@ -95,6 +94,8 @@ export default function LoginForm({}) {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="admin">Admin</SelectItem>
+                  <SelectItem value="cre">CRE</SelectItem>
+                  <SelectItem value="manager">Manager</SelectItem>
                   <SelectItem value="dealer">Dealer</SelectItem>
                   <SelectItem value="customer">Customer</SelectItem>
                 </SelectContent>

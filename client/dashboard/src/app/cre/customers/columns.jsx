@@ -7,20 +7,19 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Switch } from "@/components/ui/switch";
-import { Muted, Small } from "@/components/ui/typography";
+import { Muted } from "@/components/ui/typography";
 import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import moment from "moment";
 import Link from "next/link";
+import { Badge } from "@/components/ui/badge";
+import { ExternalLink } from "lucide-react";
 
-export const columns = (updateMutation, setUserId, openModal) => [
+export const columns = (setCustomerId, openModal) => [
   {
     accessorKey: "fullname",
-    header: "Fullname",
+    header: "FULLNAME",
     cell: ({ row }) => {
       const fullname = row.getValue("fullname");
       const role = row.original.role;
@@ -34,53 +33,32 @@ export const columns = (updateMutation, setUserId, openModal) => [
     },
   },
   {
-    accessorKey: "username",
-    header: "Username",
-    cell: ({ row }) => {
-      const username = row.getValue("username");
-      return (
-        <div className="flex items-center justify-start gap-2">
-          <Badge variant={"outline"}>@{username}</Badge>
-        </div>
-      );
-    },
-  },
-  {
     accessorKey: "mobile_number",
-    header: "Phone",
+    header: "PHONE",
   },
   {
     accessorKey: "email",
-    header: "Email",
+    header: "EMAIL",
   },
   {
-    accessorKey: "is_active",
-    header: ({ column }) => {
-      return <Button variant="ghost">Status</Button>;
-    },
+    accessorKey: "total_purchases",
+    header: "Total Purchases",
     cell: ({ row }) => {
-      const is_active = row.getValue("is_active");
-      const id = row.original.user_id;
+      const id = row.original.id;
       return (
-        <div className="flex items-center justify-start gap-2">
-          <Switch
-            checked={is_active}
-            onCheckedChange={(checked) => {
-              setUserId(id);
-              return updateMutation.mutate({ is_active: checked });
-            }}
-          />
-          <Small className={is_active ? "text-green-500" : "text-red-500"}>
-            {is_active ? "active" : "inactive"}
-          </Small>
-        </div>
+        <Link href={`/users/customers/purchases/${id}?page=1&limit=10`}>
+          <Badge variant="outline">
+            {row.getValue("total_purchases")}{" "}
+            <ExternalLink className="size-3" />
+          </Badge>
+        </Link>
       );
     },
   },
   {
     accessorKey: "created_at",
     header: ({ column }) => {
-      return <Button variant="ghost">Registered on</Button>;
+      return <Button variant="ghost">REGISTERED ON</Button>;
     },
     cell: ({ row }) => {
       return (
@@ -92,7 +70,8 @@ export const columns = (updateMutation, setUserId, openModal) => [
     id: "actions",
     enableHiding: false,
     cell: ({ row }) => {
-      const id = row.original.user_id;
+      const id = row.original.id;
+      const userId = row.original.user_id;
       const role = row.original.role;
       return (
         <DropdownMenu>
@@ -106,16 +85,16 @@ export const columns = (updateMutation, setUserId, openModal) => [
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem>
-              <Link href={`/dealers/${id}/edit`}>Edit</Link>
+              <Link href={`/users/${userId}/edit`}>Edit</Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={() => {
-                setUserId(id);
-                openModal("delete");
+                setCustomerId(id);
+                openModal("assign-dealer");
               }}
             >
-              Delete
+              Assign to dealer
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
