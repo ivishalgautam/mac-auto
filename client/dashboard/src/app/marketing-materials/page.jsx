@@ -1,7 +1,16 @@
+"use client";
 import PageContainer from "@/components/layout/page-container";
 import { Heading } from "@/components/ui/heading";
-import MarketingMaterials from "./_components/marketing-materials";
-import OrderBrochureDialog from "./_components/order-brochure-dialog";
+import dynamic from "next/dynamic";
+const MarketingMaterials = dynamic(
+  () => import("./_components/marketing-materials"),
+  { ssr: false },
+);
+const OrderBrochureDialog = dynamic(
+  () => import("./_components/order-brochure-dialog"),
+  { ssr: false },
+);
+import { Suspense } from "react";
 
 export default async function MarketingMaterialsPage({}) {
   return (
@@ -12,8 +21,12 @@ export default async function MarketingMaterialsPage({}) {
           description={"Download marketing materials."}
         />
       </div>
-      <OrderBrochureDialog />
-      <MarketingMaterials />
+      <Suspense>
+        <OrderBrochureDialog />
+      </Suspense>
+      <Suspense>
+        <MarketingMaterials />
+      </Suspense>
     </PageContainer>
   );
 }
