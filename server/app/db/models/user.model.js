@@ -135,6 +135,7 @@ const get = async (req) => {
   const queryParams = {};
   const q = req.query.q ? req.query.q : null;
   const roles = req.query.role ? req.query.role.split(".") : null;
+  const onlyRoles = req.query.or ? req.query.or.split(".") : null;
 
   if (q) {
     whereConditions.push(
@@ -146,6 +147,10 @@ const get = async (req) => {
   if (roles?.length) {
     whereConditions.push(`usr.role = any(:roles)`);
     queryParams.roles = `{${roles.join(",")}}`;
+  }
+  if (onlyRoles?.length) {
+    whereConditions.push(`usr.role = any(:onlyRoles)`);
+    queryParams.onlyRoles = `{${onlyRoles.join(",")}}`;
   }
 
   const page = req.query.page ? Number(req.query.page) : 1;

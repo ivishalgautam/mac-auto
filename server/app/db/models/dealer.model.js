@@ -49,7 +49,7 @@ const init = async (sequelize) => {
   await DealerModel.sync({ alter: true });
 };
 
-const create = async ({ user_id, location, code }, transaction) => {
+const create = async ({ user_id, location, dealer_code }, transaction) => {
   const options = {};
   if (transaction) options.transaction = transaction;
 
@@ -66,7 +66,7 @@ const create = async ({ user_id, location, code }, transaction) => {
   // }
 
   const data = await DealerModel.create(
-    { user_id: user_id, location: location, code: code },
+    { user_id: user_id, location: location, dealer_code: dealer_code },
     options
   );
 

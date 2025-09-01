@@ -13,7 +13,9 @@ export const userSchema = z
     last_name: z.string().optional(),
     email: z.string().email("Please enter a valid email address"),
     mobile_number: z.string(),
-    role: z.enum(["admin", "customer", "dealer"]).default("user"),
+    role: z
+      .enum(["admin", "customer", "dealer", "cre", "manager"])
+      .default("user"),
     location: z.string().optional(),
     // mobile_number: z.string().min(10, "Please enter a valid mobile number"),
     // password: z.string().min(8, "Password must be at least 8 characters"),
@@ -44,7 +46,9 @@ export const registerVerifySchema = z
     last_name: z.string().optional(),
     email: z.string().email("Please enter a valid email address"),
     mobile_number: z.string(),
-    role: z.enum(["admin", "customer", "dealer"]).default("user"),
+    role: z
+      .enum(["admin", "customer", "dealer", "cre", "manager"])
+      .default("user"),
     location: z.string().optional(),
 
     otp: z

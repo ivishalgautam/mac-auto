@@ -23,6 +23,7 @@ const create = async (req, res) => {
         {
           user_id: user.id,
           location: validateData.location,
+          dealer_code: req.body.dealer_code,
         },
         transaction
       );
