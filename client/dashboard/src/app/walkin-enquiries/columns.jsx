@@ -21,7 +21,13 @@ import {
 } from "@/components/ui/select";
 import { walkinEnquiriesStatus } from "@/data";
 
-export const columns = (openModal, setId, user, updateMutation) =>
+export const columns = (
+  openModal,
+  setId,
+  user,
+  updateMutation,
+  setSelectedEnq,
+) =>
   [
     {
       accessorKey: "enquiry_code",
@@ -67,7 +73,7 @@ export const columns = (openModal, setId, user, updateMutation) =>
         const purchaseType = row.getValue("purchase_type");
         const id = row.original.id;
 
-        return purchaseType === "finance" ? (
+        return (
           <Select
             value={status}
             onValueChange={(value) => {
@@ -86,15 +92,15 @@ export const columns = (openModal, setId, user, updateMutation) =>
                   key={option.value}
                   value={option.value}
                   className={"capitalize"}
-                  disabled={["approved", "rejected"].includes(status)}
+                  disabled={
+                    ["approved", "rejected"].includes(status) || option.disabled
+                  }
                 >
                   {option.label}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
-        ) : (
-          "N/a"
         );
       },
     },
@@ -102,10 +108,24 @@ export const columns = (openModal, setId, user, updateMutation) =>
       accessorKey: "purchase_type",
       header: "Purchase type",
       cell: ({ row }) => {
+        const purchaseType = row.getValue("purchase_type");
+        const id = row.original.id;
         return (
-          <Badge className={"capitalize"} variant={"outline"}>
-            {row.getValue("purchase_type")}
-          </Badge>
+          <Select
+            value={purchaseType}
+            onValueChange={(value) => {
+              setId(id);
+              updateMutation.mutate({ purchase_type: value });
+            }}
+          >
+            <SelectTrigger className={"capitalize"}>
+              <SelectValue placeholder="Select a type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={"cash"}>Cash</SelectItem>
+              <SelectItem value={"finance"}>Finance</SelectItem>
+            </SelectContent>
+          </Select>
         );
       },
     },
@@ -125,6 +145,7 @@ export const columns = (openModal, setId, user, updateMutation) =>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              <DropdownMenuSeparator />
               <DropdownMenuItem>
                 <Link href={`/walkin-enquiries/${id}/view`}>View</Link>
               </DropdownMenuItem>
@@ -133,6 +154,40 @@ export const columns = (openModal, setId, user, updateMutation) =>
                 <Link href={`/walkin-enquiries/${id}/edit`}>Edit</Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
+              <DropdownMenuItem>
+                <Link
+                  href={`/walkin-enquiries/followups?page=1&limit=10&enquiry=${id}`}
+                >
+                  Follow ups
+                </Link>
+              </DropdownMenuItem>
+              {user?.role === "dealer" && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={() => {
+                      setId(id);
+                      openModal("convert");
+                      setSelectedEnq(row.original);
+                    }}
+                  >
+                    Create order
+                  </DropdownMenuItem>
+                </>
+              )}
+              {user?.role === "admin" && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={() => {
+                      setId(id);
+                      openModal("inquiry-assign");
+                    }}
+                  >
+                    Assign to dealer
+                  </DropdownMenuItem>
+                </>
+              )}
               <DropdownMenuItem
                 onClick={() => {
                   setId(id);

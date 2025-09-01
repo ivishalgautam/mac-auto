@@ -7,12 +7,17 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-export function ConvertDialog({ isOpen, setIsOpen, inquiryId }) {
+export function ConvertDialog({
+  isOpen,
+  setIsOpen,
+  inquiryId,
+  selectedEnq = {},
+}) {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Convert to customer?</DialogTitle>
+          <DialogTitle>Create order?</DialogTitle>
           <DialogDescription className={"sr-only"}>
             Convert to customer
           </DialogDescription>
@@ -20,6 +25,7 @@ export function ConvertDialog({ isOpen, setIsOpen, inquiryId }) {
             <InquiryToCustomerForm
               onSuccess={() => setIsOpen(false)}
               inquiryId={inquiryId}
+              selectedEnq={selectedEnq}
             />
           </div>
         </DialogHeader>

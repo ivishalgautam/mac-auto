@@ -26,9 +26,10 @@ export const colors = [
 ];
 
 export const walkinEnquiriesStatus = [
-  { label: "Pending", value: "pending" },
-  { label: "Approved", value: "approved" },
-  { label: "Rejected", value: "rejected" },
+  { label: "Pending", value: "pending", disabled: false },
+  { label: "Approved", value: "approved", disabled: false },
+  { label: "Rejected", value: "rejected", disabled: false },
+  { label: "Converted", value: "converted", disabled: true },
 ];
 
 export const purchaseTypes = [

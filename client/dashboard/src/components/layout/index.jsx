@@ -13,10 +13,13 @@ import { publicRoutes } from "@/data/routes";
 export default function Layout({ children }) {
   const pathname = usePathname();
   const { id } = useParams();
+
   const getContent = () => {
     if (publicRoutes.includes(pathname.replace(id, ":id"))) {
       return children;
     }
+
+    // const currRoute =
 
     return (
       <AuthProvider>

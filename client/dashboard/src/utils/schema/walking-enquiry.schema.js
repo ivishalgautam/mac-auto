@@ -46,6 +46,7 @@ const personDetailsSchema = z.object({
 export const walkInEnquirySchema = z
   .object({
     vehicle_id: z.string().uuid({ message: "Invalid vehicle" }),
+    dealer_id: z.string().uuid().nullable(),
 
     name: z
       .string()
@@ -53,6 +54,7 @@ export const walkInEnquirySchema = z
       .max(50, "Name cannot exceed 50 characters")
       .regex(/^[a-zA-Z\s]+$/, "Name can only contain letters and spaces")
       .trim(),
+    quantity: z.number().optional().default(0),
 
     phone: phoneSchema,
 
@@ -62,9 +64,8 @@ export const walkInEnquirySchema = z
       .max(100, "Location cannot exceed 100 characters")
       .trim(),
 
-    purchase_type: z.enum(["finance", "cash"], {
-      message: "Purchase type is required",
-    }),
+    purchase_type: z.enum(["finance", "cash", ""]).default(""),
+    enquiry_type: z.enum(["walk-in", "mac-auto", ""]).default(""),
 
     pan: z.array(z.any()).optional(),
     aadhaar: z.array(z.any()).optional(),

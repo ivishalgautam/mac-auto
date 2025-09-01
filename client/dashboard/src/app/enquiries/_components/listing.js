@@ -21,6 +21,7 @@ import { InquiryAssignDialog } from "./dialog/inquiry-assign-dialog";
 import { useAuth } from "@/providers/auth-provider";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { useUpdateWalkInEnquiryMutation } from "@/mutations/walkin-enquiries-mutation";
 
 export default function Listing() {
   const pathname = usePathname();
@@ -30,6 +31,8 @@ export default function Listing() {
   const [isConvertModal, setIsConvertModal] = useState(false);
   const [isInquiryAssignModal, setIsInquiryAssignModal] = useState(false);
   const [id, setId] = useState(null);
+  const [selectedEnq, setSelectedEnq] = useState({});
+
   const queryClient = useQueryClient();
   const searchParams = useSearchParams();
   const searchParamStr = searchParams.toString();
@@ -47,6 +50,7 @@ export default function Listing() {
     }
   }
 
+  const updateMutation = useUpdateWalkInEnquiryMutation(id);
   const { data, isLoading, isError, error } = useQuery({
     queryFn: () => fetchEnquiries(searchParamStr),
     queryKey: ["enquiries", searchParamStr],
@@ -79,13 +83,13 @@ export default function Listing() {
 
   return (
     <div className="border-input rounded-lg">
-      {user?.role === "admin" && (
+      {/* {user?.role === "admin" && (
         <div className="mb-2 text-end">
           <Button type="button" size="sm" onClick={() => setIsCreateOpen(true)}>
             <Plus /> Create
           </Button>
         </div>
-      )}
+      )} */}
 
       <div className="mb-4 flex w-max gap-2 rounded-full border p-1 text-sm">
         <Link
@@ -108,7 +112,13 @@ export default function Listing() {
       </div>
 
       <DataTable
-        columns={columns(openModal, setId, user)}
+        columns={columns(
+          openModal,
+          setId,
+          setSelectedEnq,
+          user,
+          updateMutation,
+        )}
         data={data.enquiries}
         totalItems={data.total}
       />
@@ -134,6 +144,7 @@ export default function Listing() {
           isOpen: isConvertModal,
           setIsOpen: setIsConvertModal,
           inquiryId: id,
+          selectedEnq: selectedEnq,
         }}
       />
 

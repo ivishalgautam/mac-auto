@@ -12,8 +12,22 @@ import { DropdownMenuSeparator } from "@radix-ui/react-dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { walkinEnquiriesStatus } from "@/data";
 
-export const columns = (openModal, setId, user) =>
+export const columns = (
+  openModal,
+  setId,
+  setSelectedEnq,
+  user,
+  updateMutation,
+) =>
   [
     {
       accessorKey: "enquiry_code",
@@ -53,6 +67,7 @@ export const columns = (openModal, setId, user) =>
         return location ? location : "N/a";
       },
     },
+
     {
       accessorKey: "vehicle_name",
       header: "Model name",
@@ -69,14 +84,45 @@ export const columns = (openModal, setId, user) =>
         return message ? message : "N/a";
       },
     },
-    user.role === "admin" && {
+    {
       accessorKey: "status",
-      header: "Status",
+      header: ({ column }) => {
+        return <Button variant="ghost">Finance status</Button>;
+      },
       cell: ({ row }) => {
+        const status = row.getValue("status");
+        const purchaseType = row.getValue("purchase_type");
+        const id = row.original.id;
+
         return (
-          <Badge className={"capitalize"} variant={"outline"}>
-            {row.getValue("status")}
-          </Badge>
+          <Select
+            value={status}
+            onValueChange={(value) => {
+              setId(id);
+              const formData = new FormData();
+              formData.append("status", value);
+              updateMutation.mutate(formData);
+            }}
+          >
+            <SelectTrigger className={"capitalize"}>
+              <SelectValue placeholder="Select a status" />
+            </SelectTrigger>
+            <SelectContent>
+              {walkinEnquiriesStatus.map((option) => (
+                <SelectItem
+                  key={option.value}
+                  value={option.value}
+                  className={"capitalize"}
+                  disabled={
+                    ["approved", "rejected", "converted"].includes(status) ||
+                    option.disabled
+                  }
+                >
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         );
       },
     },
@@ -84,10 +130,24 @@ export const columns = (openModal, setId, user) =>
       accessorKey: "purchase_type",
       header: "Purchase type",
       cell: ({ row }) => {
+        const purchaseType = row.getValue("purchase_type");
+        const id = row.original.id;
         return (
-          <Badge className={"capitalize"} variant={"outline"}>
-            {row.getValue("purchase_type")}
-          </Badge>
+          <Select
+            value={purchaseType}
+            onValueChange={(value) => {
+              setId(id);
+              updateMutation.mutate({ purchase_type: value });
+            }}
+          >
+            <SelectTrigger className={"capitalize"}>
+              <SelectValue placeholder="Select a type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={"cash"}>Cash</SelectItem>
+              <SelectItem value={"finance"}>Finance</SelectItem>
+            </SelectContent>
+          </Select>
         );
       },
     },
@@ -99,9 +159,10 @@ export const columns = (openModal, setId, user) =>
         return email ? email : "N/a";
       },
     },
-    user.role === "admin" && {
+    user?.role === "admin" && {
       accessorKey: "dealership",
       header: "Dealership",
+      cell: ({ row }) => row.getValue("dealership") ?? "N/a",
     },
     {
       id: "actions",
@@ -121,6 +182,14 @@ export const columns = (openModal, setId, user) =>
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem>
+                <Link href={`/walkin-enquiries/${id}/view`}>View</Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem>
+                <Link href={`/walkin-enquiries/${id}/edit`}>Edit</Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem>
                 <Link
                   href={`/enquiries/followups?page=1&limit=10&enquiry=${id}`}
                 >
@@ -134,9 +203,10 @@ export const columns = (openModal, setId, user) =>
                     onClick={() => {
                       setId(id);
                       openModal("convert");
+                      setSelectedEnq(row.original);
                     }}
                   >
-                    Convert to customer
+                    Create order
                   </DropdownMenuItem>
                 </>
               )}

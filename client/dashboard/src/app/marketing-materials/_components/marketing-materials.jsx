@@ -22,7 +22,7 @@ import { useQueryState } from "nuqs";
 import { useCallback, useMemo } from "react";
 import { Controller, useForm } from "react-hook-form";
 
-export default function MarketingMaterials({ vehicleId }) {
+export default function MarketingMaterials({}) {
   const [category, setCategory] = useQueryState("category");
   const [model, setModel] = useQueryState("model");
 

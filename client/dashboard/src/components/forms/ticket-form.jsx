@@ -35,6 +35,7 @@ import { customerComplaintTypes } from "@/data";
 import { DatePicker } from "../ui/date-picker";
 import { Input } from "../ui/input";
 import TagInput from "../tag-input";
+import TechnicianSelect from "@/features/technician-select";
 
 const defaultValues = {
   images: [],
@@ -69,6 +70,8 @@ export default function TicketForm({ id, type }) {
     watch,
     setValue,
   } = methods;
+
+  const isPartsRelated = watch("complaint_type") === "Spare Parts Related";
 
   const customerId = watch("customer_id");
   const createMutation = useCreateTicket(() => {
@@ -215,7 +218,9 @@ export default function TicketForm({ id, type }) {
           )}
 
           {/* purchase_id */}
-          {((customerId && user?.role === "admin" && type === "create") ||
+          {((customerId &&
+            ["admin", "dealer"].includes(user?.role) &&
+            type === "create") ||
             user?.role === "customer") && (
             <div className="space-y-2">
               <Label htmlFor="purchase_id">Purchase ID *</Label>
@@ -267,7 +272,7 @@ export default function TicketForm({ id, type }) {
           </div>
 
           {/* expected closure date */}
-          {["dealer", "admin"].includes(user?.role) && (
+          {["admin"].includes(user?.role) && (
             <div>
               <Label>Expected closure date</Label>
               <div>
@@ -287,38 +292,43 @@ export default function TicketForm({ id, type }) {
           )}
 
           {/* assigned technician */}
-          {["dealer", "admin"].includes(user?.role) && (
+          {["admin"].includes(user?.role) && (
             <div className="space-y-2">
-              <Label htmlFor="assigned_technician">Assigned technician</Label>
-              <Input
-                id="assigned_technician"
-                {...register("assigned_technician")}
-                className={cn({ "border-red-500": errors.assigned_technician })}
-                placeholder="Enter assigned technician"
-                disabled={type === "view"}
+              <Label htmlFor="assigned_technician">Technician</Label>
+              <Controller
+                name="assigned_technician"
+                control={control}
+                render={({ field }) => (
+                  <TechnicianSelect
+                    onChange={field.onChange}
+                    value={field.value}
+                  />
+                )}
               />
             </div>
           )}
 
           {/* parts */}
-          <div className="col-span-full space-y-1">
-            <Label className="block text-sm font-medium">Parts</Label>
-            <Controller
-              name="parts"
-              control={control}
-              render={({ field }) => (
-                <TagInput
-                  value={field.value ?? []}
-                  onChange={field.onChange}
-                  placeholder="Add a tag"
-                  inlineTags={true}
-                  inputFieldPosition="top"
+          {isPartsRelated && (
+            <div className="col-span-full space-y-1">
+              <Label className="block text-sm font-medium">Parts</Label>
+              <Controller
+                name="parts"
+                control={control}
+                render={({ field }) => (
+                  <TagInput
+                    value={field.value ?? []}
+                    onChange={field.onChange}
+                    placeholder="Add a tag"
+                    inlineTags={true}
+                    inputFieldPosition="top"
 
-                  // activeIndex, setActiveIndex
-                />
-              )}
-            />
-          </div>
+                    // activeIndex, setActiveIndex
+                  />
+                )}
+              />
+            </div>
+          )}
         </div>
 
         {/* errors print */}

@@ -36,12 +36,10 @@ export default function RoleContext({ children }) {
     }
 
     const currRoute = pathname.replace(params.id || "", ":id");
-
     const protectedRoute = protectedRoutes.find((route) => {
       const routePattern = route.url.split("?")[0];
       return routePattern === currRoute;
     });
-
     if (!protectedRoute) return;
 
     const hasPermission = protectedRoute.roles.includes(user.role);

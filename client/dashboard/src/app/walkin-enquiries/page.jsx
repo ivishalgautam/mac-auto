@@ -14,8 +14,8 @@ export const metadata = {
 };
 
 export default async function Enquiries({ searchParams }) {
-  searchParamsCache.parse(searchParams);
-  const key = serialize({ ...searchParams });
+  searchParamsCache.parse(await searchParams);
+  const key = serialize({ ...(await searchParams) });
 
   return (
     <PageContainer>
@@ -25,7 +25,7 @@ export default async function Enquiries({ searchParams }) {
           description={"Manage Walk In Enquiries (View, Delete)."}
         />
         <Link
-          href={"/walkin-enquiries/create"}
+          href={"/walkin-enquiries/create?t=walk-in"}
           className={buttonVariants({ size: "sm" })}
         >
           <Plus /> Create

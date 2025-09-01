@@ -45,7 +45,7 @@ export default function FollowUpForm({
 
   const { data, isLoading, isError, error } = useGetFollowup(id);
   const createMutation = useCreateFollowUp(onSuccess);
-  const updateMutation = useUpdateFollowUp(onSuccess);
+  const updateMutation = useUpdateFollowUp(id, onSuccess);
 
   const onSubmit = (data) => {
     type === "create"
@@ -55,11 +55,13 @@ export default function FollowUpForm({
 
   const formErrors = getFormErrors(errors);
   const hasErrors = formErrors.length > 0;
-  const isFormPending = createMutation.isPending;
+  const isFormPending =
+    (type === "create" && createMutation.isPending) ||
+    (type === "edit" && updateMutation.isPending);
 
   useEffect(() => {
     if (type === "edit" && data) {
-      reset({ message: data?.message ?? "" });
+      reset({ enquiry_id: enquiryId, message: data?.message ?? "" });
     }
   }, [type, data, id, reset]);
 

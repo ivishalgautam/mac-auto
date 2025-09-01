@@ -3,9 +3,7 @@ import { Heading } from "@/components/ui/heading";
 import MarketingMaterials from "./_components/marketing-materials";
 import OrderBrochureDialog from "./_components/order-brochure-dialog";
 
-export default async function MarketingMaterialsPage({ searchParams }) {
-  const { category, vid } = await searchParams;
-
+export default async function MarketingMaterialsPage({}) {
   return (
     <PageContainer>
       <div className="flex items-center justify-between">

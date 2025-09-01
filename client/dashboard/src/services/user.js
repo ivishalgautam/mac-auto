@@ -17,6 +17,10 @@ const getById = async (id) => {
   return await http().get(`${endpoints.users.getAll}/${id}`);
 };
 
+const getByPhone = async (phone) => {
+  return await http().get(`${endpoints.users.getAll}/by-phone/${phone}`);
+};
+
 const get = async (searchParams = "") => {
   const { data } = await http().get(
     `${endpoints.users.getAll}?${searchParams}`,
@@ -43,6 +47,7 @@ const user = {
   update: update,
   deleteById: deleteById,
   getById: getById,
+  getByPhone: getByPhone,
   get: get,
   getUserCompanyProfile: getUserCompanyProfile,
   getUserContacts: getUserContacts,

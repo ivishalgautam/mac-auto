@@ -138,7 +138,7 @@ export const columns = (
     },
     {
       accessorKey: "assigned_technician",
-      header: "Technician",
+      header: "Technician name",
       cell: ({ row }) => {
         return (
           <div>

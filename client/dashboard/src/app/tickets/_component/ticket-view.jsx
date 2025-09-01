@@ -31,6 +31,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ticketStatus } from "./table-actions";
+import { useAuth } from "@/providers/auth-provider";
+import { Muted } from "@/components/ui/typography";
 
 const formatDate = (dateString) => {
   return new Date(dateString).toLocaleDateString("en-US", {
@@ -58,6 +60,7 @@ const getStatusColor = (status) => {
 };
 
 export default function TicketView({ id }) {
+  const { user } = useAuth();
   const { data, isLoading, isError, error } = useGetTicketDetails(id);
   const updateMutation = useUpdateTicket(id);
 
@@ -154,12 +157,10 @@ export default function TicketView({ id }) {
               <User className="text-primary-foreground h-6 w-6" />
             </div>
             <div>
-              <h4 className="text-card-foreground font-medium">
-                {data.assigned_technician}
+              <h4 className="text-card-foreground font-medium capitalize">
+                {data.assigned_technician_name}
               </h4>
-              <p className="text-muted-foreground text-sm">
-                Service Technician
-              </p>
+              <Muted>{data.assigned_technician_phone}</Muted>
             </div>
           </div>
         </CardContent>
@@ -255,29 +256,31 @@ export default function TicketView({ id }) {
       )}
 
       {/* Action Buttons */}
-      <div className="flex gap-4 pt-4">
-        <Select
-          value={data.status}
-          onValueChange={(value) => {
-            updateMutation.mutate({ status: value });
-          }}
-        >
-          <SelectTrigger className={"capitalize"}>
-            <SelectValue placeholder="Select a status" />
-          </SelectTrigger>
-          <SelectContent>
-            {ticketStatus.map((option) => (
-              <SelectItem
-                key={option.value}
-                value={option.value}
-                className={"capitalize"}
-              >
-                {option.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+      {user?.role === "admin" && (
+        <div className="flex gap-4 pt-4">
+          <Select
+            value={data.status}
+            onValueChange={(value) => {
+              updateMutation.mutate({ status: value });
+            }}
+          >
+            <SelectTrigger className={"capitalize"}>
+              <SelectValue placeholder="Select a status" />
+            </SelectTrigger>
+            <SelectContent>
+              {ticketStatus.map((option) => (
+                <SelectItem
+                  key={option.value}
+                  value={option.value}
+                  className={"capitalize"}
+                >
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
     </div>
   );
 }

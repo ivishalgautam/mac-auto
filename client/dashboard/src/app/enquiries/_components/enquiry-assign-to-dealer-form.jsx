@@ -10,10 +10,7 @@ import { cn } from "@/lib/utils";
 import { Alert, AlertDescription } from "../../../components/ui/alert";
 import { getFormErrors } from "@/lib/get-form-errors";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  convertInquiryToCustomer,
-  inquiryAssignToDealer,
-} from "@/services/enquiry";
+import { inquiryAssignToDealer } from "@/services/enquiry";
 import { z } from "zod";
 import DealerSelect from "@/features/dealer-select";
 

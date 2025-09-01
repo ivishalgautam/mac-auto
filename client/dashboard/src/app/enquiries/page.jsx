@@ -5,14 +5,17 @@ import { Heading } from "@/components/ui/heading";
 import PageContainer from "@/components/layout/page-container";
 import Listing from "./_components/listing";
 import TableActions from "./_components/table-actions";
+import Link from "next/link";
+import { buttonVariants } from "@/components/ui/button";
+import { Plus } from "lucide-react";
 
 export const metadata = {
   title: "Enquiries",
 };
 
 export default async function Enquiries({ searchParams }) {
-  searchParamsCache.parse(searchParams);
-  const key = serialize({ ...searchParams });
+  searchParamsCache.parse(await searchParams);
+  const key = serialize({ ...(await searchParams) });
 
   return (
     <PageContainer>
@@ -21,6 +24,12 @@ export default async function Enquiries({ searchParams }) {
           title={"Enquiries"}
           description={"Manage Enquiries (View, Delete)."}
         />
+        <Link
+          href={"/walkin-enquiries/create?t=mac-auto"}
+          className={buttonVariants({ size: "sm" })}
+        >
+          <Plus /> Create
+        </Link>
       </div>
       <TableActions />
       <Suspense

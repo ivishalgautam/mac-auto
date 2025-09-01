@@ -15,7 +15,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Alert, AlertDescription } from "../ui/alert";
 import { getFormErrors } from "@/lib/get-form-errors";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import VehicleSelect from "@/features/vehicle-select";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -38,8 +38,12 @@ import ErrorMessage from "../ui/error";
 import config from "@/config";
 import { H1, H3 } from "../ui/typography";
 import { walkInEnquirySchema } from "@/utils/schema/walking-enquiry.schema";
+import DealerSelect from "@/features/dealer-select";
+import { useAuth } from "@/providers/auth-provider";
 
 export default function WalkInEnquiryForm({ onSuccess, type = "create", id }) {
+  const user = useAuth();
+
   const [files, setFiles] = useState({
     pan: [],
     aadhaar: [],
@@ -56,6 +60,9 @@ export default function WalkInEnquiryForm({ onSuccess, type = "create", id }) {
     guarantor_aadhaar_urls: [],
   });
 
+  const searchParams = useSearchParams();
+  const t = searchParams.get("t");
+
   const {
     register,
     handleSubmit,
@@ -69,12 +76,15 @@ export default function WalkInEnquiryForm({ onSuccess, type = "create", id }) {
   } = useForm({
     resolver: zodResolver(walkInEnquirySchema),
     defaultValues: {
+      dealer_id: null,
       vehicle_id: "",
       name: "",
       phone: "",
       location: "",
       purchase_type: "",
       house: undefined,
+      quantity: 0,
+      enquiry_type: t ?? "",
 
       pan: [],
       aadhaar: [],
@@ -102,7 +112,11 @@ export default function WalkInEnquiryForm({ onSuccess, type = "create", id }) {
     onSuccess: () => {
       toast.success("Enquiry created.");
       queryClient.invalidateQueries(["walkin-enquiries"]);
-      router.push("/walkin-enquiries?page=1&limit=10");
+      router.push(
+        t === "walk-in"
+          ? "/walkin-enquiries?page=1&limit=10"
+          : "/enquiries?page=1&limit=10",
+      );
       typeof onSuccess === "function" && onSuccess();
     },
     onError: (error) => {
@@ -137,7 +151,6 @@ export default function WalkInEnquiryForm({ onSuccess, type = "create", id }) {
       "rent_agreement",
     ]);
     if (!isValid) return;
-
     const {
       pan,
       aadhaar,
@@ -147,7 +160,6 @@ export default function WalkInEnquiryForm({ onSuccess, type = "create", id }) {
       ...rest
     } = formDataValues;
     const payload = { ...rest };
-
     const formData = new FormData();
     Object.entries(files).forEach(([key, value]) => {
       value.forEach((file) => formData.append(key, file));
@@ -284,6 +296,7 @@ export default function WalkInEnquiryForm({ onSuccess, type = "create", id }) {
 
       {/* Core Fields */}
       <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+        {/* vehicle */}
         <div className="space-y-2">
           <Label>Vehicle *</Label>
           <Controller
@@ -302,6 +315,7 @@ export default function WalkInEnquiryForm({ onSuccess, type = "create", id }) {
           />
         </div>
 
+        {/* full name */}
         <div className="space-y-2">
           <Label>Full Name *</Label>
           <Input
@@ -312,6 +326,7 @@ export default function WalkInEnquiryForm({ onSuccess, type = "create", id }) {
           />
         </div>
 
+        {/* phone */}
         <div className="space-y-2">
           <Label>Phone *</Label>
           <Controller
@@ -331,6 +346,7 @@ export default function WalkInEnquiryForm({ onSuccess, type = "create", id }) {
           />
         </div>
 
+        {/* location */}
         <div className="space-y-2">
           <Label>Location *</Label>
           <Input
@@ -341,8 +357,9 @@ export default function WalkInEnquiryForm({ onSuccess, type = "create", id }) {
           />
         </div>
 
+        {/* purchase type */}
         <div className="space-y-2">
-          <Label>Purchase Type *</Label>
+          <Label>Purchase Type</Label>
           <Controller
             name="purchase_type"
             control={control}
@@ -369,6 +386,38 @@ export default function WalkInEnquiryForm({ onSuccess, type = "create", id }) {
                 </SelectContent>
               </Select>
             )}
+          />
+        </div>
+
+        {/* dealer */}
+        {user?.role === "admin" && (
+          <div className="space-y-2">
+            <Label>Dealer</Label>
+            <Controller
+              name="dealer_id"
+              control={control}
+              render={({ field }) => (
+                <DealerSelect
+                  value={field.value}
+                  onChange={field.onChange}
+                  className={cn({
+                    "border-red-500 dark:border-red-500": errors.dealer_id,
+                  })}
+                />
+              )}
+            />
+          </div>
+        )}
+
+        {/* quantity */}
+        <div className="space-y-2">
+          <Label htmlFor="quantity">Quantity</Label>
+          <Input
+            id="quantity"
+            type="number"
+            placeholder="Enter quantity"
+            {...register("quantity", { valueAsNumber: true })}
+            className={cn({ "border-red-500": errors.quantity })}
           />
         </div>
       </div>

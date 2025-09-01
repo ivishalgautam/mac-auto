@@ -27,13 +27,18 @@ import Papa from "papaparse";
 import { flattenEnquiry } from "@/helpers/flatten-walking-enquiry";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { ConvertDialog } from "./dialog/convert-dialog";
+import { WalkInEnquiryAssignDialog } from "./dialog/inquiry-assign-dialog";
 
 export default function Listing() {
   const { user } = useAuth();
+
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [isConvertModal, setIsConvertModal] = useState(false);
   const [isInquiryAssignModal, setIsInquiryAssignModal] = useState(false);
   const [id, setId] = useState(null);
+  const [selectedEnq, setSelectedEnq] = useState({});
+
   const searchParams = useSearchParams();
   const searchParamStr = searchParams.toString();
   const router = useRouter();
@@ -108,15 +113,39 @@ export default function Listing() {
       </div>
 
       <DataTable
-        columns={columns(openModal, setId, user, updateMutation)}
+        columns={columns(
+          openModal,
+          setId,
+          user,
+          updateMutation,
+          setSelectedEnq,
+        )}
         data={data.enquiries}
         totalItems={data.total}
       />
+
       <DeleteDialog
         {...{
           isOpen: isDeleteOpen,
           setIsOpen: setIsDeleteOpen,
           mutation: deleteMutation,
+        }}
+      />
+
+      <ConvertDialog
+        {...{
+          isOpen: isConvertModal,
+          setIsOpen: setIsConvertModal,
+          inquiryId: id,
+          selectedEnq: selectedEnq,
+        }}
+      />
+
+      <WalkInEnquiryAssignDialog
+        {...{
+          isOpen: isInquiryAssignModal,
+          setIsOpen: setIsInquiryAssignModal,
+          inquiryId: id,
         }}
       />
     </div>

@@ -32,6 +32,7 @@ import ErrorMessage from "../ui/error";
 import config from "@/config";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import VehicleModelSelectMulti from "@/features/vehicle-model-select-multi";
 
 const defaultValues = {
   color_name: "",
@@ -280,6 +281,26 @@ export default function VariantForm({ vehicleId, type = "create", id }) {
                       ))}
                     </SelectContent>
                   </Select>
+                );
+              }}
+            />
+            {errors.color && (
+              <p className="text-sm text-red-500">{errors.color.message}</p>
+            )}
+          </div>
+
+          {/* Select model */}
+          <div className="space-y-2">
+            <Label>Models</Label>
+            <Controller
+              name="vehicle_models"
+              control={control}
+              render={({ field }) => {
+                return (
+                  <VehicleModelSelectMulti
+                    onChange={field.onChange}
+                    value={field.value}
+                  />
                 );
               }}
             />

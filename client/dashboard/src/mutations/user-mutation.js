@@ -26,6 +26,14 @@ export const useGetUser = (id) => {
   });
 };
 
+export const useGetUserByPhone = (phone) => {
+  return useQuery({
+    queryKey: ["users", phone],
+    queryFn: () => user.getByPhone(phone),
+    enabled: !!phone,
+  });
+};
+
 export const useCreateUser = (handleSuccess) => {
   const queryClient = useQueryClient();
 

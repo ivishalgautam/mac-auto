@@ -16,6 +16,7 @@ import {
 } from "@/mutations/followup-mutation";
 import { DeleteDialog } from "./delete-dialog";
 import { CreateFollowupDialog } from "../../_components/dialog/create-followup-dialog";
+import ErrorMessage from "@/components/ui/error";
 
 export default function Listing({}) {
   const { user } = useAuth();
@@ -47,7 +48,6 @@ export default function Listing({}) {
   }
 
   const { data, isLoading, isError, error } = useGetFollowups(searchParamStr);
-
   const deleteMutation = useDeleteFollowupMutation(id, () =>
     setIsDeleteOpen(false),
   );
@@ -62,7 +62,7 @@ export default function Listing({}) {
   }, [searchParamStr, router]);
 
   if (isLoading) return <DataTableSkeleton columnCount={5} rowCount={10} />;
-  if (isError) error?.message ?? "error";
+  if (isError) return <ErrorMessage error={error} />;
 
   return (
     <div className="border-input rounded-lg">

@@ -1,0 +1,30 @@
+import InquiryAssignToDealerForm from "@/app/enquiries/_components/enquiry-assign-to-dealer-form";
+import WalkInEnquiryAssignToDealerForm from "@/components/forms/walk-in-enquiry-assign-to-dealer-form";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+
+export function WalkInEnquiryAssignDialog({ isOpen, setIsOpen, inquiryId }) {
+  return (
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Assign to dealer?</DialogTitle>
+          <DialogDescription className={"sr-only"}>
+            Assign to dealer
+          </DialogDescription>
+          <div className="mt-2">
+            <WalkInEnquiryAssignToDealerForm
+              onSuccess={() => setIsOpen(false)}
+              inquiryId={inquiryId}
+            />
+          </div>
+        </DialogHeader>
+      </DialogContent>
+    </Dialog>
+  );
+}

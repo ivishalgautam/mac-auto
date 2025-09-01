@@ -3,7 +3,7 @@ import { z } from "zod";
 
 export const userFormSchema = z
   .object({
-    role: z.enum(["admin", "dealer", "customer"], {
+    role: z.enum(["admin", "dealer", "customer", "cre", "manager"], {
       required_error: "Role is required.",
     }),
     username: z
@@ -58,7 +58,7 @@ export const userFormSchema = z
 
 export const userUpdateSchema = z
   .object({
-    role: z.enum(["admin", "dealer", "customer"], {
+    role: z.enum(["admin", "dealer", "customer", "cre", "manager"], {
       required_error: "Role is required.",
     }),
     username: z

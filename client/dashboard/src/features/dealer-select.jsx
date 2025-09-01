@@ -27,7 +27,9 @@ export default function DealerSelect({
 }) {
   const [open, setOpen] = useState(false);
   const { data, isLoading, isError, error } = useGetDealers();
+
   if (isError) return <ErrorMessage error={error} />;
+
   return isLoading ? (
     <Skeleton className={"h-9 w-full"} />
   ) : (

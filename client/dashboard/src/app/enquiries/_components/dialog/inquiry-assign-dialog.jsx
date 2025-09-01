@@ -1,4 +1,5 @@
 import InquiryAssignToDealerForm from "@/app/enquiries/_components/enquiry-assign-to-dealer-form";
+import WalkInEnquiryAssignToDealerForm from "@/components/forms/walk-in-enquiry-assign-to-dealer-form";
 import {
   Dialog,
   DialogContent,
@@ -17,7 +18,7 @@ export function InquiryAssignDialog({ isOpen, setIsOpen, inquiryId }) {
             Assign to dealer
           </DialogDescription>
           <div className="mt-2">
-            <InquiryAssignToDealerForm
+            <WalkInEnquiryAssignToDealerForm
               onSuccess={() => setIsOpen(false)}
               inquiryId={inquiryId}
             />

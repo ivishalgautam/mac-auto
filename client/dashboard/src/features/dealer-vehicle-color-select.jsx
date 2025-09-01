@@ -29,6 +29,7 @@ export default function DealerVehicleColorSelect({
   const { data, isLoading, isError, error } =
     useGetDealerVehicleColors(vehicleId);
 
+  if (!vehicleId) return <ErrorMessage error={"Vehicle not found!"} />;
   if (isError) return <ErrorMessage error={error} />;
 
   return isLoading ? (
