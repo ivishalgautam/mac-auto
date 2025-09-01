@@ -219,7 +219,7 @@ export default function TicketForm({ id, type }) {
 
           {/* purchase_id */}
           {((customerId &&
-            ["admin", "dealer"].includes(user?.role) &&
+            ["admin", "dealer", "cre", "manager"].includes(user?.role) &&
             type === "create") ||
             user?.role === "customer") && (
             <div className="space-y-2">
@@ -272,7 +272,7 @@ export default function TicketForm({ id, type }) {
           </div>
 
           {/* expected closure date */}
-          {["admin"].includes(user?.role) && (
+          {["admin", "cre", "manager"].includes(user?.role) && (
             <div>
               <Label>Expected closure date</Label>
               <div>
@@ -292,7 +292,7 @@ export default function TicketForm({ id, type }) {
           )}
 
           {/* assigned technician */}
-          {["admin"].includes(user?.role) && (
+          {["admin", "cre", "manager"].includes(user?.role) && (
             <div className="space-y-2">
               <Label htmlFor="assigned_technician">Technician</Label>
               <Controller
