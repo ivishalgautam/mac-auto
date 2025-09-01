@@ -1,7 +1,10 @@
-import WalkInEnquiryForm from "@/components/forms/walkin-enquiry";
+const WalkInEnquiryForm = dynamic(
+  () => import("@/components/forms/walkin-enquiry"),
+);
 import PageContainer from "@/components/layout/page-container";
 import { Heading } from "@/components/ui/heading";
-import React from "react";
+import dynamic from "next/dynamic";
+import React, { Suspense } from "react";
 
 export default function CreatePage() {
   return (
@@ -10,7 +13,9 @@ export default function CreatePage() {
         title="Create Walk In Enquiry"
         description="Create Walk In Enquiry."
       />
-      <WalkInEnquiryForm type={"create"} />
+      <Suspense>
+        <WalkInEnquiryForm type={"create"} />
+      </Suspense>
     </PageContainer>
   );
 }
