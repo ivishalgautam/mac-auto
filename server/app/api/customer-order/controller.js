@@ -9,7 +9,6 @@ const status = constants.http.status;
 const create = async (req, res) => {
   const transaction = await sequelize.transaction();
   try {
-    console.log("body", req.body);
     const validateData = customerOrderSchema.parse(req.body);
     const customerRecord = await table.CustomerModel.getById(
       0,

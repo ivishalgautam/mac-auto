@@ -27,7 +27,7 @@ const init = async (sequelize) => {
       },
       email: {
         type: DataTypes.STRING,
-        allowNull: false,
+        allowNull: true,
         unique: {
           args: true,
           msg: "Email address already in use.",
@@ -57,7 +57,15 @@ const init = async (sequelize) => {
       },
       role: {
         type: DataTypes.ENUM({
-          values: ["super_admin", "admin", "dealer", "customer", "user"],
+          values: [
+            "super_admin",
+            "admin",
+            "dealer",
+            "customer",
+            "user",
+            "cre",
+            "manager",
+          ],
         }),
         defaultValue: "user",
       },
@@ -281,6 +289,14 @@ const updatePassword = async (req, user_id) => {
   );
 };
 
+const getByPhone = async (phone) => {
+  return await UserModel.findOne({
+    where: { mobile_number: phone },
+    plain: true,
+    raw: true,
+  });
+};
+
 const deleteById = async (req, user_id) => {
   return await UserModel.destroy({
     where: {
@@ -391,6 +407,7 @@ export default {
   update: update,
   updatePassword: updatePassword,
   deleteById: deleteById,
+  getByPhone: getByPhone,
   countUser: countUser,
   getByEmailId: getByEmailId,
   getByResetToken: getByResetToken,

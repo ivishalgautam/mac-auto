@@ -20,6 +20,8 @@ import ticketModel from "./models/ticket.model.js";
 import vehicleColorModel from "./models/vehicle-color.model.js";
 import walkinEnquiryModel from "./models/walkin-enquiry.model.js";
 import dealerTicketModel from "./models/dealer-ticket.model.js";
+import vehicleModelModel from "./models/vehicle-model.model.js";
+import technicianModel from "./models/technician.model.js";
 
 export default {
   UserModel: userModel,
@@ -43,4 +45,6 @@ export default {
   DealerTicketModel: dealerTicketModel,
   VehicleColorModel: vehicleColorModel,
   WalkinEnquiryModel: walkinEnquiryModel,
+  VehicleModelModel: vehicleModelModel,
+  TechnicianModel: technicianModel,
 };

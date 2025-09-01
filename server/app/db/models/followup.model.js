@@ -20,7 +20,7 @@ const init = async (sequelize) => {
         type: DataTypes.UUID,
         allowNull: false,
         references: {
-          model: constants.models.ENQUIRY_TABLE,
+          model: constants.models.WALKIN_ENQUIRY_TABLE,
           key: "id",
           deferrable: Deferrable.INITIALLY_IMMEDIATE,
         },
@@ -99,7 +99,7 @@ const get = async (req) => {
     SELECT
         COUNT(flw.id) OVER()::integer as total
       FROM ${constants.models.FOLLOW_UP_TABLE} flw
-      LEFT JOIN ${constants.models.ENQUIRY_TABLE} enq ON enq.id = flw.enquiry_id
+      LEFT JOIN ${constants.models.WALKIN_ENQUIRY_TABLE} enq ON enq.id = flw.enquiry_id
       LEFT JOIN ${constants.models.DEALER_TABLE} dlr ON dlr.id = enq.dealer_id
       LEFT JOIN ${constants.models.USER_TABLE} usr ON usr.id = dlr.user_id
       ${whereClause}
@@ -113,7 +113,7 @@ const get = async (req) => {
           ELSE CONCAT(usr.first_name, ' ', usr.last_name, ' (', dlr.location, ')')
         END AS dealership
       FROM ${constants.models.FOLLOW_UP_TABLE} flw
-      LEFT JOIN ${constants.models.ENQUIRY_TABLE} enq ON enq.id = flw.enquiry_id
+      LEFT JOIN ${constants.models.WALKIN_ENQUIRY_TABLE} enq ON enq.id = flw.enquiry_id
       LEFT JOIN ${constants.models.DEALER_TABLE} dlr ON dlr.id = enq.dealer_id
       LEFT JOIN ${constants.models.USER_TABLE} usr ON usr.id = dlr.user_id
       ${whereClause}

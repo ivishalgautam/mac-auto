@@ -8,13 +8,22 @@ import {
 } from "./schema.js";
 import { cleanupFiles } from "../../helpers/cleanup-files.js";
 import { getItemsToDelete } from "../../helpers/filter.js";
+import { createNewCustomerOrderSchema } from "../enquiry/schema.js";
+import { StatusCodes } from "http-status-codes";
 
 const create = async (req, res) => {
   try {
-    const dealerRecord = await table.DealerModel.getByUserId(req.user_data.id);
-    if (!dealerRecord)
-      return res.code(404).send({ message: "Dealer not registered!" });
-    req.body.dealer_id = dealerRecord.id;
+    const { role, id } = req.user_data;
+    if (role === "dealer") {
+      const dealerRecord = await table.DealerModel.getByUserId(id);
+      console.log({ dealerRecord });
+      if (!dealerRecord)
+        return res
+          .code(404)
+          .send({ status: false, message: "Dealer not found." });
+
+      req.body.dealer_id = dealerRecord.id;
+    }
 
     const validateData = walkInEnquirySchema.parse(req.body);
     res.send({
@@ -124,7 +133,6 @@ const deleteById = async (req, res) => {
     if (!record) return res.code(404).send({ message: "Enquiry not found!" });
 
     const data = await table.WalkinEnquiryModel.deleteById(req, 0, transaction);
-    console.log(data);
 
     const filesToDelete = [
       ...(record?.pan ?? []),
@@ -150,32 +158,18 @@ const get = async (req, res) => {
   }
 };
 
-const convertToCustomer = async (req, res) => {
+const createNewCustomerOrder = async (req, res) => {
   const transaction = await sequelize.transaction();
   const { role, id } = req.user_data;
   let dealerId = req.body?.dealer_id;
 
   try {
-    const validateData = convertToCustomerSchema.parse(req.body);
-
+    const validateData = createNewCustomerOrderSchema.parse(req.body);
     const record = await table.WalkinEnquiryModel.getById(req);
-    if (!record) return res.code(404).send({ message: "Enquiry not found!" });
-
-    const user = await table.UserModel.create(
-      {
-        body: {
-          username: validateData.username,
-          password: validateData.password,
-          first_name: record.name,
-          email: record.email,
-          mobile_number: record.phone,
-          role: "customer",
-        },
-      },
-      transaction
-    );
-
-    const customer = await table.CustomerModel.create(user.id, transaction);
+    if (!record)
+      return res
+        .code(StatusCodes.NOT_FOUND)
+        .send({ message: "Enquiry not found!" });
 
     if (role === "dealer") {
       const dealerRecord = await table.DealerModel.getByUserId(id);
@@ -187,18 +181,172 @@ const convertToCustomer = async (req, res) => {
       dealerId = dealerRecord.id;
     }
 
-    await table.CustomerDealersModel.create(
-      { body: { customer_id: customer.id, dealer_id: dealerId } },
+    const user = await table.UserModel.create(
+      {
+        body: {
+          username: validateData.username,
+          password: validateData.password,
+          first_name: record.name,
+          email: record.email,
+          mobile_number: validateData.mobile_number ?? record.phone,
+          role: "customer",
+        },
+      },
       transaction
     );
+
+    const customerRecord = await table.CustomerModel.create(
+      user.id,
+      transaction
+    );
+
+    const chassisRecord =
+      await table.DealerInventoryModel.getByChassisAndDealer(
+        req.body.chassis_no,
+        dealerId
+      );
+    if (!chassisRecord) {
+      return res
+        .code(StatusCodes.NOT_FOUND)
+        .send({ status: false, message: "Chassis not found!" });
+    }
+
+    // add customer dealer map entry
+    await table.CustomerDealersModel.create(
+      { body: { customer_id: customerRecord.id, dealer_id: dealerId } },
+      transaction
+    );
+
+    // update enquiry status
     await table.WalkinEnquiryModel.update(
       { body: { status: "converted" } },
       record.id,
       transaction
     );
 
+    // add entry to customer purchase
+    await table.CustomerPurchaseModel.create(
+      {
+        body: {
+          vehicle_id: chassisRecord.vehicle_id,
+          vehicle_color_id: req.body.vehicle_color_id,
+          customer_id: customerRecord.id,
+          dealer_id: dealerId,
+          chassis_no: req.body.chassis_no,
+          invoices_bills: req.body.invoices_bills,
+          booking_amount: req.body.booking_amount,
+        },
+      },
+      transaction
+    );
+
+    // dealer inventory chassis update
+    await table.DealerInventoryModel.updateStatusByChassisNo(
+      req.body.chassis_no,
+      "sold",
+      transaction
+    );
+
     await transaction.commit();
-    res.code(200).send({ status: true, message: "Converted successfully." });
+    res.code(200).send({ status: true, message: "Created successfully." });
+  } catch (error) {
+    await transaction.rollback();
+    throw error;
+  }
+};
+
+const createExistingCustomerOrder = async (req, res) => {
+  const transaction = await sequelize.transaction();
+  const { role, id } = req.user_data;
+  let dealerId = req.body?.dealer_id;
+
+  try {
+    const record = await table.WalkinEnquiryModel.getById(req);
+    if (!record)
+      return res
+        .code(StatusCodes.NOT_FOUND)
+        .send({ message: "Enquiry not found!" });
+
+    if (role === "dealer") {
+      const dealerRecord = await table.DealerModel.getByUserId(id);
+      if (!record)
+        return res
+          .code(StatusCodes.NOT_FOUND)
+          .send({ status: false, message: "Dealer not registered." });
+
+      dealerId = dealerRecord.id;
+    }
+
+    const user = await table.UserModel.getByPhone(record.phone);
+    if (!user || (user && user.role !== "customer")) {
+      return res
+        .code(StatusCodes.NOT_FOUND)
+        .send({ status: false, message: "User not found" });
+    }
+
+    const customerRecord = await table.CustomerModel.getByUserId(0, user.id);
+    if (!customerRecord) {
+      return res
+        .code(StatusCodes.NOT_FOUND)
+        .send({ status: false, message: "Customer not found" });
+    }
+
+    const chassisRecord =
+      await table.DealerInventoryModel.getByChassisAndDealer(
+        req.body.chassis_no,
+        dealerId
+      );
+    if (!chassisRecord) {
+      return res
+        .code(StatusCodes.NOT_FOUND)
+        .send({ status: false, message: "Chassis not found!" });
+    }
+
+    const dealerCustomerRecord =
+      await table.CustomerDealersModel.getByCustomerAndDealer({
+        body: { customer_id: customerRecord.id, dealer_id: dealerId },
+      });
+
+    if (!dealerCustomerRecord) {
+      // create customer dealer entry
+      await table.CustomerDealersModel.create(
+        { body: { customer_id: customerRecord.id, dealer_id: dealerId } },
+        transaction
+      );
+    }
+
+    // update enquiry
+    await table.WalkinEnquiryModel.update(
+      { body: { status: "converted" } },
+      record.id,
+      transaction
+    );
+
+    // update dealer inventory chassis status
+    await table.DealerInventoryModel.updateStatusByChassisNo(
+      req.body.chassis_no,
+      "sold",
+      transaction
+    );
+
+    // add entry to customer purchase
+    await table.CustomerPurchaseModel.create(
+      {
+        body: {
+          vehicle_id: chassisRecord.vehicle_id,
+          vehicle_color_id: req.body.vehicle_color_id,
+          customer_id: customerRecord.id,
+          dealer_id: dealerId,
+          chassis_no: req.body.chassis_no,
+          invoices_bills: req.body.invoices_bills,
+          booking_amount: req.body.booking_amount,
+        },
+      },
+      transaction
+    );
+
+    await transaction.commit();
+    res.code(200).send({ status: true, message: "Created successfully." });
   } catch (error) {
     await transaction.rollback();
     throw error;
@@ -215,12 +363,7 @@ const assignToDealer = async (req, res) => {
     if (!record) return res.code(404).send({ message: "Enquiry not found!" });
 
     await table.WalkinEnquiryModel.update(
-      {
-        body: {
-          status: "dealer assigned",
-          dealer_id: validateData.dealer_id,
-        },
-      },
+      { body: { dealer_id: validateData.dealer_id } },
       record.id,
       transaction
     );
@@ -239,6 +382,7 @@ export default {
   deleteById: deleteById,
   update: update,
   get: get,
-  convertToCustomer: convertToCustomer,
   assignToDealer: assignToDealer,
+  createNewCustomerOrder: createNewCustomerOrder,
+  createExistingCustomerOrder: createExistingCustomerOrder,
 };

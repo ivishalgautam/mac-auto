@@ -110,9 +110,16 @@ const getById = async (req, id) => {
   });
 };
 
+const getByUserId = async (req, id) => {
+  return await CustomerModel.findOne({
+    where: { user_id: req.params?.id || id },
+  });
+};
+
 export default {
   init: init,
   create: create,
   get: get,
   getById: getById,
+  getByUserId: getByUserId,
 };

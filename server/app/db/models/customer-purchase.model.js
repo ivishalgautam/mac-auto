@@ -62,6 +62,10 @@ const init = async (sequelize) => {
         type: DataTypes.JSONB,
         defaultValue: [],
       },
+      booking_amount: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+      },
     },
     {
       createdAt: "created_at",
@@ -102,6 +106,7 @@ const create = async (req, transaction) => {
       dealer_id: req.body.dealer_id,
       chassis_no: req.body.chassis_no,
       invoices_bills: req.body.invoices_bills,
+      booking_amount: req.body.booking_amount,
     },
     options
   );

@@ -53,8 +53,13 @@ const init = async (sequelize) => {
         allowNull: true,
       },
       assigned_technician: {
-        type: DataTypes.STRING,
+        type: DataTypes.UUID,
         allowNull: true,
+        references: {
+          model: constants.models.TECHNICIAN_TABLE,
+          deferrable: Deferrable.INITIALLY_IMMEDIATE,
+        },
+        onDelete: "SET NULL",
       },
       parts: {
         type: DataTypes.JSONB,
@@ -177,13 +182,15 @@ const get = async (req) => {
         CONCAT(dstu.first_name, ' ', COALESCE(dstu.last_name, ''), ' (', dl.location, ')') as dealership_name,
         dstu.mobile_number as dealership_phone,
         CONCAT(cstu.first_name, ' ', COALESCE(cstu.last_name, '')) as customer_name,
-        cstu.mobile_number as customer_phone
+        cstu.mobile_number as customer_phone,
+        tcn.technician_name as assigned_technician
     FROM ${constants.models.TICKET_TABLE} tk
     LEFT JOIN ${constants.models.CUSTOMER_PURCHASE_TABLE} cpt ON cpt.id = tk.purchase_id
     LEFT JOIN ${constants.models.DEALER_TABLE} dl ON dl.id = cpt.dealer_id
     LEFT JOIN ${constants.models.CUSTOMER_TABLE} cst ON cst.id = cpt.customer_id
     LEFT JOIN ${constants.models.USER_TABLE} cstu ON cstu.id = cst.user_id
     LEFT JOIN ${constants.models.USER_TABLE} dstu ON dstu.id = dl.user_id
+    LEFT JOIN ${constants.models.TECHNICIAN_TABLE} tcn ON tk.assigned_technician = tcn.id
     ${whereClause}
     ORDER BY tk.created_at DESC
     LIMIT :limit OFFSET :offset
@@ -230,13 +237,15 @@ const getTicketDetailsById = async (req, id) => {
       tk.*, cp.chassis_no,
       dstu.first_name as dealership_first_name, dstu.last_name as dealership_last_name, dstu.mobile_number as dealership_phone,
       dl.location as dealership_location,
-      cstu.first_name as customer_first_name, cstu.last_name as customer_last_name, cstu.mobile_number as customer_phone
+      cstu.first_name as customer_first_name, cstu.last_name as customer_last_name, cstu.mobile_number as customer_phone,
+      tcn.technician_name as assigned_technician_name, tcn.technician_phone as assigned_technician_phone
     FROM ${constants.models.TICKET_TABLE} tk
     LEFT JOIN ${constants.models.CUSTOMER_PURCHASE_TABLE} cp ON cp.id = tk.purchase_id
     LEFT JOIN ${constants.models.DEALER_TABLE} dl ON dl.id = cp.dealer_id
     LEFT JOIN ${constants.models.CUSTOMER_TABLE} cst ON cst.id = cp.customer_id
     LEFT JOIN ${constants.models.USER_TABLE} cstu ON cstu.id = cst.user_id
     LEFT JOIN ${constants.models.USER_TABLE} dstu ON dstu.id = dl.user_id
+    LEFT JOIN ${constants.models.TECHNICIAN_TABLE} tcn ON tk.assigned_technician = tcn.id
     WHERE tk.id = :id
   `;
 

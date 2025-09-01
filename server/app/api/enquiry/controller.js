@@ -2,8 +2,12 @@
 import { z } from "zod";
 import table from "../../db/models.js";
 import { sequelize } from "../../db/postgres.js";
-import { convertToCustomerSchema, inquiryAssignToDealer } from "./schema.js";
+import {
+  createNewCustomerOrderSchema,
+  inquiryAssignToDealer,
+} from "./schema.js";
 import { isValidPhoneNumber } from "libphonenumber-js";
+import { StatusCodes } from "http-status-codes";
 
 const enquirySchema = z
   .object({
@@ -103,16 +107,18 @@ const get = async (req, res) => {
   }
 };
 
-const convertToCustomer = async (req, res) => {
+const createNewCustomerOrder = async (req, res) => {
   const transaction = await sequelize.transaction();
   const { role, id } = req.user_data;
   let dealerId = req.body?.dealer_id;
 
   try {
-    const validateData = convertToCustomerSchema.parse(req.body);
-
+    const validateData = createNewCustomerOrderSchema.parse(req.body);
     const record = await table.EnquiryModel.getById(req);
-    if (!record) return res.code(404).send({ message: "Enquiry not found!" });
+    if (!record)
+      return res
+        .code(StatusCodes.NOT_FOUND)
+        .send({ message: "Enquiry not found!" });
 
     const user = await table.UserModel.create(
       {
@@ -135,6 +141,54 @@ const convertToCustomer = async (req, res) => {
       if (!record)
         return res
           .code(404)
+          .send({ status: false, message: "Dealer not registered." });
+
+      dealerId = dealerRecord.id;
+    }
+
+    await table.CustomerDealersModel.create(
+      { body: { customer_id: customer.id, dealer_id: dealerId } },
+      transaction
+    );
+    await table.EnquiryModel.update(
+      { body: { status: "converted" } },
+      record.id,
+      transaction
+    );
+
+    await transaction.commit();
+    res.code(200).send({ status: true, message: "Converted successfully." });
+  } catch (error) {
+    await transaction.rollback();
+    throw error;
+  }
+};
+
+const createExistingCustomerOrder = async (req, res) => {
+  const transaction = await sequelize.transaction();
+  const { role, id } = req.user_data;
+  let dealerId = req.body?.dealer_id;
+
+  try {
+    const record = await table.EnquiryModel.getById(req);
+    if (!record)
+      return res
+        .code(StatusCodes.NOT_FOUND)
+        .send({ message: "Enquiry not found!" });
+
+    const user = await table.UserModel.getByPhone(record.phone);
+    if (!user || (user && user.role !== "customer"))
+      return res
+        .code(StatusCodes.NOT_FOUND)
+        .send({ status: false, message: "User not found" });
+
+    const customer = await table.CustomerModel.create(user.id, transaction);
+
+    if (role === "dealer") {
+      const dealerRecord = await table.DealerModel.getByUserId(id);
+      if (!record)
+        return res
+          .code(StatusCodes.NOT_FOUND)
           .send({ status: false, message: "Dealer not registered." });
 
       dealerId = dealerRecord.id;
@@ -191,6 +245,7 @@ export default {
   getById: getById,
   deleteById: deleteById,
   get: get,
-  convertToCustomer: convertToCustomer,
+  createNewCustomerOrder: createNewCustomerOrder,
+  createExistingCustomerOrder: createExistingCustomerOrder,
   assignToDealer: assignToDealer,
 };

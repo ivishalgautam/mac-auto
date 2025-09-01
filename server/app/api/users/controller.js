@@ -101,6 +101,20 @@ const getById = async (req, res) => {
   }
 };
 
+const getByPhone = async (req, res) => {
+  try {
+    const record = await table.UserModel.getByPhone(req.params.phone);
+    if (!record) {
+      return res.code(404).send({ message: "User not exists" });
+    }
+    delete record.password;
+
+    return res.send(record);
+  } catch (error) {
+    throw error;
+  }
+};
+
 const updatePassword = async (req, res) => {
   try {
     const record = await table.UserModel.getById(req);
@@ -179,6 +193,7 @@ export default {
   deleteById: deleteById,
   get: get,
   getById: getById,
+  getByPhone: getByPhone,
   checkUsername: checkUsername,
   updatePassword: updatePassword,
   getUser: getUser,

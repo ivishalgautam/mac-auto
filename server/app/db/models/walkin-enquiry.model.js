@@ -1,8 +1,8 @@
 "use strict";
 import constants from "../../lib/constants/index.js";
 import sequelizeFwk, { Deferrable, Op, QueryTypes } from "sequelize";
-const { DataTypes } = sequelizeFwk;
 import { format, subDays, eachDayOfInterval } from "date-fns";
+const { DataTypes } = sequelizeFwk;
 
 let WalkInEnquiryModel = null;
 
@@ -34,7 +34,7 @@ const init = async (sequelize) => {
       },
       dealer_id: {
         type: DataTypes.UUID,
-        allowNull: false,
+        allowNull: true,
         references: {
           model: constants.models.DEALER_TABLE,
           key: "id",
@@ -46,6 +46,14 @@ const init = async (sequelize) => {
         type: DataTypes.STRING,
         allowNull: false,
       },
+      quantity: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0,
+      },
+      email: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
       phone: {
         type: DataTypes.STRING,
         allowNull: false,
@@ -54,13 +62,17 @@ const init = async (sequelize) => {
         type: DataTypes.STRING,
         allowNull: false,
       },
+      enquiry_type: {
+        type: DataTypes.ENUM(["mac-auto", "walk-in"]),
+        defaultValue: "mac-auto",
+      },
       status: {
-        type: DataTypes.ENUM(["pending", "approved", "rejected"]),
+        type: DataTypes.ENUM(["pending", "approved", "rejected", "converted"]),
         defaultValue: "pending",
       },
       purchase_type: {
-        type: DataTypes.ENUM(["cash", "finance"]),
-        allowNull: false,
+        type: DataTypes.ENUM(["", "cash", "finance"]),
+        defaultValue: "",
       },
       pan: {
         type: DataTypes.JSONB,
@@ -134,6 +146,8 @@ const init = async (sequelize) => {
         { fields: ["present_address"] },
         { fields: ["guarantor"] },
         { fields: ["co_applicant"] },
+        { fields: ["enquiry_type"] },
+        { fields: ["email"] },
       ],
     }
   );
@@ -156,13 +170,17 @@ const create = async (req) => {
   }
 
   return await WalkInEnquiryModel.create({
-    dealer_id: req.body.dealer_id,
+    dealer_id: req.body?.dealer_id ?? null,
     enquiry_code: newEnqCode,
     vehicle_id: req.body.vehicle_id,
+    quantity: req.body.quantity,
     message: req.body.message,
     name: req.body.name,
     phone: req.body.phone,
+    email: req.body.email,
     location: req.body.location,
+    enquiry_type: req.body.enquiry_type,
+
     purchase_type: req.body.purchase_type,
     pan: req.body.pan,
     aadhaar: req.body.aadhaar,
@@ -198,6 +216,12 @@ const get = async (req) => {
     queryParams.query = `%${q}%`;
   }
 
+  const enquiryType = req.query?.enqt ?? null;
+  if (enquiryType) {
+    whereConditions.push(`enq.enquiry_type = :enquiryType`);
+    queryParams.enquiryType = enquiryType;
+  }
+
   const status = req.query.status ? req.query.status.split(".") : null;
   if (status?.length) {
     whereConditions.push(`enq.status = any(:status)`);
@@ -225,15 +249,21 @@ const get = async (req) => {
       FROM ${constants.models.WALKIN_ENQUIRY_TABLE} enq
       LEFT JOIN ${constants.models.VEHICLE_TABLE} vh ON vh.id = enq.vehicle_id
       LEFT JOIN ${constants.models.DEALER_TABLE} dlr ON dlr.id = enq.dealer_id
+      LEFT JOIN ${constants.models.USER_TABLE} dlrusr ON dlrusr.id = dlr.user_id
       ${whereClause}
       `;
 
   let query = `
       SELECT
-        enq.*, vh.title as vehicle_name
+        enq.*, vh.title as vehicle_name, 
+        CASE 
+          WHEN dlrusr.id IS NOT NULL THEN 
+          CONCAT(dlrusr.first_name, ' ', dlrusr.last_name) ELSE null 
+          END as dealership, dlr.dealer_code
       FROM ${constants.models.WALKIN_ENQUIRY_TABLE} enq
       LEFT JOIN ${constants.models.VEHICLE_TABLE} vh ON vh.id = enq.vehicle_id
       LEFT JOIN ${constants.models.DEALER_TABLE} dlr ON dlr.id = enq.dealer_id
+      LEFT JOIN ${constants.models.USER_TABLE} dlrusr ON dlrusr.id = dlr.user_id
       ${whereClause}
       ORDER BY enq.created_at DESC
       LIMIT :limit OFFSET :offset
@@ -271,6 +301,7 @@ const update = async (req, id, transaction) => {
   return await WalkInEnquiryModel.update(
     {
       status: req.body.status,
+      dealer_id: req.body.dealer_id,
       vehicle_id: req.body.vehicle_id,
       message: req.body.message,
       name: req.body.name,

@@ -6,8 +6,17 @@ export default async function routes(fastify, options) {
   fastify.get("/:id", {}, controller.getById);
   fastify.delete("/:id", {}, controller.deleteById);
   fastify.get("/", {}, controller.get);
-  fastify.post("/convert-to-customer/:id", {}, controller.convertToCustomer);
-  fastify.post("/assign-to-dealer/:id", {}, controller.assignToDealer);
+  fastify.post(
+    "/create-new-customer-order/:id",
+    {},
+    controller.createNewCustomerOrder
+  );
+  fastify.post(
+    "/create-existing-customer-order/:id",
+    {},
+    controller.createExistingCustomerOrder
+  );
+  fastify.post("/assign-to-dealer/:id", {}, controller.assignToDealer); //walkin enquiry
 }
 
 export async function enquiryPublicRoutes(fastify, opt) {

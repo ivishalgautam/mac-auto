@@ -66,6 +66,8 @@ const constants = {
     TICKET_TABLE: "tickets",
     DEALER_TICKET_TABLE: "dealer_tickets",
     VEHICLE_COLOR_TABLE: "vehicle_colors",
+    VEHICLE_MODEL_TABLE: "vehicle_models",
+    TECHNICIAN_TABLE: "technicians",
   },
   bcrypt: {
     SALT_ROUNDS: 10,

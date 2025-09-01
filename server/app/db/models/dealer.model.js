@@ -13,6 +13,10 @@ const init = async (sequelize) => {
         primaryKey: true,
         defaultValue: DataTypes.UUIDV4,
       },
+      dealer_code: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
       user_id: {
         type: DataTypes.UUID,
         allowNull: false,
@@ -45,15 +49,24 @@ const init = async (sequelize) => {
   await DealerModel.sync({ alter: true });
 };
 
-const create = async ({ user_id, location }, transaction) => {
+const create = async ({ user_id, location, code }, transaction) => {
   const options = {};
   if (transaction) options.transaction = transaction;
 
+  // const latest = await DealerModel.findOne({
+  //   attributes: ["dealer_code"],
+  //   order: [["created_at", "DESC"]],
+  //   raw: true,
+  // });
+  // let newCode = "DLR-0001";
+  // if (latest?.dealer_code) {
+  //   const number = parseInt(latest.dealer_code.split("-")[1]);
+  //   const nextNumber = number + 1;
+  //   newCode = `DLR-${String(nextNumber).padStart(4, "0")}`;
+  // }
+
   const data = await DealerModel.create(
-    {
-      user_id: user_id,
-      location: location,
-    },
+    { user_id: user_id, location: location, code: code },
     options
   );
 

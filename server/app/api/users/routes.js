@@ -9,5 +9,6 @@ export default async function routes(fastify, options) {
   fastify.get("/me", {}, controller.getUser);
   fastify.get("/", {}, controller.get);
   fastify.get("/:id", {}, controller.getById);
+  fastify.get("/by-phone/:phone", {}, controller.getByPhone);
   fastify.delete("/:id", {}, controller.deleteById);
 }

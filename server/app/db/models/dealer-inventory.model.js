@@ -318,6 +318,13 @@ const getColors = async (req, vehicleId) => {
   return { colors, total: count?.total ?? 0 };
 };
 
+const getByChassisAndDealer = async (chassis_no, dealerId) => {
+  return await DealerInventoryModel.findOne({
+    where: { chassis_no: chassis_no, dealer_id: dealerId, status: "active" },
+    raw: true,
+  });
+};
+
 const getByVehicleColorId = async (req, vehicleColorId) => {
   const whereConditions = [
     "invnt.vehicle_color_id = :vehicle_color_id AND dlr.user_id = :userId",
@@ -480,5 +487,6 @@ export default {
   getByVehicleAndDealer: getByVehicleAndDealer,
   updateStatusByChassisNo: updateStatusByChassisNo,
   getColors: getColors,
+  getByChassisAndDealer: getByChassisAndDealer,
   getByVehicleColorId: getByVehicleColorId,
 };
