@@ -8,6 +8,7 @@ import TableActions from "./_components/table-actions";
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
 import { Plus } from "lucide-react";
+import Header from "./_components/header";
 
 export const metadata = {
   title: "Enquiries",
@@ -19,18 +20,7 @@ export default async function Enquiries({ searchParams }) {
 
   return (
     <PageContainer>
-      <div className="flex items-center justify-between">
-        <Heading
-          title={"Enquiries"}
-          description={"Manage Enquiries (View, Delete)."}
-        />
-        <Link
-          href={"/walkin-enquiries/create?t=mac-auto"}
-          className={buttonVariants({ size: "sm" })}
-        >
-          <Plus /> Create
-        </Link>
-      </div>
+      <Header />
       <TableActions />
       <Suspense
         key={key}
