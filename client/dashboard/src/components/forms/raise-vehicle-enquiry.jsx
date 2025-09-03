@@ -21,6 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
+import VehicleVariantMapSelect from "@/features/vehicle-variant-map-select";
 
 export default function RaiseVehicleEnquiryForm({
   vehicleId,
@@ -44,6 +45,10 @@ export default function RaiseVehicleEnquiryForm({
           .string({ required_error: "Vehicle color ID is required" })
           .uuid()
           .min(1, { message: "Vehicle color ID is required" }),
+        vehicle_variant_map_id: z
+          .string({ required_error: "Vehicle variant ID is required" })
+          .uuid()
+          .min(1, { message: "Vehicle variant ID is required" }),
         battery_type: z.enum(
           batteryTypes.map(({ value }) => value),
           {
@@ -99,6 +104,26 @@ export default function RaiseVehicleEnquiryForm({
               onChange={field.onChange}
               className={cn({
                 "border-red-500 dark:border-red-500": errors.vehicle_color_id,
+              })}
+            />
+          )}
+        />
+      </div>
+
+      {/* vehicle variant id */}
+      <div className="space-y-2">
+        <Label>Variant</Label>
+        <Controller
+          name="vehicle_variant_map_id"
+          control={control}
+          render={({ field }) => (
+            <VehicleVariantMapSelect
+              vehicleId={vehicleId}
+              value={field.value}
+              onChange={field.onChange}
+              className={cn({
+                "border-red-500 dark:border-red-500":
+                  errors.vehicle_variant_map_id,
               })}
             />
           )}

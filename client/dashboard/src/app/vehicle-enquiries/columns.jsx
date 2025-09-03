@@ -18,12 +18,17 @@ export const columns = (
   setId,
   setVehicleId,
   setVehicleColorId,
+  setVehicleVariantMapId,
   setDealerId,
   setMaxSelect,
 ) => [
   {
     accessorKey: "title",
     header: "Model name",
+  },
+  {
+    accessorKey: "variant_name",
+    header: "Variant",
   },
   {
     accessorKey: "color_hex",
@@ -70,6 +75,7 @@ export const columns = (
       const id = row.original.id;
       const vehicleId = row.original.vehicle_id;
       const vehicleColorId = row.original.vehicle_color_id;
+      const vehicleVariantMapId = row.original.vehicle_variant_map_id;
       const dealerId = row.original.dealer_id;
       const quantity = row.original.quantity;
 
@@ -97,6 +103,7 @@ export const columns = (
               onClick={() => {
                 setVehicleId(vehicleId);
                 setVehicleColorId(vehicleColorId);
+                setVehicleVariantMapId(vehicleVariantMapId);
                 setDealerId(dealerId);
                 setMaxSelect(quantity);
                 openModal("dealer-order");

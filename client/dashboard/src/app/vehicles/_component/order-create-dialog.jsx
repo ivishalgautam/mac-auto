@@ -15,6 +15,7 @@ export function DealerOrderCreateDialog({
   createMutation,
   vehicleId,
   vehicleColorId = null,
+  vehicleVariantMapId = null,
   dealerId,
   maxSelect = null,
 }) {
@@ -36,6 +37,7 @@ export function DealerOrderCreateDialog({
             dealerId={dealerId}
             maxSelect={maxSelect}
             vehicleColorId={vehicleColorId}
+            vehicleVariantMapId={vehicleVariantMapId}
           />
         </div>
       </DialogContent>

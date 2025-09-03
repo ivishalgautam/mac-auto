@@ -23,6 +23,7 @@ export default function Listing() {
   const [id, setId] = useState(null);
   const [vehicleId, setVehicleId] = useState(null);
   const [vehicleColorId, setVehicleColorId] = useState(null);
+  const [vehicleVariantMapId, setVehicleVariantMapId] = useState(null);
   const [dealerId, setDealerId] = useState(null);
   const searchParams = useSearchParams();
   const searchParamStr = searchParams.toString();
@@ -64,6 +65,7 @@ export default function Listing() {
           setId,
           setVehicleId,
           setVehicleColorId,
+          setVehicleVariantMapId,
           setDealerId,
           setMaxSelect,
         )}
@@ -79,6 +81,7 @@ export default function Listing() {
         dealerId={dealerId}
         maxSelect={maxSelect}
         vehicleColorId={vehicleColorId}
+        vehicleVariantMapId={vehicleVariantMapId}
       />
 
       <DeleteDialog
