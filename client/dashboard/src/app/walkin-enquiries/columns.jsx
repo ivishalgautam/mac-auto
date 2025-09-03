@@ -64,6 +64,18 @@ export const columns = (
       header: "Model name",
     },
     {
+      accessorKey: "quantity",
+      header: "Quantity",
+    },
+    {
+      accessorKey: "message",
+      header: "Message",
+      cell: ({ row }) => {
+        const message = row.getValue("message");
+        return message ? message : "N/a";
+      },
+    },
+    {
       accessorKey: "status",
       header: ({ column }) => {
         return <Button variant="ghost">Finance status</Button>;
@@ -127,6 +139,14 @@ export const columns = (
             </SelectContent>
           </Select>
         );
+      },
+    },
+    {
+      accessorKey: "email",
+      header: "Email",
+      cell: ({ row }) => {
+        const email = row.getValue("email");
+        return email ? email : "N/a";
       },
     },
     {
