@@ -107,7 +107,10 @@ const create = async (req) => {
     purchase_id: req.body.purchase_id,
     complaint_type: req.body.complaint_type,
     expected_closure_date: req.body.expected_closure_date,
-    assigned_technician: req.body?.assigned_technician,
+    assigned_technician:
+      req.body?.assigned_technician && req.body?.assigned_technician !== ""
+        ? req.body?.assigned_technician
+        : null,
     parts: req.body.parts,
   });
 };
