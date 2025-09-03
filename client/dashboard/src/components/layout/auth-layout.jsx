@@ -37,7 +37,7 @@ export default function AuthLayout({
         {/* Image Section */}
         <div className="from-primary/10 via-primary/5 relative hidden items-center justify-center bg-gradient-to-br to-transparent lg:flex lg:flex-col lg:gap-4">
           <Image
-            src={"/logo.png"}
+            src={"/logo-dark.png"}
             alt={"Mac Auto India"}
             width={200}
             height={200}

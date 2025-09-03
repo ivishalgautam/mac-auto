@@ -53,7 +53,7 @@ export function AppSidebar({ ...props }) {
         <div className="flex h-16 items-center justify-center p-2">
           {state === "expanded" ? (
             <Image
-              src="/logo-light.png"
+              src="/logo-dark.png"
               width={200}
               height={50}
               alt="Mac auto"
