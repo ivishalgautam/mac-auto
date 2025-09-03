@@ -2,18 +2,22 @@
 import constants from "../../lib/constants/index.js";
 import { DataTypes, QueryTypes } from "sequelize";
 
-let VehicleModelModel = null;
+let ColorModel = null;
 
 const init = async (sequelize) => {
-  VehicleModelModel = sequelize.define(
-    constants.models.VEHICLE_MODEL_TABLE,
+  ColorModel = sequelize.define(
+    constants.models.VEHICLE_COLOR_TABLE,
     {
       id: {
         type: DataTypes.UUID,
         primaryKey: true,
         defaultValue: DataTypes.UUIDV4,
       },
-      model_name: {
+      color_name: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      color_hex: {
         type: DataTypes.STRING,
         allowNull: false,
       },
@@ -21,19 +25,22 @@ const init = async (sequelize) => {
     {
       createdAt: "created_at",
       updatedAt: "updated_at",
-      indexes: [{ fields: ["model_name"] }],
+      indexes: [{ fields: ["color_name"] }, { fields: ["color_hex"] }],
     }
   );
 
-  await VehicleModelModel.sync({ alter: true });
+  await ColorModel.sync({ alter: true });
 };
 
 const create = async (req, transaction) => {
   const options = {};
   if (transaction) options.transaction = transaction;
 
-  const data = await VehicleModelModel.create(
-    { model_name: req.body.model_name },
+  const data = await ColorModel.create(
+    {
+      color_name: req.body.color_name,
+      color_hex: req.body.color_hex,
+    },
     options
   );
 
@@ -41,15 +48,18 @@ const create = async (req, transaction) => {
 };
 
 const bulkCreate = async (bulkdData) => {
-  return await VehicleModelModel.bulkCreate(bulkdData);
+  return await ColorModel.bulkCreate(bulkdData);
 };
 
 const update = async (req, id, transaction) => {
   const options = { where: { id: req.params?.id || id } };
   if (transaction) options.transaction = transaction;
 
-  const data = await VehicleModelModel.update(
-    { model_name: req.body.model_name },
+  const data = await ColorModel.update(
+    {
+      color_name: req.body.color_name,
+      color_hex: req.body.color_hex,
+    },
     options
   );
 
@@ -64,12 +74,6 @@ const get = async (req) => {
   const limit = req.query.limit ? Number(req.query.limit) : null;
   const offset = (page - 1) * limit;
 
-  const q = req.query?.q ?? null;
-  if (q) {
-    whereConditions.push("vmd.model_name ILIKE :q");
-    queryParams.q = `%${q}%`;
-  }
-
   let whereClause = "";
   if (whereConditions.length) {
     whereClause = `WHERE ${whereConditions.join(" AND ")}`;
@@ -77,43 +81,38 @@ const get = async (req) => {
 
   const query = `
   SELECT 
-      vmd.*
-    FROM ${constants.models.VEHICLE_MODEL_TABLE} vmd
+      vhlclr.*
+    FROM ${constants.models.VEHICLE_COLOR_TABLE} vhlclr
     ${whereClause}
-    GROUP BY vmd.id
+    GROUP BY vhlclr.id
     LIMIT :limit OFFSET :offset
   `;
 
   const countQuery = `
   SELECT 
-      COUNT(vmd.id) OVER()::integer as total
-    FROM ${constants.models.VEHICLE_MODEL_TABLE} vmd
+      COUNT(vhlclr.id) OVER()::integer as total
+    FROM ${constants.models.VEHICLE_COLOR_TABLE} vhlclr
   ${whereClause}
   `;
 
-  const models = await VehicleModelModel.sequelize.query(query, {
+  const colors = await ColorModel.sequelize.query(query, {
     replacements: { ...queryParams, limit, offset },
     type: QueryTypes.SELECT,
     raw: true,
   });
 
-  const count = await VehicleModelModel.sequelize.query(countQuery, {
+  const count = await ColorModel.sequelize.query(countQuery, {
     replacements: { ...queryParams },
     type: QueryTypes.SELECT,
     raw: true,
     plain: true,
   });
 
-  return { models, total: count?.total ?? 0 };
+  return { colors, total: count?.total ?? 0 };
 };
 
 const getById = async (req, id) => {
-  return await VehicleModelModel.findOne({
-    where: { id: req.params?.id || id },
-  });
-};
-const deleteById = async (req, id) => {
-  return await VehicleModelModel.destroy({
+  return await ColorModel.findOne({
     where: { id: req.params?.id || id },
   });
 };
@@ -125,5 +124,4 @@ export default {
   bulkCreate: bulkCreate,
   get: get,
   getById: getById,
-  deleteById: deleteById,
 };

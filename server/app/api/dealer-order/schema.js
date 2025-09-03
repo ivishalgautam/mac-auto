@@ -13,5 +13,9 @@ export const dealerOrderSchema = z.object({
     .string({ required_error: "Vehicle color ID is required" })
     .uuid()
     .min(1, { message: "Vehicle color ID is required" }),
+  vehicle_variant_map_id: z
+    .string({ required_error: "Vehicle variant ID is required" })
+    .uuid()
+    .min(1, { message: "Vehicle variant ID is required" }),
   chassis_numbers: z.array(z.string()),
 });

@@ -1,4 +1,5 @@
 "use strict";
+import { StatusCodes } from "http-status-codes";
 import table from "../../db/models.js";
 import { sequelize } from "../../db/postgres.js";
 import { cleanupFiles } from "../../helpers/cleanup-files.js";
@@ -13,6 +14,7 @@ const create = async (req, res) => {
   try {
     const colorHex = req.body.color_hex;
     const vehicleId = req.body.vehicle_id;
+    const vehicleVariantId = req.body.variant_id;
     const chassisNumbers = req.body.chassis_numbers;
 
     let colorRecord = await table.VehicleColorModel.getByColorAndVehicleId(
@@ -25,9 +27,33 @@ const create = async (req, res) => {
       await cleanupFiles(req.filePaths);
     }
 
+    const variantRecord = await table.VehicleVariantModel.getById(
+      0,
+      vehicleVariantId
+    );
+    if (!variantRecord)
+      return res
+        .code(StatusCodes.NOT_FOUND)
+        .send({ status: false, message: "Variant not found." });
+
+    let vehicleVariantMapRecord =
+      await table.VehicleVariantMapModel.getByVariantAndVehicleId(
+        vehicleVariantId,
+        vehicleId
+      );
+    if (!vehicleVariantMapRecord) {
+      vehicleVariantMapRecord = await table.VehicleVariantMapModel.create(
+        {
+          body: { vehicle_id: vehicleId, vehicle_variant_id: vehicleVariantId },
+        },
+        transaction
+      );
+    }
+
     if (chassisNumbers && chassisNumbers.length) {
       const bulkData = chassisNumbers.map((c) => ({
         vehicle_color_id: colorRecord.id,
+        vehicle_variant_map_id: vehicleVariantMapRecord.id,
         vehicle_id: colorRecord.vehicle_id,
         chassis_no: c.number,
         motor_no: c.motor_no,
@@ -77,6 +103,8 @@ const update = async (req, res) => {
   const transaction = await sequelize.transaction();
 
   try {
+    const vehicleVariantId = req.body.variant_id;
+    const vehicleId = req.body.vehicle_id;
     const chassisNumbers = req.body?.chassis_numbers ?? [];
 
     const record = await table.VehicleColorModel.getById(req);
@@ -113,9 +141,33 @@ const update = async (req, res) => {
       await cleanupFiles(documentsToDelete);
     }
 
+    const variantRecord = await table.VehicleVariantModel.getById(
+      0,
+      vehicleVariantId
+    );
+    if (!variantRecord)
+      return res
+        .code(StatusCodes.NOT_FOUND)
+        .send({ status: false, message: "Variant not found." });
+
+    let vehicleVariantMapRecord =
+      await table.VehicleVariantMapModel.getByVariantAndVehicleId(
+        vehicleVariantId,
+        vehicleId
+      );
+    if (!vehicleVariantMapRecord) {
+      vehicleVariantMapRecord = await table.VehicleVariantMapModel.create(
+        {
+          body: { vehicle_id: vehicleId, vehicle_variant_id: vehicleVariantId },
+        },
+        transaction
+      );
+    }
+
     if (chassisNumbers && chassisNumbers.length) {
       const bulkData = chassisNumbers.map((c) => ({
         vehicle_color_id: record.id,
+        vehicle_variant_map_id: vehicleVariantMapRecord.id,
         vehicle_id: record.vehicle_id,
         chassis_no: c.number,
         motor_no: c.motor_no,

@@ -77,6 +77,15 @@ const getByVehicleColorId = async (req, res) => {
     throw error;
   }
 };
+const get = async (req, res) => {
+  try {
+    const data = await table.InventoryModel.get(req);
+
+    res.code(status.OK).send({ status: true, data: data });
+  } catch (error) {
+    throw error;
+  }
+};
 
 const getById = async (req, res) => {
   try {
@@ -113,4 +122,5 @@ export default {
   getByVehicleColorId: getByVehicleColorId,
   update: update,
   getById: getById,
+  get: get,
 };

@@ -235,6 +235,7 @@ const createNewCustomerOrder = async (req, res) => {
           chassis_no: req.body.chassis_no,
           invoices_bills: req.body.invoices_bills,
           booking_amount: req.body.booking_amount,
+          vehicle_variant_map_id: req.body.vehicle_variant_map_id,
         },
       },
       transaction

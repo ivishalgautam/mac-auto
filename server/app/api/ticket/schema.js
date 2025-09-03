@@ -12,6 +12,7 @@ export const ticketSchema = z.object({
   complaint_type: z.string().min(1, { message: "Complaint type is required" }),
   expected_closure_date: z.coerce
     .date()
+    .optional()
     .nullable()
     .transform((date) => (date ? date.toISOString().split("T")[0] : null)),
   assigned_technician: z.string().optional().nullable(),

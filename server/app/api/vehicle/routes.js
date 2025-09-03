@@ -41,6 +41,7 @@ export default async function routes(fastify, opts) {
   fastify.get("/:id", {}, controller.getById);
   fastify.get("/marketing-materials", {}, controller.getMarketingMaterials);
   fastify.get("/:id/colors", {}, controller.getColors);
+  fastify.get("/:id/variants", {}, controller.getVariants);
 }
 
 export async function vehiclePublicRoutes(fastify, opts) {

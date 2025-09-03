@@ -66,7 +66,9 @@ const constants = {
     TICKET_TABLE: "tickets",
     DEALER_TICKET_TABLE: "dealer_tickets",
     VEHICLE_COLOR_TABLE: "vehicle_colors",
-    VEHICLE_MODEL_TABLE: "vehicle_models",
+    COLOR_TABLE: "colors",
+    VEHICLE_VARIANT_TABLE: "vehicle_variants",
+    VEHICLE_VARIANT_MAP_TABLE: "vehicle_variant_maps",
     TECHNICIAN_TABLE: "technicians",
   },
   bcrypt: {

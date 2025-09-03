@@ -2,7 +2,10 @@
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import table from "../../db/models.js";
 import constants from "../../lib/constants/index.js";
-import { bulkVehicleModelSchema, singleVehicleModelSchema } from "./schema.js";
+import {
+  bulkVehicleVariantSchema,
+  singleVehicleVariantSchema,
+} from "./schema.js";
 
 const status = constants.http.status;
 const responseMessage = constants.error.message;
@@ -11,12 +14,14 @@ export const create = async (req, res) => {
   try {
     let data;
 
-    if (req.body?.model_names && Array.isArray(req.body.model_names)) {
-      const validateData = bulkVehicleModelSchema.parse(req.body);
-      data = await table.VehicleModelModel.bulkCreate(validateData.model_names);
+    if (req.body?.variant_names && Array.isArray(req.body.variant_names)) {
+      const validateData = bulkVehicleVariantSchema.parse(req.body);
+      data = await table.VehicleVariantModel.bulkCreate(
+        validateData.variant_names
+      );
     } else {
-      const validateData = singleVehicleModelSchema.parse(req.body);
-      data = await table.VehicleModelModel.create({ body: validateData });
+      const validateData = singleVehicleVariantSchema.parse(req.body);
+      data = await table.VehicleVariantModel.create({ body: validateData });
     }
 
     return res
@@ -29,14 +34,14 @@ export const create = async (req, res) => {
 
 const deleteById = async (req, res) => {
   try {
-    const record = await table.VehicleModelModel.getById(req);
+    const record = await table.VehicleVariantModel.getById(req);
     if (!record)
       return res.code(status.NOT_FOUND).send({
         status: StatusCodes.NOT_FOUND,
         message: ReasonPhrases.NOT_FOUND,
       });
 
-    await table.VehicleModelModel.deleteById(req);
+    await table.VehicleVariantModel.deleteById(req);
     res
       .code(status.OK)
       .send({ status: true, message: responseMessage[status.OK] });
@@ -47,13 +52,13 @@ const deleteById = async (req, res) => {
 
 const update = async (req, res) => {
   try {
-    const record = await table.VehicleModelModel.getById(req);
+    const record = await table.VehicleVariantModel.getById(req);
     if (!record)
       return res
         .code(status.NOT_FOUND)
         .send({ status: false, message: responseMessage[status.NOT_FOUND] });
 
-    await table.VehicleModelModel.update(req);
+    await table.VehicleVariantModel.update(req);
 
     res
       .code(status.OK)
@@ -65,7 +70,7 @@ const update = async (req, res) => {
 
 const get = async (req, res) => {
   try {
-    const data = await table.VehicleModelModel.get(req);
+    const data = await table.VehicleVariantModel.get(req);
 
     res.code(status.OK).send({ status: true, data: data });
   } catch (error) {
@@ -74,7 +79,7 @@ const get = async (req, res) => {
 };
 const getById = async (req, res) => {
   try {
-    const record = await table.VehicleModelModel.getById(req);
+    const record = await table.VehicleVariantModel.getById(req);
     if (!record)
       return res
         .code(status.NOT_FOUND)

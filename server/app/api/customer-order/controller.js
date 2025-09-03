@@ -40,6 +40,8 @@ const create = async (req, res) => {
         body: {
           vehicle_id: validateData.vehicle_id,
           vehicle_color_id: validateData.vehicle_color_id,
+          vehicle_variant_map_id: validateData.vehicle_variant_map_id,
+          booking_amount: validateData.booking_amount,
           customer_id: validateData.customer_id,
           dealer_id: dealerRecord.id,
           chassis_no: validateData.chassis_number,

@@ -239,6 +239,21 @@ const getColors = async (req, res) => {
     throw error;
   }
 };
+const getVariants = async (req, res) => {
+  try {
+    const record = await table.VehicleModel.getById(req);
+    if (!record)
+      return res
+        .code(status.NOT_FOUND)
+        .send({ status: false, message: responseMessage[status.NOT_FOUND] });
+
+    const data = await table.VehicleVariantMapModel.getByVehicleId(req);
+
+    res.code(status.OK).send({ status: true, data: data });
+  } catch (error) {
+    throw error;
+  }
+};
 
 const getBySlug = async (req, res) => {
   console.log(req.ip);
@@ -328,6 +343,7 @@ export default {
   deleteById: deleteById,
   getById: getById,
   getColors: getColors,
+  getVariants: getVariants,
   get: get,
   getBySlug: getBySlug,
   updatePrice: updatePrice,

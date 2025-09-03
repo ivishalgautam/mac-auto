@@ -17,7 +17,17 @@ const get = async (req, res) => {
 
 const getDealerInventory = async (req, res) => {
   try {
-    const data = await table.DealerInventoryModel.get(req);
+    const dealer = await table.DealerModel.getByUserId(req.user_data.id);
+
+    const data = await table.DealerInventoryModel.get(req, dealer?.id ?? null);
+    res.send({ status: true, data });
+  } catch (error) {
+    throw error;
+  }
+};
+const getChassis = async (req, res) => {
+  try {
+    const data = await table.DealerInventoryModel.getChassis(req);
     res.send({ status: true, data });
   } catch (error) {
     throw error;
@@ -76,6 +86,23 @@ const getColors = async (req, res) => {
         .send({ status: false, message: "Vehicle not found" });
 
     const data = await table.DealerInventoryModel.getColors(req, vehicleId);
+
+    res.code(status.OK).send({ status: true, data: data });
+  } catch (error) {
+    throw error;
+  }
+};
+const getVariants = async (req, res) => {
+  try {
+    const vehicleId = req.params.vehicle_id;
+
+    const record = await table.VehicleModel.getById(0, vehicleId);
+    if (!record)
+      return res
+        .code(status.NOT_FOUND)
+        .send({ status: false, message: "Vehicle not found" });
+
+    const data = await table.DealerInventoryModel.getVariants(req, vehicleId);
 
     res.code(status.OK).send({ status: true, data: data });
   } catch (error) {
@@ -165,4 +192,6 @@ export default {
   updateDealerInventory: updateDealerInventory,
   getInventoryItemById: getInventoryItemById,
   getColors: getColors,
+  getVariants: getVariants,
+  getChassis: getChassis,
 };

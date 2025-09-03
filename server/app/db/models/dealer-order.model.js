@@ -32,6 +32,16 @@ const init = async (sequelize) => {
         },
         onDelete: "CASCADE",
       },
+      vehicle_variant_map_id: {
+        type: DataTypes.UUID,
+        allowNull: false,
+        references: {
+          model: constants.models.VEHICLE_VARIANT_MAP_TABLE,
+          key: "id",
+          deferrable: Deferrable.INITIALLY_IMMEDIATE,
+        },
+        onDelete: "CASCADE",
+      },
       dealer_id: {
         type: DataTypes.UUID,
         allowNull: false,
@@ -64,6 +74,7 @@ const init = async (sequelize) => {
       indexes: [
         { fields: ["vehicle_id"] },
         { fields: ["vehicle_color_id"] },
+        { fields: ["vehicle_variant_map_id"] },
         { fields: ["dealer_id"] },
         { fields: ["chassis_nos"] },
         { fields: ["status"] },
@@ -82,6 +93,7 @@ const create = async (req, transaction) => {
     {
       vehicle_id: req.body.vehicle_id,
       vehicle_color_id: req.body.vehicle_color_id,
+      vehicle_variant_map_id: req.body.vehicle_variant_map_id,
       dealer_id: req.body.dealer_id,
       chassis_nos: req.body.chassis_numbers,
     },

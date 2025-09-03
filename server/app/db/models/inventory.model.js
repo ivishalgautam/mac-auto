@@ -32,6 +32,16 @@ const init = async (sequelize) => {
         },
         onDelete: "CASCADE",
       },
+      vehicle_variant_map_id: {
+        type: DataTypes.UUID,
+        allowNull: false,
+        references: {
+          model: constants.models.VEHICLE_VARIANT_MAP_TABLE,
+          key: "id",
+          deferrable: Deferrable.INITIALLY_IMMEDIATE,
+        },
+        onDelete: "CASCADE",
+      },
       chassis_no: {
         type: DataTypes.STRING,
         allowNull: false,
@@ -65,31 +75,17 @@ const init = async (sequelize) => {
       deletedAt: "deleted_at",
       paranoid: true,
       indexes: [
-        {
-          fields: ["vehicle_id"],
-        },
-        {
-          fields: ["vehicle_color_id"],
-        },
+        { fields: ["vehicle_id"] },
+        { fields: ["vehicle_color_id"] },
         {
           fields: ["chassis_no"],
           unique: true,
         },
-        {
-          fields: ["status"],
-        },
-        {
-          fields: ["motor_no"],
-        },
-        {
-          fields: ["battery_no"],
-        },
-        {
-          fields: ["controller_no"],
-        },
-        {
-          fields: ["charger_no"],
-        },
+        { fields: ["status"] },
+        { fields: ["motor_no"] },
+        { fields: ["battery_no"] },
+        { fields: ["controller_no"] },
+        { fields: ["charger_no"] },
       ],
     }
   );
@@ -208,6 +204,81 @@ const getByVehicleId = async (req, vehicle_id) => {
   const q = req.query.q ? req.query.q : null;
   const status = req.query?.status?.split(".") ?? null;
   const colors = req.query?.colors?.split(".") ?? null;
+  const variants = req.query?.variants?.split(".") ?? null;
+
+  if (q) {
+    whereConditions.push(`(invnt.chassis_no ILIKE :query)`);
+    queryParams.query = `%${q}%`;
+  }
+
+  if (status && status.length) {
+    whereConditions.push(`invnt.status = ANY(:status)`);
+    queryParams.status = `{${status.join(",")}}`;
+  }
+
+  if (colors && colors.length) {
+    whereConditions.push(`LOWER(vclr.color_hex) = ANY(:colors)`);
+    queryParams.colors = `{${colors.map((color) => String(color).toLowerCase()).join(",")}}`;
+  }
+  if (variants && variants.length) {
+    whereConditions.push(`vvm.vehicle_variant_id = ANY(:variants)`);
+    queryParams.variants = `{${variants.join(",")}}`;
+  }
+
+  const page = req.query.page ? Number(req.query.page) : 1;
+  const limit = req.query.limit ? Number(req.query.limit) : null;
+  const offset = (page - 1) * limit;
+
+  const whereClause = `WHERE ${whereConditions.join(" AND ")}`;
+
+  let query = `
+  SELECT
+      invnt.*,
+      vclr.color_hex,
+      vclr.color_name,
+      vv.variant_name
+    FROM ${constants.models.INVENTORY_TABLE} invnt
+    LEFT JOIN ${constants.models.VEHICLE_COLOR_TABLE} as vclr ON vclr.id = invnt.vehicle_color_id 
+    LEFT JOIN ${constants.models.VEHICLE_VARIANT_MAP_TABLE} as vvm ON vvm.id = invnt.vehicle_variant_map_id 
+    LEFT JOIN ${constants.models.VEHICLE_VARIANT_TABLE} as vv ON vv.id = vvm.vehicle_variant_id 
+    ${whereClause}
+    ORDER BY invnt.created_at DESC
+    LIMIT :limit OFFSET :offset
+  `;
+
+  let countQuery = `
+  SELECT
+      COUNT(invnt.id) OVER()::INTEGER as total
+    FROM ${constants.models.INVENTORY_TABLE} invnt
+    LEFT JOIN ${constants.models.VEHICLE_COLOR_TABLE} as vclr ON vclr.id = invnt.vehicle_color_id 
+    LEFT JOIN ${constants.models.VEHICLE_VARIANT_MAP_TABLE} as vvm ON vvm.id = invnt.vehicle_variant_map_id 
+    LEFT JOIN ${constants.models.VEHICLE_VARIANT_TABLE} as vv ON vv.id = vvm.vehicle_variant_id 
+    ${whereClause}
+    ORDER BY invnt.created_at DESC
+  `;
+
+  const data = await InventoryModel.sequelize.query(query, {
+    replacements: { ...queryParams, limit, offset },
+    type: QueryTypes.SELECT,
+    raw: true,
+  });
+
+  const count = await InventoryModel.sequelize.query(countQuery, {
+    replacements: queryParams,
+    type: QueryTypes.SELECT,
+    raw: true,
+    plain: true,
+  });
+
+  return { inventory: data, total: count?.total ?? 0 };
+};
+
+const get = async (req) => {
+  const whereConditions = [];
+  const queryParams = {};
+  const q = req.query.q ? req.query.q : null;
+  const status = req.query?.status?.split(".") ?? null;
+  const colors = req.query?.colors?.split(".") ?? null;
 
   if (q) {
     whereConditions.push(`(invnt.chassis_no ILIKE :query)`);
@@ -224,6 +295,25 @@ const getByVehicleId = async (req, vehicle_id) => {
     queryParams.colors = `{${colors.map((color) => String(color).toLowerCase()).join(",")}}`;
   }
 
+  const vehicleId = req.query?.vid ?? null;
+  if (vehicleId) {
+    whereConditions.push("invnt.vehicle_id = :vehicle_id");
+    queryParams.vehicle_id = vehicleId;
+  }
+
+  const vehicleColorId =
+    req.query?.vcid && req.query?.vcid !== "null" ? req.query?.vcid : null;
+  if (vehicleColorId) {
+    whereConditions.push("invnt.vehicle_color_id = :vehicle_color_id");
+    queryParams.vehicle_color_id = vehicleColorId;
+  }
+  const vehicleVariantMapId =
+    req.query?.vvmid && req.query?.vvmid !== "null" ? req.query?.vvmid : null;
+  if (vehicleVariantMapId) {
+    whereConditions.push("vvm.id = :vehicle_variant_map_id");
+    queryParams.vehicle_variant_map_id = vehicleVariantMapId;
+  }
+
   const page = req.query.page ? Number(req.query.page) : 1;
   const limit = req.query.limit ? Number(req.query.limit) : null;
   const offset = (page - 1) * limit;
@@ -237,6 +327,7 @@ const getByVehicleId = async (req, vehicle_id) => {
       vclr.color_name
     FROM ${constants.models.INVENTORY_TABLE} invnt
     LEFT JOIN ${constants.models.VEHICLE_COLOR_TABLE} as vclr ON vclr.id = invnt.vehicle_color_id 
+    LEFT JOIN ${constants.models.VEHICLE_VARIANT_MAP_TABLE} as vvm ON vvm.id = invnt.vehicle_variant_map_id 
     ${whereClause}
     ORDER BY invnt.created_at DESC
     LIMIT :limit OFFSET :offset
@@ -247,6 +338,8 @@ const getByVehicleId = async (req, vehicle_id) => {
       COUNT(invnt.id) OVER()::INTEGER as total
     FROM ${constants.models.INVENTORY_TABLE} invnt
     LEFT JOIN ${constants.models.VEHICLE_COLOR_TABLE} as vclr ON vclr.id = invnt.vehicle_color_id 
+    LEFT JOIN ${constants.models.VEHICLE_VARIANT_MAP_TABLE} as vvm ON vvm.id = invnt.vehicle_variant_map_id 
+    LEFT JOIN ${constants.models.VEHICLE_VARIANT_TABLE} as vv ON vv.id = vvm.vehicle_variant_id 
     ${whereClause}
     ORDER BY invnt.created_at DESC
   `;
@@ -361,6 +454,7 @@ export default {
   getByVehicleColorId: getByVehicleColorId,
   deleteById: deleteById,
   bulkCreate: bulkCreate,
+  get: get,
   getById: getById,
   getByChassis: getByChassis,
   getActiveInventoryIds: getActiveInventoryIds,

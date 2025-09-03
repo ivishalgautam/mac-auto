@@ -33,6 +33,26 @@ const init = async (sequelize) => {
         },
         onDelete: "CASCADE",
       },
+      vehicle_color_id: {
+        type: DataTypes.UUID,
+        allowNull: false,
+        references: {
+          model: constants.models.VEHICLE_COLOR_TABLE,
+          key: "id",
+          deferrable: Deferrable.INITIALLY_IMMEDIATE,
+        },
+        onDelete: "CASCADE",
+      },
+      vehicle_variant_map_id: {
+        type: DataTypes.UUID,
+        allowNull: false,
+        references: {
+          model: constants.models.VEHICLE_VARIANT_MAP_TABLE,
+          key: "id",
+          deferrable: Deferrable.INITIALLY_IMMEDIATE,
+        },
+        onDelete: "CASCADE",
+      },
       customer_id: {
         type: DataTypes.UUID,
         allowNull: false,
@@ -102,6 +122,7 @@ const create = async (req, transaction) => {
     {
       vehicle_id: req.body.vehicle_id,
       vehicle_color_id: req.body.vehicle_color_id,
+      vehicle_variant_map_id: req.body.vehicle_variant_map_id,
       customer_id: req.body.customer_id,
       dealer_id: req.body.dealer_id,
       chassis_no: req.body.chassis_no,
