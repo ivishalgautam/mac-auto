@@ -14,35 +14,37 @@ import ErrorMessage from "../ui/error";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
-  useBulkCreateVehicleModel,
-  useGetVehicleModel,
-  useUpdateVehicleModel,
-} from "@/mutations/vehicle-model-mutation";
+  useBulkCreateVehicleVariant,
+  useGetVehicleVariant,
+  useUpdateVehicleVariant,
+} from "@/mutations/vehicle-variant-mutation";
 
 // ✅ schemas
 const singleSchema = z.object({
-  model_name: z.string().min(1, "Model name is required."),
+  variant_name: z.string().min(1, "Variant name is required."),
 });
 
 const bulkSchema = z.object({
-  model_names: z
+  variant_names: z
     .array(
       z.object({
-        model_name: z.string().min(1, { message: "Model name is required." }),
+        variant_name: z
+          .string()
+          .min(1, { message: "Variant name is required." }),
       }),
     )
-    .min(1, { message: "At least 1 model name is required." }),
+    .min(1, { message: "At least 1 variant name is required." }),
 });
 
-export default function VehicleModelForm({ type = "create", id }) {
+export default function VehicleVariantForm({ type = "create", id }) {
   const router = useRouter();
   const [isBulk, setIsBulk] = useState(false);
 
   const methods = useForm({
     resolver: zodResolver(isBulk ? bulkSchema : singleSchema),
     defaultValues: isBulk
-      ? { model_names: [{ model_name: "" }] }
-      : { model_name: "" },
+      ? { variant_names: [{ variant_name: "" }] }
+      : { variant_name: "" },
   });
 
   const {
@@ -55,15 +57,15 @@ export default function VehicleModelForm({ type = "create", id }) {
 
   const { fields, append, remove } = useFieldArray({
     control,
-    name: "model_names",
+    name: "variant_names",
   });
 
-  const bulkCreateMutation = useBulkCreateVehicleModel(() =>
-    router.push(`/vehicles/models?page=1&limit=10`),
+  const bulkCreateMutation = useBulkCreateVehicleVariant(() =>
+    router.push(`/vehicles/variants?page=1&limit=10`),
   );
-  const { data, isLoading, isError, error } = useGetVehicleModel(id);
-  const updateMutation = useUpdateVehicleModel(id, () =>
-    router.push(`/vehicles/models?page=1&limit=10`),
+  const { data, isLoading, isError, error } = useGetVehicleVariant(id);
+  const updateMutation = useUpdateVehicleVariant(id, () =>
+    router.push(`/vehicles/variants?page=1&limit=10`),
   );
 
   const onSubmit = (data) => {
@@ -71,17 +73,17 @@ export default function VehicleModelForm({ type = "create", id }) {
       if (isBulk) {
         bulkCreateMutation.mutate(data);
       } else {
-        bulkCreateMutation.mutate({ model_name: data.model_name });
+        bulkCreateMutation.mutate({ variant_name: data.variant_name });
       }
     } else {
-      updateMutation.mutate({ model_name: data.model_name });
+      updateMutation.mutate({ variant_name: data.variant_name });
     }
   };
 
   // ✅ load existing data on edit
   useEffect(() => {
     if (type === "edit" && data) {
-      reset({ model_name: data.model_name });
+      reset({ variant_name: data.variant_name });
     }
   }, [data, type, reset]);
 
@@ -106,7 +108,7 @@ export default function VehicleModelForm({ type = "create", id }) {
                 size="sm"
                 onClick={() => {
                   setIsBulk(false);
-                  reset({ model_name: "" });
+                  reset({ variant_name: "" });
                 }}
               >
                 Single
@@ -117,7 +119,7 @@ export default function VehicleModelForm({ type = "create", id }) {
                 size="sm"
                 onClick={() => {
                   setIsBulk(true);
-                  reset({ model_names: [{ model_name: "" }] });
+                  reset({ variant_names: [{ variant_name: "" }] });
                 }}
               >
                 Bulk
@@ -133,12 +135,12 @@ export default function VehicleModelForm({ type = "create", id }) {
             <Input
               type="text"
               placeholder="Enter vehicle model name"
-              {...register("model_name")}
-              className={cn({ "border-red-500": errors?.model_name })}
+              {...register("variant_name")}
+              className={cn({ "border-red-500": errors?.variant_name })}
             />
-            {errors?.model_name && (
+            {errors?.variant_name && (
               <p className="text-sm text-red-500">
-                {errors.model_name.message}
+                {errors.variant_name.message}
               </p>
             )}
           </div>
@@ -158,15 +160,15 @@ export default function VehicleModelForm({ type = "create", id }) {
                   <Input
                     type="text"
                     placeholder={`Enter model name ${index + 1}`}
-                    {...register(`model_names.${index}.model_name`)}
+                    {...register(`variant_names.${index}.variant_name`)}
                     className={cn({
                       "border-red-500":
-                        errors?.model_names?.[index]?.model_name,
+                        errors?.variant_names?.[index]?.variant_name,
                     })}
                   />
-                  {errors?.model_names?.[index]?.model_name && (
+                  {errors?.variant_names?.[index]?.variant_name && (
                     <p className="text-sm text-red-500">
-                      {errors.model_names[index]?.model_name?.message}
+                      {errors.variant_names[index]?.variant_name?.message}
                     </p>
                   )}
                 </div>
@@ -189,7 +191,7 @@ export default function VehicleModelForm({ type = "create", id }) {
                 type="button"
                 size="sm"
                 variant="outline"
-                onClick={() => append({ model_name: "" })}
+                onClick={() => append({ variant_name: "" })}
               >
                 <CirclePlus className="me-1" />
                 Add Model

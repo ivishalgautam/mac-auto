@@ -68,7 +68,7 @@ export default function Listing() {
       <TableActions />
       <div className="border-input w-full rounded-lg">
         <DataTable
-          columns={columns(setUserId, openModal)}
+          columns={columns(setUserId, openModal, user)}
           data={data?.customers ?? []}
           totalItems={data?.total}
         />

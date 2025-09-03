@@ -119,6 +119,7 @@ export const columns = (
                       ["dispatch", "delivered"].includes(option.value)) ||
                     (user.role === "dealer" &&
                       (option.value === "dispatch" ||
+                        option.value === "pdi" ||
                         (option.value === "delivered" && !isAdminPdi)))
                   }
                 >

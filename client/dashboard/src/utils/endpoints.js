@@ -24,6 +24,7 @@ export const endpoints = {
     getAll: "/inventories",
     getByVehicle: "/inventories/by-vehicle",
     getByVehicleColor: "/inventories/by-vehicle-color",
+    getByVehicleColorAndVariant: "/inventories/by-vehicle-color-and-variant",
   },
   enquiries: { getAll: "/enquiries" },
   walkInEnquiries: { getAll: "/walkin-enquiries" },
@@ -36,7 +37,7 @@ export const endpoints = {
   technicians: { getAll: "/technicians" },
   dealerTickets: { getAll: "/dealer-tickets" },
   reports: { getAll: "/reports" },
-  vehicleModels: { getAll: "/vehicle-models" },
+  vehicleModels: { getAll: "/vehicle-variants" },
   orders: {
     getAll: "/orders",
     dealers: "/dealer-orders",

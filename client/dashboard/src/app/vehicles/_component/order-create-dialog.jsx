@@ -28,16 +28,16 @@ export function DealerOrderCreateDialog({
             This action cannot be undone. This will permanently delete your
             account and remove your data from our servers.
           </DialogDescription>
-          <div>
-            <OrderForm
-              createMutation={createMutation}
-              vehicleId={vehicleId}
-              dealerId={dealerId}
-              maxSelect={maxSelect}
-              vehicleColorId={vehicleColorId}
-            />
-          </div>
         </DialogHeader>
+        <div>
+          <OrderForm
+            createMutation={createMutation}
+            vehicleId={vehicleId}
+            dealerId={dealerId}
+            maxSelect={maxSelect}
+            vehicleColorId={vehicleColorId}
+          />
+        </div>
       </DialogContent>
     </Dialog>
   );

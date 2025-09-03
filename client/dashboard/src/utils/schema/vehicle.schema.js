@@ -168,7 +168,8 @@ export const vehicleUpdateSchema = z.object({
 
 // Zod schema for Inventory
 export const inventorySchema = z.object({
-  vehicle_id: z.string().uuid({ message: "Select valid vehicle sid" }),
+  vehicle_id: z.string().uuid({ message: "Select valid vehicle ID" }),
+  variant_id: z.string().uuid({ message: "Select valid variant ID" }),
   color_name: z.string().min(1, { message: "Color name is reuqired" }),
   color_hex: z.string().min(1, { message: "Color HEX is reuqired" }),
   chassis_numbers: z.array(

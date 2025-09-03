@@ -15,8 +15,8 @@ import Link from "next/link";
 
 export const columns = (updateMutation, setId, openModal, user) => [
   {
-    accessorKey: "model_name",
-    header: "Model Name",
+    accessorKey: "variant_name",
+    header: "Variant Name",
   },
   {
     accessorKey: "created_at",
@@ -40,7 +40,7 @@ export const columns = (updateMutation, setId, openModal, user) => [
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem>
-              <Link href={`/vehicles/models/${id}/edit`}>Edit</Link>
+              <Link href={`/vehicles/variants/${id}/edit`}>Edit</Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem

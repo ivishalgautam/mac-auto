@@ -7,6 +7,12 @@ const getDealerInventory = async (searchParams = "") => {
   );
   return data;
 };
+const getInventories = async (searchParams = "") => {
+  const { data } = await http().get(
+    `${endpoints.inventories.getAll}?${searchParams}`,
+  );
+  return data;
+};
 
 const getInventoryByVehicleId = async (vehicleId, searchParams = "") => {
   const { data } = await http().get(
@@ -16,6 +22,15 @@ const getInventoryByVehicleId = async (vehicleId, searchParams = "") => {
 };
 
 const getInventoryByVehicleColorId = async (vehicleId, searchParams = "") => {
+  const { data } = await http().get(
+    `${endpoints.inventories.getByVehicleColor}/${vehicleId}?${searchParams}`,
+  );
+  return data;
+};
+const getInventoryByVehicleColorAndVariant = async (
+  vehicleId,
+  searchParams = "",
+) => {
   const { data } = await http().get(
     `${endpoints.inventories.getByVehicleColor}/${vehicleId}?${searchParams}`,
   );
@@ -37,6 +52,7 @@ const getInventoryItemById = async (id) => {
 
 const inventory = {
   getDealerInventory: getDealerInventory,
+  getInventories: getInventories,
   getInventoryByVehicleId: getInventoryByVehicleId,
   getInventoryByVehicleColorId: getInventoryByVehicleColorId,
   updateInventoryItem: updateInventoryItem,

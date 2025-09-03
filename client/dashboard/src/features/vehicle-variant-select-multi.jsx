@@ -3,19 +3,20 @@
 import ErrorMessage from "@/components/ui/error";
 import MultipleSelector from "@/components/ui/multiselect";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useGetFormattedVehicleModels } from "@/mutations/vehicle-model-mutation";
+import { useGetFormattedVehicleVariants } from "@/mutations/vehicle-variant-mutation";
 
-export default function VehicleModelSelectMulti({
+export default function VehicleVariantSelectMulti({
   value,
   onChange,
   className,
 }) {
-  const { data, isLoading, isError, error } = useGetFormattedVehicleModels("");
+  const { data, isLoading, isError, error } =
+    useGetFormattedVehicleVariants("");
 
   if (isError) return <ErrorMessage error={error} />;
 
   return isLoading ? (
-    <Skeleton className={"h-3"} />
+    <Skeleton className={"h-9"} />
   ) : (
     <MultipleSelector
       options={data ?? []}

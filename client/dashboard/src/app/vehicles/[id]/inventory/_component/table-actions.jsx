@@ -4,6 +4,9 @@ import { DataTableSearch } from "@/components/ui/table/data-table-search";
 import { useTableFilters } from "./use-table-filters";
 import { DataTableFilterBox } from "@/components/ui/table/data-table-filter-box";
 import { colors } from "@/data";
+import { useGetFormattedVehicleVariants } from "@/mutations/vehicle-variant-mutation";
+import { Skeleton } from "@/components/ui/skeleton";
+import ErrorMessage from "@/components/ui/error";
 
 export const statusOptions = [
   { label: "Active", value: "active" },
@@ -23,7 +26,12 @@ export default function TableActions() {
     isAnyFilterActive,
     colorFilter,
     setColorFilter,
+    variantFilter,
+    setVariantFilter,
   } = useTableFilters();
+
+  const { data, isLoading, isError, error } =
+    useGetFormattedVehicleVariants("");
 
   return (
     <div className="my-3 flex flex-wrap items-center gap-4">
@@ -40,6 +48,19 @@ export default function TableActions() {
         setFilterValue={setStatusFilter}
         filterValue={statusFilter}
       />
+      {isLoading ? (
+        <Skeleton className={"h-9 w-28"} />
+      ) : isError ? (
+        <ErrorMessage error={error} />
+      ) : (
+        <DataTableFilterBox
+          filterKey="variants"
+          title="Variants"
+          options={data}
+          setFilterValue={setVariantFilter}
+          filterValue={variantFilter}
+        />
+      )}
       <DataTableFilterBox
         filterKey="colors"
         title="Colors"

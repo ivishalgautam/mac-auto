@@ -1,4 +1,4 @@
-import VehicleModelForm from "@/components/forms/vehicle-model-form";
+import VehicleVariantForm from "@/components/forms/vehicle-variant-form";
 import PageContainer from "@/components/layout/page-container";
 import { Heading } from "@/components/ui/heading";
 
@@ -8,7 +8,7 @@ export default async function EditPage({ params }) {
   return (
     <PageContainer className="">
       <Heading title="Edit Model" description="Edit model." />
-      <VehicleModelForm type={"edit"} id={id} />
+      <VehicleVariantForm type={"edit"} id={id} />
     </PageContainer>
   );
 }

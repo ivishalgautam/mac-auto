@@ -34,13 +34,28 @@ export const useGetDealerVehicleColors = (vehicleId) => {
   return useQuery({
     queryFn: () =>
       dealerInventory.getDealerInventoryColorsByVehicleId(vehicleId),
-    queryKey: ["vehicles", vehicleId],
+    queryKey: ["vehicles-colors", vehicleId],
     enabled: !!vehicleId,
     select: ({ colors }) => {
       return colors?.map((color) => ({
         value: color.id,
         label: color.color_name,
         hex: color.color_hex,
+      }));
+    },
+  });
+};
+export const useGetDealerVehicleVariants = (vehicleId) => {
+  console.log({ vehicleId });
+  return useQuery({
+    queryFn: () =>
+      dealerInventory.getDealerInventoryVariantsByVehicleId(vehicleId),
+    queryKey: ["vehicles-variants", vehicleId],
+    enabled: !!vehicleId,
+    select: ({ variants }) => {
+      return variants?.map((v) => ({
+        value: v.id,
+        label: v.variant_name,
       }));
     },
   });

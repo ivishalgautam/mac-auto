@@ -27,6 +27,8 @@ import MyStepper from "../stepper";
 import FileUpload from "../file-uploader";
 import config from "@/config";
 import Image from "next/image";
+import { useAuth } from "@/providers/auth-provider";
+import { ROLES } from "@/data/routes";
 
 const steps = [
   {
@@ -40,6 +42,7 @@ const steps = [
 ];
 
 export default function PDICheckForm({ orderId, type = "create", id }) {
+  const { user } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
   const {
     register,
@@ -231,54 +234,56 @@ export default function PDICheckForm({ orderId, type = "create", id }) {
           </div>
 
           {/* invoices */}
-          <div>
-            <Label>Invoices</Label>
-            {["edit", "create"].includes(type) && (
-              <FileUpload
-                onFileChange={handleInvoicesChange}
-                inputName={"invoices"}
-                className={cn({ "border-red-500": errors?.invoices })}
-                initialFiles={files.invoices}
-                multiple={true}
-                maxFiles={50}
-              />
-            )}
+          {user?.role === "admin" && (
+            <div>
+              <Label>Invoices</Label>
+              {["edit", "create"].includes(type) && (
+                <FileUpload
+                  onFileChange={handleInvoicesChange}
+                  inputName={"invoices"}
+                  className={cn({ "border-red-500": errors?.invoices })}
+                  initialFiles={files.invoices}
+                  multiple={true}
+                  maxFiles={50}
+                />
+              )}
 
-            <div className="grid grid-cols-[repeat(auto-fill,minmax(100px,1fr))] gap-4">
-              {fileUrls.invoice_urls?.map((src, index) => (
-                <div
-                  className="bg-accent relative aspect-square w-24 rounded-md"
-                  key={index}
-                >
-                  <Image
-                    src={`${config.file_base}/${src}`}
-                    width={200}
-                    height={200}
-                    className={cn("size-full rounded-[inherit] object-cover")}
-                    alt={`image-${index}`}
-                  />
-                  {type === "edit" && (
-                    <Button
-                      onClick={() =>
-                        setFileUrls((prev) => ({
-                          ...prev,
-                          invoice_urls: prev.invoice_urls.filter(
-                            (i) => i !== src,
-                          ),
-                        }))
-                      }
-                      size="icon"
-                      className="border-background focus-visible:border-background absolute -top-2 -right-2 size-6 rounded-full border-2 shadow-none"
-                      aria-label="Remove image"
-                      type="button"
-                    >
-                      <XIcon className="size-3.5" />
-                    </Button>
-                  )}
-                </div>
-              ))}
+              <div className="grid grid-cols-[repeat(auto-fill,minmax(100px,1fr))] gap-4">
+                {fileUrls.invoice_urls?.map((src, index) => (
+                  <div
+                    className="bg-accent relative aspect-square w-24 rounded-md"
+                    key={index}
+                  >
+                    <Image
+                      src={`${config.file_base}/${src}`}
+                      width={200}
+                      height={200}
+                      className={cn("size-full rounded-[inherit] object-cover")}
+                      alt={`image-${index}`}
+                    />
+                    {type === "edit" && (
+                      <Button
+                        onClick={() =>
+                          setFileUrls((prev) => ({
+                            ...prev,
+                            invoice_urls: prev.invoice_urls.filter(
+                              (i) => i !== src,
+                            ),
+                          }))
+                        }
+                        size="icon"
+                        className="border-background focus-visible:border-background absolute -top-2 -right-2 size-6 rounded-full border-2 shadow-none"
+                        aria-label="Remove image"
+                        type="button"
+                      >
+                        <XIcon className="size-3.5" />
+                      </Button>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
         {/* step: 2 */}
@@ -472,9 +477,11 @@ export default function PDICheckForm({ orderId, type = "create", id }) {
               const hasInvoices =
                 fileUrls.invoice_urls.length > 0 || files.invoices.length > 0;
 
-              console.log({ needsImages, hasImages, hasInvoices });
-
-              if (needsImages && (!hasImages || !hasInvoices)) return;
+              if (
+                needsImages &&
+                (!hasImages || (user.role !== "dealer" && !hasInvoices))
+              )
+                return;
 
               setCurrentStep((prev) => prev + 1);
             }}

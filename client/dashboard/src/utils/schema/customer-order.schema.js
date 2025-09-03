@@ -13,6 +13,11 @@ export const customerOrderSchema = z.object({
     .string({ required_error: "Vehicle color is required" })
     .uuid()
     .min(1, { message: "Vehicle vehicle is required" }),
+  vehicle_variant_map_id: z
+    .string({ required_error: "Vehicle variant is required" })
+    .uuid()
+    .min(1, { message: "Vehicle variant is required" }),
+  booking_amount: z.number().min(1, { message: "Booking amount is required." }),
   chassis_number: z
     .array(
       z.object({

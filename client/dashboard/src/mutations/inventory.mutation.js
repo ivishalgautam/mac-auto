@@ -5,6 +5,19 @@ import inventory from "@/services/inventory";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
+export const useGetInventories = (searchParams = "") => {
+  const { user } = useAuth();
+
+  return useQuery({
+    queryKey: ["vehicle-inventory", searchParams],
+    queryFn: () =>
+      user?.role === "dealer"
+        ? dealerInventory.getDealerInventoryChassis(searchParams)
+        : inventory.getInventories(searchParams),
+    enabled: !!user,
+  });
+};
+
 export const useGetInventoryByVehicleId = (
   vehicleId,
   searchParams = "page=1",
@@ -37,6 +50,25 @@ export const useGetInventoryByVehicleColorId = (
             searchParams,
           ),
     enabled: !!vehicleColorId && !!user,
+  });
+};
+export const useGetInventoryByVehicleColorAndVariant = (
+  vehicleColorId,
+  vehicleVariantId,
+  searchParams = "page=1",
+) => {
+  const { user } = useAuth();
+
+  return useQuery({
+    queryKey: ["vehicle-color-inventory", vehicleColorId, searchParams],
+    queryFn: () =>
+      user?.role === "admin"
+        ? inventory.getInventoryByVehicleColorId(vehicleColorId, searchParams)
+        : dealer.getDealerInventoryByVehicleColorId(
+            vehicleColorId,
+            searchParams,
+          ),
+    enabled: !!vehicleColorId && !!vehicleVariantId && !!user,
   });
 };
 

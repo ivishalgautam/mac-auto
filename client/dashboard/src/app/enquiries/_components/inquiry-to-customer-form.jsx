@@ -27,6 +27,8 @@ import { isValidPhoneNumber } from "react-phone-number-input";
 import DealerVehicleColorSelect from "@/features/dealer-vehicle-color-select";
 import ChassisSelectByColor from "@/features/chassis-select-by-color";
 import { Separator } from "@/components/ui/separator";
+import DealerVehicleVariantMapSelect from "@/features/dealer-vehicle-variant-map-select";
+import ChassisSelect from "@/features/chassis-select";
 
 const newCustomerOrderSchema = z
   .object({
@@ -46,6 +48,10 @@ const newCustomerOrderSchema = z
     vehicle_color_id: z
       .string()
       .uuid({ message: "Select valid vehicle color" }),
+    vehicle_variant_map_id: z
+      .string({ required_error: "Vehicle variant is required" })
+      .uuid()
+      .min(1, { message: "Vehicle variant is required" }),
     chassis_no: z
       .array(z.object({ value: z.string(), label: z.string() }))
       .min(1, { message: "Chassis No. is required*" })
@@ -62,6 +68,10 @@ const newCustomerOrderSchema = z
 const existingCustomerOrderSchema = z.object({
   dealer_id: z.string().uuid().or(z.literal("")).optional(),
   vehicle_color_id: z.string().uuid({ message: "Select valid vehicle color" }),
+  vehicle_variant_map_id: z
+    .string({ required_error: "Vehicle variant is required" })
+    .uuid()
+    .min(1, { message: "Vehicle variant is required" }),
   chassis_no: z
     .array(z.object({ value: z.string(), label: z.string() }))
     .min(1, { message: "Chassis No. is required*" })
@@ -73,9 +83,11 @@ export default function InquiryToCustomerForm({
   onSuccess,
   inquiryId,
   selectedEnq = {},
+  maxSelect = 1,
 }) {
   // console.log({ selectedEnq });
   const phoneNumber = selectedEnq?.phone;
+  const vehicleId = selectedEnq?.vehicle_id;
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
@@ -114,6 +126,9 @@ export default function InquiryToCustomerForm({
       mobile_number: selectedEnq?.phone ?? "",
     },
   });
+
+  const vehicleColorId = watch("vehicle_color_id");
+  const vehicleVariantMapId = watch("vehicle_variant_map_id");
 
   // Mutation for new customer
   const createMutation = useMutation({
@@ -191,7 +206,7 @@ export default function InquiryToCustomerForm({
             <div className="col-span-full grid gap-4 md:grid-cols-2">
               {/* vehicle color id */}
               <div className="space-y-2">
-                <Label>Vehicle</Label>
+                <Label>Color</Label>
                 <Controller
                   name="vehicle_color_id"
                   control={control}
@@ -209,30 +224,58 @@ export default function InquiryToCustomerForm({
                 />
               </div>
 
-              {/* chassis */}
+              {/* vehicle variant id */}
               <div className="space-y-2">
-                <Label>Chassis</Label>
+                <Label>Variant</Label>
                 <Controller
-                  name="chassis_no"
+                  name="vehicle_variant_map_id"
                   control={control}
                   render={({ field }) => (
-                    <ChassisSelectByColor
-                      vehicleColorId={watch("vehicle_color_id")}
+                    <DealerVehicleVariantMapSelect
+                      vehicleId={vehicleId}
                       value={field.value}
                       onChange={field.onChange}
                       className={cn({
-                        "border-red-500 dark:border-red-500": errors.chassis_no,
+                        "border-red-500 dark:border-red-500":
+                          errors.vehicle_variant_map_id,
                       })}
-                      maxSelected={1}
-                      onMaxSelected={(maxLimit) => {
-                        toast.warning(
-                          `You have reached max selected: ${maxLimit}`,
-                        );
-                      }}
                     />
                   )}
                 />
               </div>
+
+              {/* Chassis No. */}
+              {vehicleColorId && vehicleVariantMapId && (
+                <div className="space-y-2">
+                  <Label>Chassis No.</Label>
+                  <Controller
+                    name="chassis_no"
+                    control={control}
+                    render={({ field }) => (
+                      <ChassisSelect
+                        vehicleColorId={vehicleColorId}
+                        vehicleVariantMapId={vehicleVariantMapId}
+                        onChange={(data) => {
+                          field.onChange(data);
+                        }}
+                        className={cn({
+                          "border-red-500": errors.chassis_number,
+                        })}
+                        {...(maxSelect
+                          ? {
+                              maxSelected: maxSelect,
+                              onMaxSelected: (maxLimit) => {
+                                toast.warning(
+                                  `You have reached max selected: ${maxLimit}`,
+                                );
+                              },
+                            }
+                          : {})}
+                      />
+                    )}
+                  />
+                </div>
+              )}
 
               {/* booking amt */}
               <div className="space-y-2">

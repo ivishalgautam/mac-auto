@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/select";
 import { colors } from "@/data";
 import { useState } from "react";
-import { useCreateVehicleVariant } from "@/mutations/vehicle-variant-mutation";
+import { useCreateVehicleColor } from "@/mutations/vehicle-color-mutation";
 
 const defaultValues = {
   color_name: "", // NEW
@@ -65,7 +65,7 @@ export default function InventoryForm({ vehicleId }) {
     name: "chassis_numbers",
   });
 
-  const createMutation = useCreateVehicleVariant(() => {});
+  const createMutation = useCreateVehicleColor(() => {});
 
   const onSubmit = (data) => {
     if (!fileUrls?.carousel_urls?.length && !files.carousel.length) {

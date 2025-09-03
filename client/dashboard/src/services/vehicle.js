@@ -54,6 +54,12 @@ const getVehicleColors = async (vehicleId) => {
   );
   return data;
 };
+const getVehicleVariants = async (vehicleId) => {
+  const { data } = await http().get(
+    `${endpoints.vehicles.getAll}/${vehicleId}/variants`,
+  );
+  return data;
+};
 
 const createVehicleVariant = async (data) => {
   return await http().post(endpoints.vehicles.variant, data, true);
@@ -80,6 +86,7 @@ const vehicle = {
   createVehicleInventory: createVehicleInventory,
   getVehicleInventory: getVehicleInventory,
   getVehicleColors: getVehicleColors,
+  getVehicleVariants: getVehicleVariants,
   createVehicleVariant: createVehicleVariant,
   getVehicleVariant: getVehicleVariant,
   updateVehicleVariant: updateVehicleVariant,

@@ -47,6 +47,18 @@ export const columns = (setId, openModal, user) =>
         );
       },
     },
+    {
+      accessorKey: "chassis_no",
+      header: "Chassis",
+      cell: ({ row }) => {
+        const chassis_no = row.getValue("chassis_no");
+        return (
+          <Badge className={"capitalize"} variant={"outline"}>
+            {chassis_no}
+          </Badge>
+        );
+      },
+    },
     ["customer", "admin"].includes(user?.role) && {
       accessorKey: "dealership",
       header: "Dealership",

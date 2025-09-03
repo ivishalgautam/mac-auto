@@ -145,13 +145,26 @@ export const useCreateVehicleInventory = (id, handleSuccess) => {
 export const useGetVehicleColors = (vehicleId) => {
   return useQuery({
     queryFn: () => vehicle.getVehicleColors(vehicleId),
-    queryKey: ["vehicles", vehicleId],
+    queryKey: ["vehicles-colors", vehicleId],
     enabled: !!vehicleId,
     select: (data) => {
       return data.map((color) => ({
         value: color.id,
         label: color.color_name,
         hex: color.color_hex,
+      }));
+    },
+  });
+};
+export const useGetVehicleVariants = (vehicleId) => {
+  return useQuery({
+    queryFn: () => vehicle.getVehicleVariants(vehicleId),
+    queryKey: ["vehicles-variants", vehicleId],
+    enabled: !!vehicleId,
+    select: (data) => {
+      return data.map((v) => ({
+        value: v.id,
+        label: v.variant_name,
       }));
     },
   });

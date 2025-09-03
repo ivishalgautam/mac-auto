@@ -23,11 +23,11 @@ export default async function MainPage({ searchParams }) {
     <PageContainer>
       <div className="flex items-start justify-between">
         <Heading
-          title="Vehicle Models"
-          description="Manage vehicle models (Create, Update, Delete)."
+          title="Vehicle variants"
+          description="Manage vehicle variants (Create, Update, Delete)."
         />
         <Link
-          href="/vehicles/models/create"
+          href="/vehicles/variants/create"
           className={buttonVariants({ size: "sm" })}
         >
           <Plus size="15" /> Add Model

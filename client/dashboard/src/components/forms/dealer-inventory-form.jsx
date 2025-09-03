@@ -9,15 +9,18 @@ import { Alert, AlertDescription } from "../ui/alert";
 import { getFormErrors } from "@/lib/get-form-errors";
 import DealerSelect from "@/features/dealer-select";
 import { dealerInventorySchema } from "@/utils/schema/dealer-inventory.schema";
-import ChassisSelect from "@/features/chassis-select";
 import { toast } from "sonner";
 import VehicleColorSelect from "@/features/vehicle-color-select";
-import ChassisSelectByColor from "@/features/chassis-select-by-color";
+import ChassisSelect from "@/features/chassis-select";
+import VehicleVariantSelect from "@/features/vehicle-variant-select";
+import VehicleVariantSelectByVehicle from "@/features/vehicle-variant-map-select";
+import VehicleVariantMapSelect from "@/features/vehicle-variant-map-select";
 
 export default function OrderForm({
   createMutation,
   vehicleId,
   vehicleColorId: defaultVehicleColorId = null,
+  vehicleVariantMapId: defaultVehicleVariantMapId = null,
   dealerId = null,
   maxSelect = null,
 }) {
@@ -28,6 +31,7 @@ export default function OrderForm({
       vehicle_id: vehicleId,
       vehicle_color_id: defaultVehicleColorId ?? "",
       chassis_numbers: [],
+      vehicle_variant_map_id: defaultVehicleVariantMapId ?? "",
     },
   });
   const {
@@ -41,6 +45,7 @@ export default function OrderForm({
   };
 
   const vehicleColorId = watch("vehicle_color_id");
+  const vehicleVariantMapId = watch("vehicle_variant_map_id");
 
   const formErrors = getFormErrors(errors);
   const hasErrors = formErrors.length > 0;
@@ -88,15 +93,37 @@ export default function OrderForm({
             />
           </div>
 
+          {/* vehicle variant id */}
+          <div className="space-y-2">
+            <Label>Variant</Label>
+            <Controller
+              name="vehicle_variant_map_id"
+              control={control}
+              render={({ field }) => (
+                <VehicleVariantMapSelect
+                  vehicleId={vehicleId}
+                  value={field.value}
+                  onChange={field.onChange}
+                  className={cn({
+                    "border-red-500 dark:border-red-500":
+                      errors.vehicle_variant_map_id,
+                  })}
+                />
+              )}
+            />
+          </div>
+
           {/* Chassis No. */}
-          {vehicleColorId && (
+          {vehicleColorId && vehicleVariantMapId && (
             <div className="space-y-2">
               <Label>Chassis No.</Label>
               <Controller
                 name="chassis_numbers"
                 control={control}
                 render={({ field }) => (
-                  <ChassisSelectByColor
+                  <ChassisSelect
+                    vehicleId={vehicleId}
+                    vehicleVariantMapId={vehicleVariantMapId}
                     vehicleColorId={vehicleColorId}
                     onChange={(data) => {
                       field.onChange(data);

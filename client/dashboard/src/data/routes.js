@@ -84,9 +84,106 @@ export const sidebarData = [
     ],
   },
   {
+    title: "My Customers",
+    url: "#",
+    icon: Users,
+    roles: [ROLES.DEALER],
+    isVisible: true,
+    items: [
+      {
+        title: "Enquiries",
+        url: "/enquiries?page=1&limit=10",
+        roles: [ROLES.ADMIN, ROLES.CRE, ROLES.MANAGER, ROLES.DEALER],
+        isVisible: true,
+      },
+      {
+        title: "My Orders",
+        url: "/customer-purchases?page=1&limit=10",
+        icon: SwatchBook,
+        roles: [ROLES.ADMIN, ROLES.CRE, ROLES.MANAGER, ROLES.DEALER],
+        isVisible: true,
+        items: [],
+      },
+      {
+        title: "Customers",
+        url: "/customers?page=1&limit=10",
+        roles: [ROLES.ADMIN, ROLES.CRE, ROLES.MANAGER, ROLES.DEALER],
+        isVisible: true,
+      },
+      {
+        title: "Walk In Enquiries",
+        url: "/walkin-enquiries?page=1&limit=10",
+        icon: ScrollText,
+        roles: [ROLES.ADMIN, ROLES.CRE, ROLES.MANAGER, ROLES.DEALER],
+        isVisible: false,
+      },
+      {
+        title: "Tickets",
+        url: "/tickets?page=1&limit=10",
+        roles: [
+          ROLES.ADMIN,
+          ROLES.CRE,
+          ROLES.MANAGER,
+          ROLES.DEALER,
+          ROLES.CUSTOMER,
+        ],
+        isVisible: true,
+      },
+    ],
+  },
+  {
+    title: "Marketing",
+    url: "#",
+    icon: Users,
+    roles: [ROLES.DEALER],
+    isVisible: true,
+    items: [
+      {
+        title: "Schemes",
+        url: "/schemes?page=1&limit=10",
+        roles: [ROLES.ADMIN, ROLES.CRE, ROLES.MANAGER, ROLES.DEALER],
+        isVisible: true,
+      },
+      {
+        title: "Marketing materials",
+        url: "/marketing-materials",
+        roles: [ROLES.ADMIN, ROLES.CRE, ROLES.MANAGER, ROLES.DEALER],
+        isVisible: true,
+      },
+    ],
+  },
+  {
+    title: "My Showroom",
+    url: "#",
+    icon: Users,
+    roles: [ROLES.DEALER],
+    isVisible: true,
+    items: [
+      {
+        title: "Stock Inventory",
+        url: "/dealer-inventory?page=1",
+        roles: [ROLES.DEALER],
+        isVisible: true,
+      },
+      {
+        title: "Stock Orders",
+        url: "/dealer-orders?page=1&limit=10",
+        icon: Handshake,
+        roles: [ROLES.ADMIN, ROLES.CRE, ROLES.MANAGER, ROLES.DEALER],
+        isVisible: true,
+      },
+      {
+        title: "Service Complaints",
+        url: "/dealer-tickets?page=1&limit=10",
+        roles: [ROLES.DEALER],
+        isVisible: true,
+      },
+    ],
+  },
+  {
     title: "Customers",
     url: "/customers?page=1&limit=10",
-    roles: [ROLES.ADMIN, ROLES.CRE, ROLES.MANAGER, ROLES.DEALER],
+    roles: [ROLES.ADMIN, ROLES.CRE, ROLES.MANAGER],
     isVisible: true,
     icon: Users,
     items: [
@@ -157,8 +254,8 @@ export const sidebarData = [
         isVisible: false,
       },
       {
-        title: "Models",
-        url: "/vehicles/models",
+        title: "Variants",
+        url: "/vehicles/variants",
         roles: [ROLES.ADMIN, ROLES.CRE, ROLES.MANAGER],
         isVisible: true,
       },
@@ -181,7 +278,7 @@ export const sidebarData = [
     url: "/dealer-inventory?page=1",
     icon: CarFront,
     roles: [ROLES.DEALER],
-    isVisible: true,
+    isVisible: false,
     items: [
       {
         title: "Inventory",
@@ -203,7 +300,7 @@ export const sidebarData = [
     title: "Enquiries",
     url: "/enquiries?page=1&limit=10",
     icon: ScrollText,
-    roles: [ROLES.ADMIN, ROLES.CRE, ROLES.MANAGER, ROLES.DEALER],
+    roles: [ROLES.ADMIN, ROLES.CRE, ROLES.MANAGER],
     isVisible: true,
     items: [],
   },
@@ -211,7 +308,7 @@ export const sidebarData = [
     title: "Walk In Enquiries",
     url: "/walkin-enquiries?page=1&limit=10",
     icon: ScrollText,
-    roles: [ROLES.ADMIN, ROLES.CRE, ROLES.MANAGER, ROLES.DEALER],
+    roles: [ROLES.ADMIN, ROLES.CRE, ROLES.MANAGER],
     isVisible: true,
     items: [
       {
@@ -238,7 +335,7 @@ export const sidebarData = [
     title: "Orders",
     url: "/dealer-orders?page=1&limit=10",
     icon: Handshake,
-    roles: [ROLES.ADMIN, ROLES.CRE, ROLES.MANAGER, ROLES.DEALER],
+    roles: [ROLES.ADMIN, ROLES.CRE, ROLES.MANAGER],
     isVisible: true,
     items: [
       {
@@ -271,7 +368,7 @@ export const sidebarData = [
     title: "Marketing materials",
     url: "/marketing-materials",
     icon: CirclePercent,
-    roles: [ROLES.ADMIN, ROLES.CRE, ROLES.MANAGER, ROLES.DEALER],
+    roles: [ROLES.ADMIN, ROLES.CRE, ROLES.MANAGER],
     isVisible: true,
     items: [],
   },
@@ -279,7 +376,7 @@ export const sidebarData = [
     title: "Schemes",
     url: "/schemes?page=1&limit=10",
     icon: SwatchBook,
-    roles: [ROLES.ADMIN, ROLES.CRE, ROLES.MANAGER, ROLES.DEALER],
+    roles: [ROLES.ADMIN, ROLES.CRE, ROLES.MANAGER],
     isVisible: true,
     items: [],
   },
@@ -287,7 +384,7 @@ export const sidebarData = [
     title: "Dealer Tickets",
     url: "/dealer-tickets?page=1&limit=10",
     icon: Ticket,
-    roles: [ROLES.ADMIN, ROLES.CRE, ROLES.MANAGER, ROLES.DEALER],
+    roles: [ROLES.ADMIN, ROLES.CRE, ROLES.MANAGER],
     isVisible: true,
     items: [
       {
@@ -314,13 +411,7 @@ export const sidebarData = [
     title: "Customer Tickets",
     url: "/tickets?page=1&limit=10",
     icon: Ticket,
-    roles: [
-      ROLES.ADMIN,
-      ROLES.CRE,
-      ROLES.MANAGER,
-      ROLES.DEALER,
-      ROLES.CUSTOMER,
-    ],
+    roles: [ROLES.ADMIN, ROLES.CRE, ROLES.MANAGER, ROLES.CUSTOMER],
     isVisible: true,
     items: [
       {
@@ -392,7 +483,7 @@ export const sidebarData = [
     title: "Customer Purchase",
     url: "/customer-purchases?page=1&limit=10",
     icon: SwatchBook,
-    roles: [ROLES.ADMIN, ROLES.CRE, ROLES.MANAGER, ROLES.DEALER],
+    roles: [ROLES.ADMIN, ROLES.CRE, ROLES.MANAGER],
     isVisible: true,
     items: [],
   },

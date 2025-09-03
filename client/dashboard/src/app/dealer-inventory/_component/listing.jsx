@@ -13,6 +13,10 @@ import { RaiseEnquiryDialog } from "./raise-enquiry-dialog";
 import { VehicleCardSkeleton } from "./vehicle-card-skeloton";
 import { VehicleNotFound } from "./vehicle-not-found";
 import { H2 } from "@/components/ui/typography";
+import { saveAs } from "file-saver";
+import Papa from "papaparse";
+import { Button } from "@/components/ui/button";
+import { Download } from "lucide-react";
 
 export default function Listing() {
   const [isModal, setIsModal] = useState(false);
@@ -44,6 +48,36 @@ export default function Listing() {
 
   const updateMutation = useUpdateDealerInventoryItem(id);
 
+  function exportInventory() {
+    const csvData = data?.inventory?.map((inv) => {
+      return {
+        "Model Name": inv.title,
+        "Active Inventory": inv.active_quantity,
+        "In Active Inventory": inv.inactive_quantity,
+        "Sold Inventory": inv.sold_quantity,
+        "Scrapped Inventory": inv.scrapped_quantity,
+      };
+    });
+
+    const csvString = Papa.unparse(csvData);
+
+    const blob = new Blob([csvString], { type: "text/csv;charset=utf-8;" });
+    saveAs(blob, `Inventory.csv`);
+  }
+  function exportPrice() {
+    const csvData = data?.inventory?.map((inv) => {
+      return {
+        "Model Name": inv.title,
+        Price: inv.dealer_price,
+      };
+    });
+
+    const csvString = Papa.unparse(csvData);
+
+    const blob = new Blob([csvString], { type: "text/csv;charset=utf-8;" });
+    saveAs(blob, `Pricing.csv`);
+  }
+
   useEffect(() => {
     if (!searchParamsStr) {
       const params = new URLSearchParams();
@@ -55,13 +89,23 @@ export default function Listing() {
   if (isError) return <ErrorMessage error={error} />;
 
   return (
-    <div className="border-input mt-4 w-full rounded-lg">
+    <div className="border-input mt-4 w-full space-y-2 rounded-lg">
       {/* <DataTable
         columns={columns(setId, openModal)}
         data={data?.inventory ?? []}
         totalItems={data?.total}
       /> */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="space-x-2 text-end">
+        <Button type="button" variant={"outline"} onClick={exportPrice}>
+          <Download /> Export Price
+        </Button>
+        <Button type="button" variant={"outline"} onClick={exportInventory}>
+          <Download />
+          Export Inventory
+        </Button>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2">
         {isLoading ? (
           Array.from({ length: 10 }).map((_, ind) => (
             <VehicleCardSkeleton key={ind} />
@@ -82,7 +126,7 @@ export default function Listing() {
                 return (
                   <div className="space-y-4" key={key}>
                     <H2 className={"border-none"}>{key}</H2>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid gap-4 sm:grid-cols-2">
                       {value.map((inv) => {
                         return (
                           <VehicleCard

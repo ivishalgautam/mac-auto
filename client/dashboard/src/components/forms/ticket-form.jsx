@@ -211,6 +211,10 @@ export default function TicketForm({ id, type }) {
                       setValue("purchase_id", "");
                     }}
                     value={field.value}
+                    className={cn({
+                      "border border-red-500 dark:border-red-500":
+                        errors.customer_id,
+                    })}
                   />
                 )}
               />
@@ -233,6 +237,10 @@ export default function TicketForm({ id, type }) {
                     value={field.value}
                     customerId={customerId}
                     disabled={type === "view"}
+                    className={cn({
+                      "border border-red-500 dark:border-red-500":
+                        errors.purchase_id,
+                    })}
                   />
                 )}
               />
@@ -250,7 +258,10 @@ export default function TicketForm({ id, type }) {
                   onChange={field.onChange}
                   value={field.value}
                   placeholder="Select complaint"
-                  className=""
+                  className={cn({
+                    "border border-red-500 dark:border-red-500":
+                      errors.complaint_type,
+                  })}
                   disabled={type === "view"}
                   key={"complaint_type"}
                   options={customerComplaintTypes}

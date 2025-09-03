@@ -12,15 +12,16 @@ import CustomerSelect from "@/features/customer-select";
 import { customerOrderSchema } from "@/utils/schema/customer-order.schema";
 import ChassisSelectByColor from "@/features/chassis-select-by-color";
 import DealerVehicleColorSelect from "@/features/dealer-vehicle-color-select";
-import { useCallback, useState } from "react";
+import { useState } from "react";
 import Image from "next/image";
 import config from "@/config";
-import FileUpload from "../file-uploader";
 import { Input } from "../ui/input";
 import {
   useCreateCustomerOrder,
   useUpdateCustomerOrder,
 } from "@/mutations/customer-order-mutation";
+import DealerVehicleVariantMapSelect from "@/features/dealer-vehicle-variant-map-select";
+import ChassisSelect from "@/features/chassis-select";
 
 export default function CustomerOrderForm({
   callback,
@@ -44,6 +45,8 @@ export default function CustomerOrderForm({
       vehicle_id: vehicleId,
       chassis_number: "",
       vehicle_color_id: "",
+      vehicle_variant_map_id: "",
+      booking_amount: 0,
     },
   });
   const {
@@ -51,6 +54,7 @@ export default function CustomerOrderForm({
     formState: { errors, isDirty },
     control,
     watch,
+    register,
   } = methods;
 
   const createMutation = useCreateCustomerOrder(() => {
@@ -87,6 +91,7 @@ export default function CustomerOrderForm({
     createMutation.mutate(data);
   };
   const vehicleColorId = watch("vehicle_color_id");
+  const vehicleVariantMapId = watch("vehicle_variant_map_id");
 
   const formErrors = getFormErrors(errors);
   const hasErrors = formErrors.length > 0;
@@ -141,16 +146,37 @@ export default function CustomerOrderForm({
             />
           </div>
 
+          {/* vehicle variant id */}
+          <div className="space-y-2">
+            <Label>Variant</Label>
+            <Controller
+              name="vehicle_variant_map_id"
+              control={control}
+              render={({ field }) => (
+                <DealerVehicleVariantMapSelect
+                  vehicleId={vehicleId}
+                  value={field.value}
+                  onChange={field.onChange}
+                  className={cn({
+                    "border-red-500 dark:border-red-500":
+                      errors.vehicle_variant_map_id,
+                  })}
+                />
+              )}
+            />
+          </div>
+
           {/* Chassis No. */}
-          {vehicleColorId && (
+          {vehicleColorId && vehicleVariantMapId && (
             <div className="space-y-2">
               <Label>Chassis No.</Label>
               <Controller
                 name="chassis_number"
                 control={control}
                 render={({ field }) => (
-                  <ChassisSelectByColor
+                  <ChassisSelect
                     vehicleColorId={vehicleColorId}
+                    vehicleVariantMapId={vehicleVariantMapId}
                     onChange={(data) => {
                       field.onChange(data);
                     }}
@@ -170,6 +196,17 @@ export default function CustomerOrderForm({
               />
             </div>
           )}
+
+          <div className="space-y-2">
+            <Label htmlFor="booking_amount">Booking Amt *</Label>
+            <Input
+              id="booking_amount"
+              type="number"
+              placeholder="Enter booking amt"
+              {...register("booking_amount", { valueAsNumber: true })}
+              className={cn({ "border-red-500": errors.booking_amount })}
+            />
+          </div>
 
           {/* Invoices / Bills */}
           <div>

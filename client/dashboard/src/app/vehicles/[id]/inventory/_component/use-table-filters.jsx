@@ -22,18 +22,29 @@ export function useTableFilters() {
     "colors",
     searchParams.colors.withDefault(""),
   );
+  const [variantFilter, setVariantFilter] = useQueryState(
+    "variants",
+    searchParams.variants.withDefault(""),
+  );
 
   const resetFilters = useCallback(() => {
     setSearchQuery(null);
     setStatusFilter(null);
     setColorFilter(null);
+    setVariantFilter(null);
 
     setPage(1);
-  }, [setSearchQuery, setStatusFilter, setColorFilter, setPage]);
+  }, [
+    setSearchQuery,
+    setStatusFilter,
+    setColorFilter,
+    setVariantFilter,
+    setPage,
+  ]);
 
   const isAnyFilterActive = useMemo(() => {
-    return !!searchQuery || !!statusFilter || !!colorFilter;
-  }, [searchQuery, statusFilter, colorFilter]);
+    return !!searchQuery || !!statusFilter || !!colorFilter || !!variantFilter;
+  }, [searchQuery, statusFilter, colorFilter, variantFilter]);
 
   return {
     searchQuery,
@@ -46,5 +57,7 @@ export function useTableFilters() {
     isAnyFilterActive,
     colorFilter,
     setColorFilter,
+    variantFilter,
+    setVariantFilter,
   };
 }

@@ -1,67 +1,101 @@
-import vehicle from "@/services/vehicle";
+import vehicleModel from "@/services/vehicle-model";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-export const useCreateVehicleVariant = (handleSuccess) => {
-  const queryClient = useQueryClient();
+// ✅ Get all models (with pagination or filters)
+export const useGetVehicleVariants = (searchParams = "page=1") => {
+  return useQuery({
+    queryKey: ["vehicle-models", searchParams],
+    queryFn: () => vehicleModel.get(searchParams),
+    enabled: !!searchParams,
+  });
+};
+export const useGetFormattedVehicleVariants = () => {
+  return useQuery({
+    queryKey: ["vehicle-models"],
+    queryFn: () => vehicleModel.get(""),
 
-  return useMutation({
-    mutationFn: vehicle.createVehicleVariant,
-    onSuccess: () => {
-      toast("Quantity updated successfully.");
-      queryClient.invalidateQueries(["vehicles"]);
-      typeof handleSuccess === "function" && handleSuccess();
-    },
-    onError: (error) => {
-      console.error("Mutation Error:", error);
-      toast.error(
-        error?.response?.data?.message ?? error?.message ?? "An error occurred",
+    select: ({ variants }) => {
+      return (
+        variants?.map(({ variant_name: label, id: value }) => ({
+          label,
+          value,
+        })) ?? []
       );
     },
   });
 };
 
+// ✅ Get single model
 export const useGetVehicleVariant = (id) => {
   return useQuery({
-    queryKey: ["vehicles", id],
-    queryFn: () => vehicle.getVehicleVariant(id),
+    queryKey: ["vehicle-model", id],
+    queryFn: () => vehicleModel.getById(id),
     enabled: !!id,
   });
 };
 
-export const useUpdateVehicleVariant = (id, handleSuccess) => {
+// ✅ Bulk create
+export const useBulkCreateVehicleVariant = (handleSuccess) => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data) => vehicle.updateVehicleVariant(id, data),
+    mutationFn: (data) => vehicleModel.bulkCreate(data),
     onSuccess: () => {
-      toast("Vehicle updated successfully.");
-      queryClient.invalidateQueries(["vehicles", "vehicles-variants"]);
+      toast.success("Vehicle models added successfully.");
+      queryClient.invalidateQueries(["vehicle-models"]);
       typeof handleSuccess === "function" && handleSuccess();
     },
     onError: (error) => {
-      console.error("Mutation Error:", error);
       toast.error(
-        error?.response?.data?.message ?? error?.message ?? "An error occurred",
+        error?.response?.data?.message ??
+          error?.message ??
+          "An error occurred while adding models",
       );
     },
   });
 };
-export const useDeleteVehicleVariant = (id, handleSuccess) => {
+
+// ✅ Update single model
+export const useUpdateVehicleVariant = (id, handleSuccess) => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: () => vehicle.deleteVehicleVariant(id),
+    mutationFn: (data) => vehicleModel.update(id, data),
     onSuccess: () => {
-      toast("Vehicle deleted successfully.");
-
-      queryClient.invalidateQueries(["vehicles", "vehicles-variants"]);
+      toast.success("Vehicle model updated successfully.");
+      queryClient.invalidateQueries(["vehicle-models"]);
+      queryClient.invalidateQueries(["vehicle-model", id]);
       typeof handleSuccess === "function" && handleSuccess();
     },
     onError: (error) => {
       console.error("Mutation Error:", error);
       toast.error(
-        error?.response?.data?.message ?? error?.message ?? "An error occurred",
+        error?.response?.data?.message ??
+          error?.message ??
+          "An error occurred while updating model",
+      );
+    },
+  });
+};
+
+// ✅ Delete single model
+export const useDeleteVehicleVariant = (id, handleSuccess) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => vehicleModel.deleteById(id),
+    onSuccess: () => {
+      toast.success("Vehicle model deleted successfully.");
+      queryClient.invalidateQueries(["vehicle-models"]);
+      typeof handleSuccess === "function" && handleSuccess();
+    },
+    onError: (error) => {
+      console.error("Mutation Error:", error);
+      toast.error(
+        error?.response?.data?.message ??
+          error?.message ??
+          "An error occurred while deleting model",
       );
     },
   });

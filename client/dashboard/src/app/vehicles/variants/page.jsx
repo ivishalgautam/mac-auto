@@ -3,15 +3,17 @@ import { Heading } from "@/components/ui/heading";
 import { DataTableSkeleton } from "@/components/ui/table/data-table-skeleton";
 import { searchParamsCache, serialize } from "@/lib/searchparams";
 import { Suspense } from "react";
-import UserTableActions from "./_component/table-actions";
+import Link from "next/link";
+import { Plus } from "lucide-react";
+import { buttonVariants } from "@/components/ui/button";
 import Listing from "./_component/listing";
-import Header from "./_component/header";
+import TableActions from "./_component/table-actions";
 
 export const metadata = {
-  title: "Dealer orders",
+  title: "Vehicles models",
 };
 
-export default async function DealerOrdersPage({ searchParams }) {
+export default async function MainPage({ searchParams }) {
   const sParams = await searchParams;
 
   searchParamsCache.parse(sParams);
@@ -20,9 +22,18 @@ export default async function DealerOrdersPage({ searchParams }) {
   return (
     <PageContainer>
       <div className="flex items-start justify-between">
-        <Header />
+        <Heading
+          title="Vehicle variants"
+          description="Manage vehicle variants (Create, Update, Delete)."
+        />
+        <Link
+          href="/vehicles/variants/create"
+          className={buttonVariants({ size: "sm" })}
+        >
+          <Plus size="15" /> Add Model
+        </Link>
       </div>
-      <UserTableActions />
+      <TableActions />
       <Suspense
         key={key}
         fallback={<DataTableSkeleton columnCount={4} rowCount={10} />}

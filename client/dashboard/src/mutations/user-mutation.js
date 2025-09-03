@@ -31,6 +31,7 @@ export const useGetUserByPhone = (phone) => {
     queryKey: ["users", phone],
     queryFn: () => user.getByPhone(phone),
     enabled: !!phone,
+    retry: 1,
   });
 };
 

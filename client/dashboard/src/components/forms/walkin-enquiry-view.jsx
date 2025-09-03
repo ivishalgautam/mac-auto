@@ -38,12 +38,8 @@ import ErrorMessage from "../ui/error";
 import config from "@/config";
 import { H1, H3 } from "../ui/typography";
 import { walkInEnquirySchema } from "@/utils/schema/walking-enquiry.schema";
-import DealerSelect from "@/features/dealer-select";
-import { useAuth } from "@/providers/auth-provider";
 
-export default function WalkInEnquiryForm({ onSuccess, type = "create", id }) {
-  const { user } = useAuth();
-
+export default function WalkInEnquiryView({ onSuccess, type = "create", id }) {
   const [files, setFiles] = useState({
     pan: [],
     aadhaar: [],
@@ -314,7 +310,6 @@ export default function WalkInEnquiryForm({ onSuccess, type = "create", id }) {
             )}
           />
         </div>
-
         {/* full name */}
         <div className="space-y-2">
           <Label>Full Name *</Label>
@@ -325,7 +320,6 @@ export default function WalkInEnquiryForm({ onSuccess, type = "create", id }) {
             className={cn({ "border-red-500": errors.name })}
           />
         </div>
-
         {/* phone */}
         <div className="space-y-2">
           <Label>Phone *</Label>
@@ -345,7 +339,6 @@ export default function WalkInEnquiryForm({ onSuccess, type = "create", id }) {
             )}
           />
         </div>
-
         {/* location */}
         <div className="space-y-2">
           <Label>Location *</Label>
@@ -356,7 +349,6 @@ export default function WalkInEnquiryForm({ onSuccess, type = "create", id }) {
             className={cn({ "border-red-500": errors.location })}
           />
         </div>
-
         {/* purchase type */}
         <div className="space-y-2">
           <Label>Purchase Type</Label>
@@ -388,26 +380,6 @@ export default function WalkInEnquiryForm({ onSuccess, type = "create", id }) {
             )}
           />
         </div>
-
-        {/* dealer */}
-        {user?.role === "admin" && (
-          <div className="space-y-2">
-            <Label>Dealer</Label>
-            <Controller
-              name="dealer_id"
-              control={control}
-              render={({ field }) => (
-                <DealerSelect
-                  value={field.value}
-                  onChange={field.onChange}
-                  className={cn({
-                    "border-red-500 dark:border-red-500": errors.dealer_id,
-                  })}
-                />
-              )}
-            />
-          </div>
-        )}
 
         {/* quantity */}
         <div className="space-y-2">
@@ -836,21 +808,21 @@ export default function WalkInEnquiryForm({ onSuccess, type = "create", id }) {
 
 export const FileCard = ({ file, onRemove, type }) => (
   <div className="hover:bg-muted/50 relative flex items-center justify-between rounded-lg border px-3 py-2 text-sm">
-    <div className="flex min-w-0 flex-1 items-center gap-2">
-      <a href={`${config.file_base}${file}`} target="_blank">
+    <a href={`${config.file_base}${file}`} target="_blank" className="w-full">
+      <div className="flex min-w-0 flex-1 items-center gap-2">
         <ExternalLink className="h-4 w-4" />
-      </a>
-      <span className="truncate">{file.split("\\").pop()}</span>
-    </div>
-    {type !== "view" && (
-      <Button
-        onClick={onRemove}
-        size="icon"
-        className="absolute -top-2 -right-2 size-6 rounded-full border-2"
-        type="button"
-      >
-        <XIcon className="size-3.5" />
-      </Button>
-    )}
+        <span className="truncate">{file.split("\\").pop()}</span>
+      </div>
+      {type !== "view" && (
+        <Button
+          onClick={onRemove}
+          size="icon"
+          className="absolute -top-2 -right-2 size-6 rounded-full border-2"
+          type="button"
+        >
+          <XIcon className="size-3.5" />
+        </Button>
+      )}
+    </a>
   </div>
 );

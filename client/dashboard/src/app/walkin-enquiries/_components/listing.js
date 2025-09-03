@@ -1,18 +1,10 @@
 "use client";
 import { columns } from "../columns";
 import { useEffect, useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { DataTable } from "@/components/ui/table/data-table";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { DataTableSkeleton } from "@/components/ui/table/data-table-skeleton";
-import {
-  deleteEnquiry,
-  deleteWalkinEnquiry,
-  fetchWalkinEnquiries,
-} from "@/services/enquiry";
-import { Button } from "@/components/ui/button";
-import { Download, Plus } from "lucide-react";
 import { useAuth } from "@/providers/auth-provider";
 import ErrorMessage from "@/components/ui/error";
 import { DeleteDialog } from "./delete-dialog";

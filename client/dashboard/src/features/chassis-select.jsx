@@ -1,20 +1,20 @@
 import ErrorMessage from "@/components/ui/error";
-import { useGetInventoryByVehicleId } from "@/mutations/inventory.mutation";
+import { useGetInventories } from "@/mutations/inventory.mutation";
 import { useMemo } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import MultipleSelector from "@/components/ui/multiselect";
-import { useAuth } from "@/providers/auth-provider";
 
 export default function ChassisSelect({
   vehicleId,
+  vehicleColorId,
+  vehicleVariantMapId,
   value,
   onChange,
   className,
   ...props
 }) {
-  const { data, isLoading, isError, error } = useGetInventoryByVehicleId(
-    vehicleId,
-    "status=active",
+  const { data, isLoading, isError, error } = useGetInventories(
+    `vcid=${vehicleColorId ?? null}&vvmid=${vehicleVariantMapId ?? null}&status=active`,
   );
 
   const formattedNumbers = useMemo(() => {

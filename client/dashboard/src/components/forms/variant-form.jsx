@@ -23,16 +23,16 @@ import { colors } from "@/data";
 import FileUpload from "../file-uploader";
 import { useCallback, useEffect, useState } from "react";
 import {
-  useCreateVehicleVariant,
-  useGetVehicleVariant,
-  useUpdateVehicleVariant,
-} from "@/mutations/vehicle-variant-mutation";
+  useCreateVehicleColor,
+  useGetVehicleColor,
+  useUpdateVehicleColor,
+} from "@/mutations/vehicle-color-mutation";
 import Loader from "../loader";
 import ErrorMessage from "../ui/error";
 import config from "@/config";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import VehicleModelSelectMulti from "@/features/vehicle-model-select-multi";
+import VehicleVariantSelect from "@/features/vehicle-variant-select";
 
 const defaultValues = {
   color_name: "",
@@ -77,28 +77,28 @@ export default function VariantForm({ vehicleId, type = "create", id }) {
     name: "chassis_numbers",
   });
 
-  const createMutation = useCreateVehicleVariant(() =>
+  const createMutation = useCreateVehicleColor(() =>
     router.push(`/vehicles?page=1&limit=10`),
   );
-  const { data, isLoading, isError, error } = useGetVehicleVariant(id);
-  const updateMutation = useUpdateVehicleVariant(id, () =>
+  const { data, isLoading, isError, error } = useGetVehicleColor(id);
+  const updateMutation = useUpdateVehicleColor(id, () =>
     router.push(`/vehicles?page=1&limit=10`),
   );
 
   const onSubmit = (data) => {
-    if (!fileUrls?.carousel_urls?.length && !files.carousel.length) {
-      return setError("carousel", {
-        type: "manual",
-        message: "Atleat 1 carousel is required*",
-      });
-    }
-    if (!fileUrls?.gallery_urls?.length && !files.gallery.length) {
-      return setError("gallery", {
-        type: "manual",
-        message: "Atleat 1 gallery is required*",
-      });
-    }
-
+    // if (!fileUrls?.carousel_urls?.length && !files.carousel.length) {
+    //   return setError("carousel", {
+    //     type: "manual",
+    //     message: "Atleat 1 carousel is required*",
+    //   });
+    // }
+    // if (!fileUrls?.gallery_urls?.length && !files.gallery.length) {
+    //   return setError("gallery", {
+    //     type: "manual",
+    //     message: "Atleat 1 gallery is required*",
+    //   });
+    // }
+    // console.log({ data });
     const formData = new FormData();
 
     files.carousel?.forEach((file) => {
@@ -289,23 +289,25 @@ export default function VariantForm({ vehicleId, type = "create", id }) {
             )}
           </div>
 
-          {/* Select model */}
+          {/* Select variant */}
           <div className="space-y-2">
-            <Label>Models</Label>
+            <Label>Variant</Label>
             <Controller
-              name="vehicle_models"
+              name="variant_id"
               control={control}
               render={({ field }) => {
                 return (
-                  <VehicleModelSelectMulti
+                  <VehicleVariantSelect
                     onChange={field.onChange}
                     value={field.value}
                   />
                 );
               }}
             />
-            {errors.color && (
-              <p className="text-sm text-red-500">{errors.color.message}</p>
+            {errors.variant_id && (
+              <p className="text-sm text-red-500">
+                {errors.variant_id.message}
+              </p>
             )}
           </div>
         </div>

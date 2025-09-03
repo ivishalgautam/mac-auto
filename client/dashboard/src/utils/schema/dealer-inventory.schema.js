@@ -13,6 +13,10 @@ export const dealerInventorySchema = z.object({
     .string({ required_error: "Vehicle color ID is required" })
     .uuid()
     .min(1, { message: "Vehicle color ID is required" }),
+  vehicle_variant_map_id: z
+    .string({ required_error: "Vehicle variant ID is required" })
+    .uuid()
+    .min(1, { message: "Vehicle variant ID is required" }),
   // quantity: z.number().min(1, { message: "Quantity is required!" }),
   chassis_numbers: z
     .array(

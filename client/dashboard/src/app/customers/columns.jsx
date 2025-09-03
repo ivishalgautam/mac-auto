@@ -16,7 +16,7 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { ExternalLink } from "lucide-react";
 
-export const columns = (setUserId, openModal) => [
+export const columns = (setUserId, openModal, user) => [
   {
     accessorKey: "fullname",
     header: "Fullname",
@@ -84,21 +84,25 @@ export const columns = (setUserId, openModal) => [
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem>
-              <Link href={`/customers/${userId}/edit`}>Edit</Link>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>
               <Link href={`/customers/${customerId}/purchases`}>Purchases</Link>
             </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={() => {
-                setUserId(userId);
-                openModal("delete");
-              }}
-            >
-              Delete
-            </DropdownMenuItem>
+            {user?.role === "admin" && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem>
+                  <Link href={`/customers/${userId}/edit`}>Edit</Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={() => {
+                    setUserId(userId);
+                    openModal("delete");
+                  }}
+                >
+                  Delete
+                </DropdownMenuItem>
+              </>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       );

@@ -5,10 +5,10 @@ import { DataTableSkeleton } from "@/components/ui/table/data-table-skeleton";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
-  useDeleteVehicleModel,
-  useGetVehicleModels,
-  useUpdateVehicleModel,
-} from "@/mutations/vehicle-model-mutation";
+  useDeleteVehicleVariant,
+  useGetVehicleVariants,
+  useUpdateVehicleVariant,
+} from "@/mutations/vehicle-variant-mutation";
 import { useAuth } from "@/providers/auth-provider";
 import { columns } from "../column";
 import { DeleteDialog } from "./delete-dialog";
@@ -25,9 +25,9 @@ export default function Listing() {
   const closeModal = () => setIsModal(false);
 
   const { data, isLoading, isError, error } =
-    useGetVehicleModels(searchParamsStr);
-  const deleteMutation = useDeleteVehicleModel(id, closeModal);
-  const updateMutation = useUpdateVehicleModel(id);
+    useGetVehicleVariants(searchParamsStr);
+  const deleteMutation = useDeleteVehicleVariant(id, closeModal);
+  const updateMutation = useUpdateVehicleVariant(id);
 
   console.log({ data });
 
@@ -47,7 +47,7 @@ export default function Listing() {
     <div className="border-input w-full rounded-lg">
       <DataTable
         columns={columns(updateMutation, setId, openModal, user)}
-        data={data?.models ?? []}
+        data={data?.variants ?? []}
         totalItems={data?.total}
       />
       <DeleteDialog

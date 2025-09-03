@@ -15,28 +15,27 @@ import {
 } from "@/components/ui/popover";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import { useGetDealerVehicleColors } from "@/mutations/dealer-inventory.mutation";
+import { useGetVehicleVariants } from "@/mutations/vehicle-mutation";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { useState } from "react";
 
-export default function DealerVehicleColorSelect({
+export default function VehicleVariantMapSelect({
   onChange,
   className = "",
   value,
-  vehicleId = null,
+  disabled,
+  vehicleId,
 }) {
   const [open, setOpen] = useState(false);
-  const { data, isLoading, isError, error } =
-    useGetDealerVehicleColors(vehicleId);
+  const { data, isLoading, isError, error } = useGetVehicleVariants(vehicleId);
 
-  if (!vehicleId) return <ErrorMessage error={"Vehicle not found!"} />;
   if (isError) return <ErrorMessage error={error} />;
 
   return isLoading ? (
     <Skeleton className={"h-9 w-full"} />
   ) : (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild className={className}>
+      <PopoverTrigger asChild className={className} disabled={disabled}>
         <Button
           variant="outline"
           role="combobox"
@@ -45,19 +44,9 @@ export default function DealerVehicleColorSelect({
             !value && "text-muted-foreground",
           )}
         >
-          {value ? (
-            <div className="flex items-center justify-start gap-2">
-              <div
-                className={"size-4 rounded-full"}
-                style={{
-                  background: data.find((color) => color.value === value)?.hex,
-                }}
-              ></div>
-              {data.find((color) => color.value === value)?.label}
-            </div>
-          ) : (
-            "Select color"
-          )}
+          {value
+            ? data.find((variant) => variant.value === value)?.label
+            : "Select variant"}
           <ChevronsUpDown className="opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -66,27 +55,23 @@ export default function DealerVehicleColorSelect({
         align="start"
       >
         <Command>
-          <CommandInput placeholder="Search color..." className="h-9" />
+          <CommandInput placeholder="Search variant..." className="h-9" />
           <CommandList>
-            <CommandEmpty>No color found.</CommandEmpty>
+            <CommandEmpty>No variant found.</CommandEmpty>
             <CommandGroup>
-              {data?.map((color) => (
+              {data?.map((variant) => (
                 <CommandItem
-                  value={color.label}
-                  key={color.value}
+                  value={variant.label}
+                  key={variant.value}
                   onSelect={() => {
-                    onChange(color.value);
+                    onChange(variant.value);
                     setOpen(false);
                   }}
                 >
-                  <div
-                    className={"size-4 rounded-full"}
-                    style={{ background: color.hex }}
-                  ></div>{" "}
-                  {color.label}
+                  {variant.label}
                   <Check
                     className={cn("ml-auto opacity-0", {
-                      "opacity-100": color.value === value,
+                      "opacity-100": variant.value === value,
                     })}
                   />
                 </CommandItem>

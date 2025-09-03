@@ -23,7 +23,11 @@ import { statusOptions } from "./_component/table-actions";
 export const columns = (openModal, updateMutation, setId) => [
   {
     accessorKey: "chassis_no",
-    header: "CHASSIS NO.",
+    header: "Chassis No",
+  },
+  {
+    accessorKey: "variant_name",
+    header: "Variant",
   },
   {
     accessorKey: "color_name",

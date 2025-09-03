@@ -14,6 +14,7 @@ import { NavUser } from "./nav-user";
 import { Skeleton } from "./ui/skeleton";
 import Image from "next/image";
 import { ScrollArea } from "./ui/scroll-area";
+import { H2, H3, H4 } from "./ui/typography";
 
 export function AppSidebar({ ...props }) {
   const { state } = useSidebar();
@@ -48,26 +49,29 @@ export function AppSidebar({ ...props }) {
 
   return (
     <Sidebar variant="sidebar" collapsible="icon" {...props}>
-      <div className="max-h-16 p-2">
-        {state === "expanded" ? (
-          <Image
-            src="/logo.png"
-            width={150}
-            height={50}
-            alt="Mac auto"
-            className="mx-auto"
-            loading="lazy"
-          />
-        ) : (
-          <Image
-            src="/logo-icon.png"
-            width={30}
-            height={30}
-            alt="Mac auto"
-            className="mx-auto"
-            loading="lazy"
-          />
-        )}
+      <div>
+        <div className="flex h-16 items-center justify-center p-2">
+          {state === "expanded" ? (
+            <Image
+              src="/logo-light.png"
+              width={200}
+              height={50}
+              alt="Mac auto"
+              className="mx-auto"
+              loading="lazy"
+            />
+          ) : (
+            <Image
+              src="/logo-icon.png"
+              width={30}
+              height={30}
+              alt="Mac auto"
+              className="mx-auto"
+              loading="lazy"
+            />
+          )}
+        </div>
+        <H4 className={"text-accent text-center uppercase"}>{user?.role}</H4>
       </div>
       <SidebarContent>
         <ScrollArea>

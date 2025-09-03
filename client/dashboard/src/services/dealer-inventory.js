@@ -7,6 +7,12 @@ const getDealerInventory = async (searchParams = "") => {
   );
   return data;
 };
+const getDealerInventoryChassis = async (searchParams = "") => {
+  const { data } = await http().get(
+    `${endpoints.dealers.inventory}/chassis?${searchParams}`,
+  );
+  return data;
+};
 
 const getDealerInventoryByVehicleId = async (vehicleId, searchParams = "") => {
   const { data } = await http().get(
@@ -20,6 +26,16 @@ const getDealerInventoryColorsByVehicleId = async (
 ) => {
   const { data } = await http().get(
     `${endpoints.dealers.inventory}/by-vehicle/${vehicleId}/colors?${searchParams}`,
+  );
+  return data;
+};
+const getDealerInventoryVariantsByVehicleId = async (
+  vehicleId,
+  searchParams = "",
+) => {
+  console.log({ vehicleId });
+  const { data } = await http().get(
+    `${endpoints.dealers.inventory}/by-vehicle/${vehicleId}/variants?${searchParams}`,
   );
   return data;
 };
@@ -44,6 +60,8 @@ const dealerInventory = {
   updateDealerInventoryItem: updateDealerInventoryItem,
   deleteDealerInventoryById: deleteDealerInventoryById,
   getDealerInventoryItemById: getDealerInventoryItemById,
+  getDealerInventoryVariantsByVehicleId: getDealerInventoryVariantsByVehicleId,
+  getDealerInventoryChassis: getDealerInventoryChassis,
 };
 
 export default dealerInventory;

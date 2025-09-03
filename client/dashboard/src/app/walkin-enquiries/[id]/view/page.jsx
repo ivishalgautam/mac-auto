@@ -1,4 +1,4 @@
-import WalkInEnquiryForm from "@/components/forms/walkin-enquiry";
+import WalkInEnquiryView from "@/components/forms/walkin-enquiry-view";
 import PageContainer from "@/components/layout/page-container";
 import { Heading } from "@/components/ui/heading";
 import React from "react";
@@ -11,7 +11,7 @@ export default async function ViewPage({ params }) {
         title="View Walk In Enquiry"
         description="View Walk In Enquiry."
       />
-      <WalkInEnquiryForm type={"view"} id={id} />
+      <WalkInEnquiryView type={"view"} id={id} />
     </PageContainer>
   );
 }

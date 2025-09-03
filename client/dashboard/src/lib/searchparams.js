@@ -16,6 +16,7 @@ export const searchParams = {
   category: parseAsString,
   status: parseAsString,
   colors: parseAsString,
+  variants: parseAsString,
   start_date: parseAsString,
   end_date: parseAsString,
 };
