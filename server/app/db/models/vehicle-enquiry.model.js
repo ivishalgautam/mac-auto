@@ -68,6 +68,7 @@ const create = async (req, transaction) => {
     {
       dealer_id: req.body.dealer_id,
       vehicle_color_id: req.body.vehicle_color_id,
+      vehicle_variant_map_id: req.body.vehicle_variant_map_id,
       quantity: req.body.quantity,
       message: req.body.message,
       battery_type: req.body.battery_type,
