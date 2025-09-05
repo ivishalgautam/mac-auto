@@ -1,6 +1,6 @@
 "use strict";
 import constants from "../../lib/constants/index.js";
-import sequelizeFwk, { Deferrable, QueryTypes } from "sequelize";
+import sequelizeFwk, { Deferrable, Op, QueryTypes } from "sequelize";
 const { DataTypes } = sequelizeFwk;
 
 let TicketModel = null;
@@ -52,12 +52,33 @@ const init = async (sequelize) => {
         type: DataTypes.DATEONLY,
         allowNull: true,
       },
+      assigned_cre: {
+        type: DataTypes.UUID,
+        allowNull: true,
+        references: {
+          model: constants.models.USER_TABLE,
+          deferrable: Deferrable.INITIALLY_IMMEDIATE,
+          key: "id",
+        },
+        onDelete: "SET NULL",
+      },
+      assigned_manager: {
+        type: DataTypes.UUID,
+        allowNull: true,
+        references: {
+          model: constants.models.USER_TABLE,
+          deferrable: Deferrable.INITIALLY_IMMEDIATE,
+          key: "id",
+        },
+        onDelete: "SET NULL",
+      },
       assigned_technician: {
         type: DataTypes.UUID,
         allowNull: true,
         references: {
           model: constants.models.TECHNICIAN_TABLE,
           deferrable: Deferrable.INITIALLY_IMMEDIATE,
+          key: "id",
         },
         onDelete: "SET NULL",
       },
@@ -111,6 +132,8 @@ const create = async (req) => {
       req.body?.assigned_technician && req.body?.assigned_technician !== ""
         ? req.body?.assigned_technician
         : null,
+    assigned_cre: req.body.assigned_cre,
+    assigned_manager: req.body?.assigned_manager ?? null,
     parts: req.body.parts,
   });
 };
@@ -127,6 +150,8 @@ const update = async (req, id, transaction) => {
       complaint_type: req.body.complaint_type,
       expected_closure_date: req.body.expected_closure_date,
       assigned_technician: req.body.assigned_technician,
+      assigned_cre: req.body.assigned_cre,
+      assigned_manager: req.body.assigned_manager,
       parts: req.body.parts,
     },
     options
@@ -144,6 +169,14 @@ const get = async (req) => {
   }
   if (role === "customer") {
     whereConditions.push(`cst.user_id = :userId`);
+    queryParams.userId = id;
+  }
+  if (role === "cre") {
+    whereConditions.push(`creusr.id = :userId`);
+    queryParams.userId = id;
+  }
+  if (role === "manager") {
+    whereConditions.push(`mgusr.id = :userId`);
     queryParams.userId = id;
   }
 
@@ -168,17 +201,6 @@ const get = async (req) => {
     whereClause = "WHERE " + whereConditions.join(" AND ");
   }
 
-  let countQuery = `
-    SELECT
-        COUNT(tk.id) OVER()::integer as total
-      FROM ${constants.models.TICKET_TABLE} tk
-      LEFT JOIN ${constants.models.CUSTOMER_PURCHASE_TABLE} cpt ON cpt.id = tk.purchase_id
-      LEFT JOIN ${constants.models.DEALER_TABLE} dl ON dl.id = cpt.dealer_id
-      LEFT JOIN ${constants.models.CUSTOMER_TABLE} cst ON cst.id = cpt.customer_id
-      LEFT JOIN ${constants.models.USER_TABLE} cstu ON cstu.id = cst.user_id
-      ${whereClause}
-    `;
-
   let query = `
     SELECT
         tk.*, cpt.chassis_no,
@@ -194,9 +216,25 @@ const get = async (req) => {
     LEFT JOIN ${constants.models.USER_TABLE} cstu ON cstu.id = cst.user_id
     LEFT JOIN ${constants.models.USER_TABLE} dstu ON dstu.id = dl.user_id
     LEFT JOIN ${constants.models.TECHNICIAN_TABLE} tcn ON tk.assigned_technician = tcn.id
+    LEFT JOIN ${constants.models.USER_TABLE} creusr ON creusr.id = tk.assigned_cre
+    LEFT JOIN ${constants.models.USER_TABLE} mgusr ON mgusr.id = tk.assigned_manager
     ${whereClause}
     ORDER BY tk.created_at DESC
     LIMIT :limit OFFSET :offset
+    `;
+
+  let countQuery = `
+    SELECT
+        COUNT(tk.id) OVER()::integer as total
+      FROM ${constants.models.TICKET_TABLE} tk
+      LEFT JOIN ${constants.models.CUSTOMER_PURCHASE_TABLE} cpt ON cpt.id = tk.purchase_id
+      LEFT JOIN ${constants.models.DEALER_TABLE} dl ON dl.id = cpt.dealer_id
+      LEFT JOIN ${constants.models.CUSTOMER_TABLE} cst ON cst.id = cpt.customer_id
+      LEFT JOIN ${constants.models.USER_TABLE} cstu ON cstu.id = cst.user_id
+      LEFT JOIN ${constants.models.TECHNICIAN_TABLE} tcn ON tk.assigned_technician = tcn.id
+      LEFT JOIN ${constants.models.USER_TABLE} creusr ON creusr.id = tk.assigned_cre
+      LEFT JOIN ${constants.models.USER_TABLE} mgusr ON mgusr.id = tk.assigned_manager
+      ${whereClause}
     `;
 
   const tickets = await TicketModel.sequelize.query(query, {
@@ -231,6 +269,18 @@ const getById = async (req, id) => {
     },
     type: QueryTypes.SELECT,
     plain: true,
+  });
+};
+
+const getLastCREAssignedTicket = async () => {
+  return await TicketModel.findOne({
+    where: {
+      assigned_cre: { [Op.ne]: null },
+    },
+    order: [["created_at", "DESC"]],
+    limit: 1,
+    type: QueryTypes.SELECT,
+    raw: true,
   });
 };
 
@@ -293,4 +343,5 @@ export default {
   deleteById: deleteById,
   getTicketStatusBreakdown: getTicketStatusBreakdown,
   getTicketDetailsById: getTicketDetailsById,
+  getLastCREAssignedTicket: getLastCREAssignedTicket,
 };

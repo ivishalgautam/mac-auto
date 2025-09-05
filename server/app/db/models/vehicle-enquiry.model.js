@@ -55,6 +55,20 @@ const init = async (sequelize) => {
         type: DataTypes.TEXT,
         allowNull: true,
       },
+      status: {
+        type: DataTypes.ENUM([
+          "pending",
+          "accepted",
+          "rejected",
+          "delivered",
+          "order-created",
+        ]),
+        defaultValue: "pending",
+      },
+      remarks: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
     },
     {
       createdAt: "created_at",
@@ -88,12 +102,33 @@ const create = async (req, transaction) => {
 
   return data.dataValues;
 };
+const update = async (req, transaction) => {
+  const options = { where: { id: req.params?.id || id } };
+  if (transaction) options.transaction = transaction;
+
+  const data = await VehicleEnquiryModel.update(
+    {
+      status: req.body.status,
+      remarks: req.body.remarks,
+    },
+
+    options
+  );
+
+  return data.dataValues;
+};
 
 const get = async (req) => {
   const whereConditions = [];
   const queryParams = {};
-  const q = req.query.q ? req.query.q : null;
 
+  const { id, role } = req.user_data;
+  if (role === "dealer") {
+    whereConditions.push("dlr.user_id = :userId");
+    queryParams.userId = id;
+  }
+
+  const q = req.query.q ? req.query.q : null;
   if (q) {
     whereConditions.push(
       `(usr.first_name ILIKE :query OR usr.last_name ILIKE :query OR usr.email ILIKE :query)`
@@ -176,6 +211,7 @@ const deleteById = async (req, id) => {
 export default {
   init: init,
   create: create,
+  update: update,
   getById: getById,
   deleteById: deleteById,
   get: get,

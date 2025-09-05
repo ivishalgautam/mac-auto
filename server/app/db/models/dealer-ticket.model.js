@@ -1,6 +1,6 @@
 "use strict";
 import constants from "../../lib/constants/index.js";
-import sequelizeFwk, { Deferrable, QueryTypes } from "sequelize";
+import sequelizeFwk, { Deferrable, Op, QueryTypes } from "sequelize";
 const { DataTypes } = sequelizeFwk;
 
 let DealerTicketModel = null;
@@ -48,6 +48,26 @@ const init = async (sequelize) => {
         },
         onDelete: "CASCADE",
       },
+      assigned_cre: {
+        type: DataTypes.UUID,
+        allowNull: true,
+        references: {
+          model: constants.models.USER_TABLE,
+          deferrable: Deferrable.INITIALLY_IMMEDIATE,
+          key: "id",
+        },
+        onDelete: "SET NULL",
+      },
+      assigned_manager: {
+        type: DataTypes.UUID,
+        allowNull: true,
+        references: {
+          model: constants.models.USER_TABLE,
+          deferrable: Deferrable.INITIALLY_IMMEDIATE,
+          key: "id",
+        },
+        onDelete: "SET NULL",
+      },
     },
     {
       createdAt: "created_at",
@@ -86,6 +106,8 @@ const create = async (req) => {
     complaint_type: req.body.complaint_type,
     expected_closure_date: req.body.expected_closure_date,
     dealer_id: req.body.dealer_id,
+    assigned_cre: req.body.assigned_cre,
+    assigned_manager: req.body.assigned_manager,
   });
 };
 
@@ -99,6 +121,8 @@ const update = async (req, id, transaction) => {
       message: req.body.message,
       complaint_type: req.body.complaint_type,
       expected_closure_date: req.body.expected_closure_date,
+      assigned_cre: req.body.assigned_cre,
+      assigned_manager: req.body.assigned_manager,
     },
     options
   );
@@ -115,6 +139,14 @@ const get = async (req) => {
   }
   if (role === "customer") {
     whereConditions.push(`cst.user_id = :userId`);
+    queryParams.userId = id;
+  }
+  if (role === "cre") {
+    whereConditions.push(`creusr.id = :userId`);
+    queryParams.userId = id;
+  }
+  if (role === "manager") {
+    whereConditions.push(`mgusr.id = :userId`);
     queryParams.userId = id;
   }
 
@@ -145,6 +177,8 @@ const get = async (req) => {
       FROM ${constants.models.DEALER_TICKET_TABLE} tk
       LEFT JOIN ${constants.models.DEALER_TABLE} dl ON dl.id = tk.dealer_id
       LEFT JOIN ${constants.models.USER_TABLE} usr ON usr.id = dl.user_id
+      LEFT JOIN ${constants.models.USER_TABLE} creusr ON creusr.id = tk.assigned_cre
+      LEFT JOIN ${constants.models.USER_TABLE} mgusr ON mgusr.id = tk.assigned_manager
       ${whereClause}
     `;
 
@@ -153,12 +187,14 @@ const get = async (req) => {
         tk.*,
         CONCAT(usr.first_name, ' ', COALESCE(usr.last_name, ''), ' (', dl.location, ')') as dealership_name,
         usr.mobile_number as dealership_phone
-    FROM ${constants.models.DEALER_TICKET_TABLE} tk
-    LEFT JOIN ${constants.models.DEALER_TABLE} dl ON dl.id = tk.dealer_id
-    LEFT JOIN ${constants.models.USER_TABLE} usr ON usr.id = dl.user_id
-    ${whereClause}
-    ORDER BY tk.created_at DESC
-    LIMIT :limit OFFSET :offset
+      FROM ${constants.models.DEALER_TICKET_TABLE} tk
+      LEFT JOIN ${constants.models.DEALER_TABLE} dl ON dl.id = tk.dealer_id
+      LEFT JOIN ${constants.models.USER_TABLE} usr ON usr.id = dl.user_id
+      LEFT JOIN ${constants.models.USER_TABLE} creusr ON creusr.id = tk.assigned_cre
+      LEFT JOIN ${constants.models.USER_TABLE} mgusr ON mgusr.id = tk.assigned_manager
+      ${whereClause}
+      ORDER BY tk.created_at DESC
+      LIMIT :limit OFFSET :offset
     `;
 
   const tickets = await DealerTicketModel.sequelize.query(query, {
@@ -191,6 +227,18 @@ const getById = async (req, id) => {
     },
     type: QueryTypes.SELECT,
     plain: true,
+  });
+};
+
+const getLastCREAssignedTicket = async () => {
+  return await DealerTicketModel.findOne({
+    where: {
+      assigned_cre: { [Op.ne]: null },
+    },
+    order: [["created_at", "DESC"]],
+    limit: 1,
+    type: QueryTypes.SELECT,
+    raw: true,
   });
 };
 
@@ -241,6 +289,7 @@ export default {
   update: update,
   get: get,
   getById: getById,
+  getLastCREAssignedTicket: getLastCREAssignedTicket,
   deleteById: deleteById,
   getTicketStatusBreakdown: getTicketStatusBreakdown,
   getTicketDetailsById: getTicketDetailsById,

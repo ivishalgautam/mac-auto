@@ -10,6 +10,23 @@ const create = async (req, res) => {
   const transaction = await sequelize.transaction();
   try {
     const validateData = dealerOrderSchema.parse(req.body);
+
+    if (validateData.enquiry_id) {
+      const enquiryRecord = await table.VehicleEnquiryModel.getById(
+        0,
+        req.body.enquiry_id
+      );
+      if (!enquiryRecord) {
+        return res
+          .code(status.NOT_FOUND)
+          .send({ status: false, message: "Enquiry not found!" });
+      }
+      await table.VehicleEnquiryModel.update(
+        { body: { status: "order-created" }, params: { id: enquiryRecord.id } },
+        transaction
+      );
+    }
+
     const dealerRecord = await table.DealerModel.getById(
       validateData.dealer_id
     );
@@ -36,7 +53,7 @@ const create = async (req, res) => {
     // }));
     // await table.DealerInventoryModel.bulkCreate(bulkAddData, transaction);
 
-    const data = await table.DealerOrderModel.create(req, transaction);
+    await table.DealerOrderModel.create(req, transaction);
     await table.InventoryModel.bulkUpdateStatusByChassisNos(
       validateData.chassis_numbers,
       "sold",

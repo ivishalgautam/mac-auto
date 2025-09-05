@@ -2,6 +2,7 @@
 import { z } from "zod";
 import table from "../../db/models.js";
 import constants from "../../lib/constants/index.js";
+import { StatusCodes } from "http-status-codes";
 
 const status = constants.http.status;
 
@@ -49,6 +50,25 @@ const getById = async (req, res) => {
   }
 };
 
+const update = async (req, res) => {
+  try {
+    const record = await table.VehicleEnquiryModel.getById(req);
+    if (!record) return res.code(404).send({ message: "Enquiry not found!" });
+
+    if (record.status !== "pending")
+      return res
+        .code(StatusCodes.CONFLICT)
+        .send({ status: false, message: "This enquiry is closed now." });
+
+    await table.VehicleEnquiryModel.update(req);
+    res
+      .code(status.OK)
+      .send({ status: true, message: "Updated successfully." });
+  } catch (error) {
+    throw error;
+  }
+};
+
 const deleteById = async (req, res) => {
   try {
     const record = await table.VehicleEnquiryModel.getById(req);
@@ -78,4 +98,5 @@ export default {
   getById: getById,
   deleteById: deleteById,
   get: get,
+  update: update,
 };

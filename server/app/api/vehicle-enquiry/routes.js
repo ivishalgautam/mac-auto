@@ -5,6 +5,7 @@ export default async function routes(fastify, options) {
   fastify.post("/", {}, controller.create);
   fastify.get("/:id", {}, controller.getById);
   fastify.delete("/:id", {}, controller.deleteById);
+  fastify.put("/:id", {}, controller.update);
   fastify.get("/", {}, controller.get);
 }
 

@@ -85,6 +85,7 @@ const get = async (req) => {
       COUNT(cst.id) OVER()::integer as total
     FROM ${constants.models.CUSTOMER_TABLE} cst
     LEFT JOIN ${constants.models.USER_TABLE} usr ON usr.id = cst.user_id
+    LEFT JOIN ${constants.models.CUSTOMER_PURCHASE_TABLE} cpt ON cpt.customer_id = cst.id
   ${whereClause}
   `;
 

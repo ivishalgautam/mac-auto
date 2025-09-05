@@ -215,6 +215,16 @@ const getById = async (req, user_id) => {
   return data;
 };
 
+const getCREs = async () => {
+  return await UserModel.findAll({
+    type: QueryTypes.SELECT,
+    where: { role: "cre" },
+    order: [["created_at", "ASC"]],
+    attributes: ["id", "created_at"],
+    raw: true,
+  });
+};
+
 const getByUsername = async (req, record = undefined) => {
   let query = `
   SELECT
@@ -408,6 +418,7 @@ export default {
   create: create,
   get: get,
   getById: getById,
+  getCREs: getCREs,
   getByUsername: getByUsername,
   update: update,
   updatePassword: updatePassword,

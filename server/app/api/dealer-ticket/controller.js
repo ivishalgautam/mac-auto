@@ -16,6 +16,28 @@ const create = async (req, res) => {
         .code(status.NOT_FOUND)
         .send({ status: false, message: "Dealer not found!" });
     console.log({ dealerRecord });
+
+    const lastCREAssignedTicket =
+      await table.DealerTicketModel.getLastCREAssignedTicket();
+    const creUsers = await table.UserModel.getCREs();
+
+    let creToBeAssign = null;
+    if (creUsers.length > 0) {
+      const assignedCREIndex = creUsers.findIndex(
+        (c) => c.id === lastCREAssignedTicket?.assigned_cre
+      );
+
+      creToBeAssign =
+        assignedCREIndex + 1 > creUsers.length - 1
+          ? creUsers[0]
+          : creUsers[assignedCREIndex + 1];
+    }
+    if (req.user_data.role === "cre") {
+      req.body.assigned_cre = req.user_data.id;
+    } else {
+      req.body.assigned_cre = creToBeAssign.id;
+    }
+
     await table.DealerTicketModel.create({
       body: { ...validateData, dealer_id: dealerRecord.id },
     });

@@ -9,6 +9,7 @@ export const dealerOrderSchema = z.object({
     .string({ required_error: "Vehicle ID is required" })
     .uuid()
     .min(1, { message: "Vehicle ID is required" }),
+  enquiry_id: z.string().optional(),
   vehicle_color_id: z
     .string({ required_error: "Vehicle color ID is required" })
     .uuid()
