@@ -14,13 +14,15 @@ export default function Header() {
         title={user?.role === "dealer" ? "My Tickets" : "Dealer tickets"}
         description="Manage Tickets (Create, Update, Delete)."
       />
-      <Link
-        href="/dealer-tickets/create"
-        className={buttonVariants({ size: "sm" })}
-      >
-        <Plus size="15" />
-        Add ticket
-      </Link>
+      {user?.role === "dealer" && (
+        <Link
+          href="/dealer-tickets/create"
+          className={buttonVariants({ size: "sm" })}
+        >
+          <Plus size="15" />
+          Add ticket
+        </Link>
+      )}
     </div>
   );
 }

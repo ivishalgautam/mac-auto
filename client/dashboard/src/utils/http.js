@@ -34,6 +34,7 @@ const http = (headerType = "json", baseURL = API_ROOT) => {
           return Promise.reject(error);
         }
       } catch (refreshError) {
+        localStorage.clear();
         handleLogout();
         console.error("Error refreshing token:", refreshError);
         return Promise.reject(error);

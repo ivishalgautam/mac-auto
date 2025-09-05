@@ -18,6 +18,7 @@ export function DealerOrderCreateDialog({
   vehicleVariantMapId = null,
   dealerId,
   maxSelect = null,
+  enquiryId,
 }) {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -38,6 +39,7 @@ export function DealerOrderCreateDialog({
             maxSelect={maxSelect}
             vehicleColorId={vehicleColorId}
             vehicleVariantMapId={vehicleVariantMapId}
+            enquiryId={enquiryId}
           />
         </div>
       </DialogContent>

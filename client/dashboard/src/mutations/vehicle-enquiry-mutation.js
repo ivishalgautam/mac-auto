@@ -59,3 +59,23 @@ export function useDeleteVehicleEnquiry(vehicleId, callback) {
     },
   });
 }
+
+export function useUpdateVehicleEnquiry(id, callback) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data) => vehicleEnquiry.update(id, data),
+    onSuccess: () => {
+      toast.success("Enquiry updated successfully.");
+      queryClient.invalidateQueries(["vehicle-enquiries", id]);
+      typeof callback === "function" && callback();
+    },
+    onError: (error) => {
+      toast.error(
+        error?.response?.data?.message ??
+          error?.message ??
+          "Something went wrong!",
+      );
+    },
+  });
+}

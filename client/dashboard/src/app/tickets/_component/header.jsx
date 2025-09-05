@@ -14,10 +14,12 @@ export default function Header() {
         title={user?.role === "customer" ? "My Tickets" : "Customer tickets"}
         description="Manage Tickets (Create, Update, Delete)."
       />
-      <Link href="/tickets/create" className={buttonVariants({ size: "sm" })}>
-        <Plus size="15" />
-        Add ticket
-      </Link>
+      {["admin", "cre", "customer"].includes(user?.role) && (
+        <Link href="/tickets/create" className={buttonVariants({ size: "sm" })}>
+          <Plus size="15" />
+          Add ticket
+        </Link>
+      )}
     </div>
   );
 }

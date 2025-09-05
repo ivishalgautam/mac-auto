@@ -23,7 +23,8 @@ export function useGetFormattedCustomers() {
     select: ({ customers = [] }) => {
       return customers.map((customer) => ({
         value: customer.id,
-        label: customer.fullname,
+        label: customer.fullname.trim(),
+        phone: customer.mobile_number,
       }));
     },
   });

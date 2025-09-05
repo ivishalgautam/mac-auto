@@ -14,21 +14,23 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Muted, Small } from "@/components/ui/typography";
+import { Muted } from "@/components/ui/typography";
 import { cn } from "@/lib/utils";
-import { useGetFormattedCustomers } from "@/mutations/customer-mutation";
+import { useGetFormattedUsers } from "@/mutations/user-mutation";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { useState } from "react";
 
-export default function CustomerSelect({
+export default function UserSelect({
   onChange,
   className = "",
   value,
   disabled,
+  role = "",
 }) {
   const [open, setOpen] = useState(false);
-  const { data, isLoading, isError, error } = useGetFormattedCustomers();
-
+  const { data, isLoading, isError, error } = useGetFormattedUsers(
+    `role=${role}`,
+  );
   if (isError) return <ErrorMessage error={error} />;
 
   return isLoading ? (
@@ -45,8 +47,8 @@ export default function CustomerSelect({
           )}
         >
           {value
-            ? data.find((customer) => customer.value === value)?.label
-            : "Select customer"}
+            ? data.find((user) => user.value === value)?.label
+            : `Select ${role ?? "user"}`}
           <ChevronsUpDown className="opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -55,25 +57,25 @@ export default function CustomerSelect({
         align="start"
       >
         <Command>
-          <CommandInput placeholder="Search customer..." className="h-9" />
+          <CommandInput placeholder="Search ..." className="h-9" />
           <CommandList>
-            <CommandEmpty>No customer found.</CommandEmpty>
+            <CommandEmpty>No user found.</CommandEmpty>
             <CommandGroup>
-              {data.map((customer) => (
+              {data.map((user) => (
                 <CommandItem
-                  value={customer.label + customer.phone}
-                  key={customer.value}
+                  value={user.label + user.phone}
+                  key={user.value}
                   onSelect={() => {
-                    onChange(customer.value);
+                    onChange(user.value);
                     setOpen(false);
                   }}
                 >
                   <div className="flex w-full items-center justify-between">
-                    <span>{customer.label}</span>
-                    <Muted className={"ml-1 text-xs"}>({customer.phone})</Muted>
+                    <span>{user.label}</span>
+                    <Muted className={"ml-1 text-xs"}>({user.phone})</Muted>
                     <Check
                       className={cn("ml-auto opacity-0", {
-                        "opacity-100": customer.value === value,
+                        "opacity-100": user.value === value,
                       })}
                     />
                   </div>

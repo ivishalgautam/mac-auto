@@ -13,11 +13,6 @@ import ErrorMessage from "../ui/error";
 import { Textarea } from "../ui/textarea";
 import { useRouter } from "next/navigation";
 import { dealerTicketSchema } from "@/utils/schema/ticket.schema";
-import {
-  useCreateTicket,
-  useGetTicket,
-  useUpdateTicket,
-} from "@/mutations/ticket-mutation";
 import { useAuth } from "@/providers/auth-provider";
 import CustomSelect from "../ui/custom-select";
 import { dealerComplaintTypes } from "@/data";
@@ -27,6 +22,7 @@ import {
   useGetDealerTicket,
   useUpdateDealerTicket,
 } from "@/mutations/dealer-ticket-mutation";
+import UserSelect from "@/features/user-select";
 
 const defaultValues = {
   assigned_technician: "",
@@ -118,7 +114,7 @@ export default function DealerTicketForm({ id, type }) {
           </div>
 
           {/* expected closure date */}
-          {["admin"].includes(user?.role) && (
+          {["admin", "cre", "manager"].includes(user?.role) && (
             <div>
               <Label>Expected closure date</Label>
               <div>
@@ -134,6 +130,24 @@ export default function DealerTicketForm({ id, type }) {
                   )}
                 />
               </div>
+            </div>
+          )}
+
+          {/* assigned manager */}
+          {["cre"].includes(user?.role) && (
+            <div className="space-y-2">
+              <Label htmlFor="assigned_manager">Manager</Label>
+              <Controller
+                name="assigned_manager"
+                control={control}
+                render={({ field }) => (
+                  <UserSelect
+                    onChange={field.onChange}
+                    value={field.value}
+                    role="manager"
+                  />
+                )}
+              />
             </div>
           )}
         </div>

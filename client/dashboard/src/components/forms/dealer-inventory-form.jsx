@@ -23,6 +23,7 @@ export default function OrderForm({
   vehicleVariantMapId: defaultVehicleVariantMapId = null,
   dealerId = null,
   maxSelect = null,
+  enquiryId,
 }) {
   const methods = useForm({
     resolver: zodResolver(dealerInventorySchema),
@@ -41,7 +42,7 @@ export default function OrderForm({
     watch,
   } = methods;
   const onSubmit = (data) => {
-    createMutation.mutate(data);
+    createMutation.mutate({ ...data, enquiry_id: enquiryId });
   };
 
   const vehicleColorId = watch("vehicle_color_id");

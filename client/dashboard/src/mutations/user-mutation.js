@@ -9,6 +9,22 @@ export const useGetUsers = (searchParams = "page=1") => {
     enabled: !!searchParams,
   });
 };
+export const useGetFormattedUsers = (searchParams = "page=1") => {
+  return useQuery({
+    queryKey: ["users-formatted", searchParams],
+    queryFn: () => user.get(searchParams),
+    enabled: !!searchParams,
+    select: ({ users }) => {
+      return (
+        users?.map((u) => ({
+          value: u.id,
+          label: u.fullname,
+          phone: u.mobile_number,
+        })) ?? []
+      );
+    },
+  });
+};
 
 export const useGetUserProfile = (id) => {
   return useQuery({

@@ -178,6 +178,13 @@ export const sidebarData = [
         roles: [ROLES.DEALER],
         isVisible: true,
       },
+      {
+        title: "Vehicles Enquiries",
+        url: "/vehicle-enquiries?page=1&limit=10",
+        roles: [ROLES.ADMIN, ROLES.CRE, ROLES.MANAGER, ROLES.DEALER],
+        isVisible: true,
+        items: [],
+      },
     ],
   },
   {

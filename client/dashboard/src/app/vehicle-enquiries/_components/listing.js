@@ -1,13 +1,11 @@
 "use client";
 import { columns } from "../columns";
 import { useEffect, useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { DataTable } from "@/components/ui/table/data-table";
 import { useRouter, useSearchParams } from "next/navigation";
 import { DataTableSkeleton } from "@/components/ui/table/data-table-skeleton";
 import { DeleteDialog } from "./dialog/delete-dialog";
-import { deleteEnquiry, fetchEnquiries } from "@/services/enquiry";
 import {
   useDeleteVehicleEnquiry,
   useFetchVehicleEnquiries,
@@ -15,9 +13,11 @@ import {
 import { DealerOrderCreateDialog } from "@/app/vehicles/_component/order-create-dialog";
 import { useCreateDealerOrder } from "@/mutations/dealer-order-mutation";
 import ErrorMessage from "@/components/ui/error";
+import { UpdateDialog } from "./dialog/update-dialog";
 
 export default function Listing() {
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [isUpdateOpen, setIsUpdateOpen] = useState(false);
   const [isDealerOrderModal, setIsDealerOrderModal] = useState(false);
   const [maxSelect, setMaxSelect] = useState(null);
   const [id, setId] = useState(null);
@@ -28,10 +28,13 @@ export default function Listing() {
   const searchParams = useSearchParams();
   const searchParamStr = searchParams.toString();
   const router = useRouter();
+
   function openModal(type) {
     if (!type) return toast.warning("Please provide which modal should open!");
     if (type === "delete") {
       setIsDeleteOpen(true);
+    } else if (type === "update") {
+      setIsUpdateOpen(true);
     } else if ("dealer-order") {
       setIsDealerOrderModal(true);
     }
@@ -82,6 +85,7 @@ export default function Listing() {
         maxSelect={maxSelect}
         vehicleColorId={vehicleColorId}
         vehicleVariantMapId={vehicleVariantMapId}
+        enquiryId={id}
       />
 
       <DeleteDialog
@@ -89,6 +93,15 @@ export default function Listing() {
           isOpen: isDeleteOpen,
           setIsOpen: setIsDeleteOpen,
           deleteMutation: deleteMutation,
+        }}
+      />
+
+      <UpdateDialog
+        {...{
+          isOpen: isUpdateOpen,
+          setIsOpen: setIsUpdateOpen,
+          id: id,
+          callback: () => setIsUpdateOpen(false),
         }}
       />
     </div>

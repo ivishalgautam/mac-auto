@@ -68,7 +68,7 @@ export const columns = (
         );
       },
     },
-    ["dealer", "admin"].includes(user?.role) && {
+    ["dealer", "admin", "cre", "manager"].includes(user?.role) && {
       accessorKey: "status",
       header: "Status",
       cell: ({ row }) => {
@@ -111,7 +111,27 @@ export const columns = (
         return <Badge className={cn("capitalize", className)}>{status}</Badge>;
       },
     },
-    { accessorKey: "complaint_type", header: "Complaint type" },
+    {
+      accessorKey: "complaint_type",
+      header: "Complaint type",
+      cell: ({ row }) => {
+        const isSparePartsComplaint =
+          row.getValue("complaint_type") === "Spare Parts Related";
+
+        return (
+          <div>
+            {row.getValue("complaint_type")}
+            {isSparePartsComplaint && (
+              <div className="flew-wrap flex gap-1">
+                {row.original.parts.map((p) => (
+                  <Badge variant={"outline"}>{p.text}</Badge>
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      },
+    },
     {
       accessorKey: "created_at",
       header: "Complaint date",

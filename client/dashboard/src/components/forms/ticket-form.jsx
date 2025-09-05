@@ -28,19 +28,19 @@ import {
 } from "@/mutations/ticket-mutation";
 import CustomerSelect from "@/features/customer-select";
 import { useAuth } from "@/providers/auth-provider";
-import { useGetFormattedPurchasesByCustomer } from "@/mutations/customer-mutation";
 import CustomerPurchaseSelect from "@/features/customer-purchase-select";
 import CustomSelect from "../ui/custom-select";
 import { customerComplaintTypes } from "@/data";
 import { DatePicker } from "../ui/date-picker";
-import { Input } from "../ui/input";
 import TagInput from "../tag-input";
 import TechnicianSelect from "@/features/technician-select";
+import UserSelect from "@/features/user-select";
 
 const defaultValues = {
   images: [],
   expected_closure_date: null,
-  assigned_technician: "",
+  assigned_technician: null,
+  assigned_manager: null,
   parts: [],
 };
 
@@ -70,7 +70,7 @@ export default function TicketForm({ id, type }) {
     watch,
     setValue,
   } = methods;
-
+  console.log(watch("expected_closure_date"));
   const isPartsRelated = watch("complaint_type") === "Spare Parts Related";
 
   const customerId = watch("customer_id");
@@ -207,6 +207,7 @@ export default function TicketForm({ id, type }) {
                 render={({ field }) => (
                   <CustomerSelect
                     onChange={(selected) => {
+                      console.log({ selected });
                       field.onChange(selected);
                       setValue("purchase_id", "");
                     }}
@@ -302,8 +303,26 @@ export default function TicketForm({ id, type }) {
             </div>
           )}
 
+          {/* assigned manager */}
+          {["cre"].includes(user?.role) && (
+            <div className="space-y-2">
+              <Label htmlFor="assigned_manager">Manager</Label>
+              <Controller
+                name="assigned_manager"
+                control={control}
+                render={({ field }) => (
+                  <UserSelect
+                    onChange={field.onChange}
+                    value={field.value}
+                    role="manager"
+                  />
+                )}
+              />
+            </div>
+          )}
+
           {/* assigned technician */}
-          {["admin", "cre", "manager"].includes(user?.role) && (
+          {["manager"].includes(user?.role) && (
             <div className="space-y-2">
               <Label htmlFor="assigned_technician">Technician</Label>
               <Controller
