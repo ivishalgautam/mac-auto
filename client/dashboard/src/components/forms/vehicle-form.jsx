@@ -64,7 +64,7 @@ const defaultValues = {
   vehicle_id: null,
   is_variant: false,
   color: "",
-  quantity: "",
+  quantity: 0,
   variants: [],
   features: [],
   specifications: [{ tab_name: "", specs: [{ label: "", value: "" }] }],
