@@ -13,7 +13,7 @@ export const vehicleSchema = z.object({
   vehicle_id: z.string().uuid().nullable().optional(),
   is_variant: z.coerce.boolean().default(false),
   video_link: z.string().optional().default(null),
-  base_price: z.coerce.number().min(1, { message: "Base price is reuqired*" }),
+  base_price: z.coerce.number().min(0, { message: "Base price is reuqired*" }),
   // pricing: z
   //   .array(
   //     z.object({
@@ -77,7 +77,7 @@ export const vehicleUpdateSchema = z.object({
     .min(1, { message: "Color is required!" }),
   video_link: z.string().optional().default(null),
   quantity: z.coerce.number().default(0),
-  base_price: z.coerce.number().min(1, { message: "Base price is reuqired*" }),
+  base_price: z.coerce.number().min(0, { message: "Base price is reuqired*" }),
   // pricing: z
   //   .array(
   //     z.object({

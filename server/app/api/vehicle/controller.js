@@ -23,18 +23,18 @@ const create = async (req, res) => {
     });
 
     // ! remove this after adding all vehicles
-    req.body.pricing = uniqueStates.map((stateName) => {
-      return {
-        name: stateName,
-        base_price: validateData.base_price,
-        cities: stateCityData
-          .filter((item) => item.state.toLowerCase() === stateName)
-          .map((item) => ({
-            name: item.city.toLowerCase(),
-            price_modifier: 0,
-          })),
-      };
-    });
+    // req.body.pricing = uniqueStates.map((stateName) => {
+    //   return {
+    //     name: stateName,
+    //     base_price: validateData.base_price,
+    //     cities: stateCityData
+    //       .filter((item) => item.state.toLowerCase() === stateName)
+    //       .map((item) => ({
+    //         name: item.city.toLowerCase(),
+    //         price_modifier: 0,
+    //       })),
+    //   };
+    // });
 
     await table.VehicleModel.create(req, transaction);
     await transaction.commit();
@@ -112,18 +112,18 @@ const update = async (req, res) => {
     }
 
     // ! remove this after adding all vehicles
-    req.body.pricing = uniqueStates.map((stateName) => {
-      return {
-        name: stateName,
-        base_price: parseInt(req.body.base_price),
-        cities: stateCityData
-          .filter((item) => item.state.toLowerCase() === stateName)
-          .map((item) => ({
-            name: item.city.toLowerCase(),
-            price_modifier: 0,
-          })),
-      };
-    });
+    // req.body.pricing = uniqueStates.map((stateName) => {
+    //   return {
+    //     name: stateName,
+    //     base_price: parseInt(req.body.base_price),
+    //     cities: stateCityData
+    //       .filter((item) => item.state.toLowerCase() === stateName)
+    //       .map((item) => ({
+    //         name: item.city.toLowerCase(),
+    //         price_modifier: 0,
+    //       })),
+    //   };
+    // });
 
     await table.VehicleModel.update(req, 0, transaction);
     if (documentsToDelete.length) {
