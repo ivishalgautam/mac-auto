@@ -60,12 +60,12 @@ const update = async (req, res) => {
         .code(status.NOT_FOUND)
         .send({ status: false, message: responseMessage[status.NOT_FOUND] });
 
-    const validateData = vehicleUpdateSchema.parse(req.body);
-    req.body.slug = slugify(validateData.title, {
-      lower: true,
-      strict: true,
-      remove: /['"]/g,
-    });
+    // const validateData = vehicleUpdateSchema.parse(req.body);
+    // req.body.slug = slugify(validateData.title, {
+    //   lower: true,
+    //   strict: true,
+    //   remove: /['"]/g,
+    // });
 
     const documentsToDelete = [];
 
