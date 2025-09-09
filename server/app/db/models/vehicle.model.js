@@ -81,12 +81,12 @@ const init = async (sequelize) => {
       pricing: {
         // [{ id: "", name: "", base_price: 0, cities: [{ id: "", name: "", price_modifier: 0 }] }]
         type: DataTypes.JSONB,
-        allowNull: false,
+        allowNull: true,
       },
       emi_calculator: {
         // { defaultValues: {down_payment: 20000,loan_tenure: 24,interest_rate: 11.0} ranges: {down_payment: {min: 10000,step: 1000} loan_tenure: {min: 12,max: 48,step: 12} interest_rate: {min: 7.0,max: 14.0,step: 0.5}} financing_companies: [{id: "company-1",name: "Urban Finance Co.", interest_rate: 10.0,color: "#3B82F6"}]}
         type: DataTypes.JSONB,
-        allowNull: false,
+        allowNull: true,
       },
       carousel: {
         type: DataTypes.JSONB,
