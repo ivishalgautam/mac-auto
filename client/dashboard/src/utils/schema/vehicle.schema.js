@@ -1,11 +1,9 @@
 import { z } from "zod";
 
 const featureItemSchema = z.object({
-  heading: z.string().min(1, "Heading is required"),
-  sub_heading: z.string().min(1, "Sub Heading is required"),
-  image: z.any().refine((file) => {
-    return file === null || file instanceof File || typeof file === "string";
-  }, "Image is required"),
+  heading: z.string().optional(),
+  sub_heading: z.string().optional(),
+  image: z.any().optional(),
 });
 
 const pricingItemSchema = z.object({
@@ -88,10 +86,10 @@ export const vehicleSchema = z.object({
   features: z.array(featureItemSchema).optional(),
   // pricing: z.array(pricingItemSchema).nonempty(),
   video_link: z.string().optional(),
-  base_price: z.coerce.number().min(1, { message: "Base price is reuqired*" }),
+  base_price: z.coerce.number().min(0, { message: "Base price is reuqired*" }),
   dealer_price: z.coerce
     .number()
-    .min(1, { message: "Dealer price is reuqired*" }),
+    .min(0, { message: "Dealer price is reuqired*" }),
   // chassis_numbers: z.array(
   //   z.object({
   //     number: z
@@ -112,7 +110,7 @@ export const vehicleSchema = z.object({
   //   }),
   // ),
   specifications: z.array(specificationSchema).nonempty(),
-  emi_calculator: emiCalculatorSchema,
+  // emi_calculator: emiCalculatorSchema,
   meta_title: z.string().optional(),
   meta_description: z.string().optional(),
   meta_keywords: z.string().optional(),
@@ -146,12 +144,12 @@ export const vehicleUpdateSchema = z.object({
   quantity: z.number().default(0),
   features: z.array(featureItemSchema).optional(),
   video_link: z.string().optional(),
-  base_price: z.coerce.number().min(1, { message: "Base price is reuqired*" }),
+  base_price: z.coerce.number().min(0, { message: "Base price is reuqired*" }),
   dealer_price: z.coerce
     .number()
-    .min(1, { message: "Dealer price is reuqired*" }),
+    .min(0, { message: "Dealer price is reuqired*" }),
   // pricing: z.array(pricingItemSchema).nonempty(),
-  emi_calculator: emiCalculatorSchema,
+  // emi_calculator: emiCalculatorSchema,
   specifications: z.array(specificationSchema).nonempty(),
   meta_title: z.string().optional(),
   meta_description: z.string().optional(),

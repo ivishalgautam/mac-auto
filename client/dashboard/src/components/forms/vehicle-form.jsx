@@ -66,7 +66,7 @@ const defaultValues = {
   color: "",
   quantity: "",
   variants: [],
-  features: [{ heading: "", image: null }],
+  features: [],
   specifications: [{ tab_name: "", specs: [{ label: "", value: "" }] }],
   base_price: "",
   dealer_price: "",
@@ -90,19 +90,19 @@ const defaultValues = {
   //   //   cities: [],
   //   // },
   // ],
-  emi_calculator: {
-    default_values: {
-      down_payment: "",
-      loan_tenure: "",
-      interest_rate: "",
-    },
-    ranges: {
-      down_payment: { min: "", step: "" },
-      loan_tenure: { min: "", max: "", step: "" },
-      interest_rate: { min: "", max: "", step: "" },
-    },
-    financing_companies: [],
-  },
+  // emi_calculator: {
+  //   default_values: {
+  //     down_payment: "",
+  //     loan_tenure: "",
+  //     interest_rate: "",
+  //   },
+  //   ranges: {
+  //     down_payment: { min: "", step: "" },
+  //     loan_tenure: { min: "", max: "", step: "" },
+  //     interest_rate: { min: "", max: "", step: "" },
+  //   },
+  //   financing_companies: [],
+  // },
   meta_title: "",
   meta_description: "",
   meta_keywords: "",
@@ -574,6 +574,7 @@ export default function VehicleForm({ id, type }) {
               <Label>Base Price *</Label>
               <Input
                 type="number"
+                step="0.01"
                 placeholder="Enter Base Price"
                 {...register(`base_price`, { valueAsNumber: true })}
                 className={cn({ "border-red-500": errors.base_price })}
@@ -585,6 +586,7 @@ export default function VehicleForm({ id, type }) {
               <Label>Dealer price *</Label>
               <Input
                 type="number"
+                step="0.01"
                 placeholder="Enter Dealer Price"
                 {...register(`dealer_price`, { valueAsNumber: true })}
                 className={cn({ "border-red-500": errors.dealer_price })}
