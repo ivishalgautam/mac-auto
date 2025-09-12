@@ -87,6 +87,8 @@ const constants = {
     "http://localhost:3000",
     "http://localhost:4000",
     "https://macautoindia.com",
+    "https://www.mack-ev.com",
+    "https://mack-ev.com",
     "https://www.macautoindia.com",
     "https://dashboard.macautoindia.com",
     "https://dms.macautoindia.com",
