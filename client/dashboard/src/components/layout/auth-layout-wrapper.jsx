@@ -12,6 +12,7 @@ export default async function AuthLayoutWrapper({ children }) {
   if (host.includes("dms")) role = "dealer";
   else if (host.includes("customer")) role = "customer";
   else if (host.includes("dashboard")) role = "admin";
+  else if (host.includes("employee")) role = "employee";
 
   return (
     <AuthLayout role={role}>

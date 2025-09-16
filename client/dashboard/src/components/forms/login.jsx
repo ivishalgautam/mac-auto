@@ -52,7 +52,7 @@ export default function LoginForm({}) {
     defaultValues: {
       username: "",
       password: "",
-      role: role ?? "admin",
+      role: role !== "employee" ? (role ?? "admin") : null,
     },
   });
 
@@ -78,7 +78,7 @@ export default function LoginForm({}) {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       {/* role */}
-      {process.env.NODE_ENV === "development" && (
+      {(process.env.NODE_ENV === "development" || role === "employee") && (
         <div className="space-y-2">
           <Controller
             name="role"
@@ -93,11 +93,20 @@ export default function LoginForm({}) {
                   <SelectValue placeholder="Role" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="admin">Admin</SelectItem>
-                  <SelectItem value="cre">CRE</SelectItem>
-                  <SelectItem value="manager">Manager</SelectItem>
-                  <SelectItem value="dealer">Dealer</SelectItem>
-                  <SelectItem value="customer">Customer</SelectItem>
+                  {process.env.NODE_ENV === "development" ? (
+                    <>
+                      <SelectItem value="admin">Admin</SelectItem>
+                      <SelectItem value="cre">CRE</SelectItem>
+                      <SelectItem value="manager">Manager</SelectItem>
+                      <SelectItem value="dealer">Dealer</SelectItem>
+                      <SelectItem value="customer">Customer</SelectItem>
+                    </>
+                  ) : role === "employee" ? (
+                    <>
+                      <SelectItem value="cre">CRE</SelectItem>
+                      <SelectItem value="manager">Manager</SelectItem>
+                    </>
+                  ) : null}
                 </SelectContent>
               </Select>
             )}
