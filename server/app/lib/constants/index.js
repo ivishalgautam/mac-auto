@@ -92,6 +92,7 @@ const constants = {
     "https://dms.mack-ev.com",
     "https://customer.mack-ev.com",
     "https://dashboard.mack-ev.com",
+    "https://employee.mack-ev.com",
     "https://www.macautoindia.com",
     "https://dashboard.macautoindia.com",
     "https://dms.macautoindia.com",
