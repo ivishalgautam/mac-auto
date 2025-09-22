@@ -138,9 +138,11 @@ const dowbloadBrochure = async (req, res) => {
   } catch (error) {
     // throw error;
     console.log(error);
+
+    if (error?.response?.data?.code === "002018")
+      return res.code(200).send({ status: true, message: "Success" });
+
     if (error instanceof AxiosError) {
-      if (error?.response?.data?.code === "002018")
-        return res.code(200).send({ status: true, message: "Success" });
       throw new HttpError(
         error?.response?.data?.message ?? "Something went wrong!",
         error?.response?.status ?? 500
