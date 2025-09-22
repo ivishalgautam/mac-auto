@@ -2,10 +2,10 @@
 import constants from "../../lib/constants/index.js";
 import { DataTypes, Deferrable, QueryTypes } from "sequelize";
 
-let CustomerPurchaseModel = null;
+let QuotationModel = null;
 
 const init = async (sequelize) => {
-  CustomerPurchaseModel = sequelize.define(
+  QuotationModel = sequelize.define(
     constants.models.CUSTOMER_PURCHASE_TABLE,
     {
       id: {
@@ -68,13 +68,17 @@ const init = async (sequelize) => {
         allowNull: false,
         unique: { args: true, msg: "Chassis no. exist" },
       },
-      invoices_bills: {
-        type: DataTypes.JSONB,
-        defaultValue: [],
+      base_price_ex_showroom: {
+        type: DataTypes.STRING,
+        allowNull: true,
       },
-      booking_amount: {
+      gst: {
         type: DataTypes.INTEGER,
-        allowNull: false,
+        allowNull: true,
+      },
+      insurance: {
+        type: DataTypes.STRING,
+        allowNull: true,
       },
     },
     {
@@ -101,14 +105,14 @@ const init = async (sequelize) => {
     }
   );
 
-  await CustomerPurchaseModel.sync({ alter: true });
+  await QuotationModel.sync({ alter: true });
 };
 
 const create = async (req, transaction) => {
   const options = {};
   if (transaction) options.transaction = transaction;
 
-  const data = await CustomerPurchaseModel.create(
+  const data = await QuotationModel.create(
     {
       vehicle_id: req.body.vehicle_id,
       vehicle_color_id: req.body.vehicle_color_id,
@@ -129,7 +133,7 @@ const bulkCreate = async (data, transaction) => {
   const options = {};
   if (transaction) options.transaction = transaction;
 
-  return await CustomerPurchaseModel.bulkCreate(data, options);
+  return await QuotationModel.bulkCreate(data, options);
 };
 
 const update = async (req, id, transaction) => {
@@ -139,14 +143,14 @@ const update = async (req, id, transaction) => {
     raw: true,
   };
   if (transaction) options.transaction = transaction;
-  return await CustomerPurchaseModel.update(
+  return await QuotationModel.update(
     { invoices_bills: req.body.invoices_bills },
     options
   );
 };
 
 const updateByCustomerId = async (req, id) => {
-  return await CustomerPurchaseModel.update(
+  return await QuotationModel.update(
     { quantity: req.body.quantity },
     {
       where: { customer_id: id },
@@ -157,7 +161,7 @@ const updateByCustomerId = async (req, id) => {
 };
 
 const getById = async (id) => {
-  return await CustomerPurchaseModel.findOne({
+  return await QuotationModel.findOne({
     where: {
       id: id,
     },
@@ -256,13 +260,13 @@ const get = async (req) => {
     ${whereClause}
   `;
 
-  const inventory = await CustomerPurchaseModel.sequelize.query(query, {
+  const inventory = await QuotationModel.sequelize.query(query, {
     replacements: { ...queryParams, limit, offset },
     type: QueryTypes.SELECT,
     raw: true,
   });
 
-  const count = await CustomerPurchaseModel.sequelize.query(countQuery, {
+  const count = await QuotationModel.sequelize.query(countQuery, {
     replacements: { ...queryParams },
     type: QueryTypes.SELECT,
     raw: true,
@@ -305,13 +309,13 @@ const getByVehicleId = async (req, vehicle_id) => {
     ORDER BY cpt.created_at DESC
   `;
 
-  const data = await CustomerPurchaseModel.sequelize.query(query, {
+  const data = await QuotationModel.sequelize.query(query, {
     replacements: { ...queryParams, limit, offset },
     type: QueryTypes.SELECT,
     raw: true,
   });
 
-  const count = await CustomerPurchaseModel.sequelize.query(countQuery, {
+  const count = await QuotationModel.sequelize.query(countQuery, {
     replacements: queryParams,
     type: QueryTypes.SELECT,
     raw: true,
@@ -322,7 +326,7 @@ const getByVehicleId = async (req, vehicle_id) => {
 };
 
 const getByVehicleAndCustomer = async (vehicle_id, customer_id) => {
-  return await CustomerPurchaseModel.findOne({
+  return await QuotationModel.findOne({
     where: { vehicle_id: vehicle_id, customer_id: customer_id },
     order: [["created_at", "DESC"]],
     raw: true,
@@ -330,13 +334,13 @@ const getByVehicleAndCustomer = async (vehicle_id, customer_id) => {
 };
 
 const deleteByVehicleId = async (vehicle_id) => {
-  return await CustomerPurchaseModel.destroy({
+  return await QuotationModel.destroy({
     where: { vehicle_id: vehicle_id },
   });
 };
 
 const deleteById = async (id) => {
-  return await CustomerPurchaseModel.destroy({
+  return await QuotationModel.destroy({
     where: { id: id },
   });
 };
