@@ -28,6 +28,7 @@ export default function Listing() {
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [isConvertModal, setIsConvertModal] = useState(false);
   const [isInquiryAssignModal, setIsInquiryAssignModal] = useState(false);
+  const [isQuotationModal, setIsQuotationModal] = useState(false);
   const [id, setId] = useState(null);
   const [selectedEnq, setSelectedEnq] = useState({});
 

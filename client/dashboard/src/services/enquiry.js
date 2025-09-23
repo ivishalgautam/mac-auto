@@ -81,13 +81,14 @@ export async function updateWalkinEnquiry(id, data) {
 export async function deleteWalkinEnquiry(id) {
   return await http().delete(`${endpoints.walkInEnquiries.getAll}/${id}`);
 }
+
 export async function fetchWalkinEnquiries(params) {
   const { data } = await http().get(
     `${endpoints.walkInEnquiries.getAll}?enqt=walk-in&${params}`,
   );
-
   return data;
 }
+
 export async function fetchWalkinEnquiry(id) {
   return await http().get(`${endpoints.walkInEnquiries.getAll}/${id}`);
 }

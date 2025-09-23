@@ -15,18 +15,22 @@ import {
 } from "@/components/ui/popover";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import { useGetVehicleColors } from "@/mutations/vehicle-mutation";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { useState } from "react";
 
-export default function VehicleColorSelect({
-  onChange,
-  className = "",
+export default function CustomCommandMenu({
+  data,
   value,
-  vehicleId = null,
+  onChange,
+  searchPlaceholder = "Search...",
+  emptyMessage = "No items found.",
+  className = "",
+  disabled,
+  isLoading,
+  isError,
+  error,
 }) {
   const [open, setOpen] = useState(false);
-  const { data, isLoading, isError, error } = useGetVehicleColors(vehicleId);
 
   if (isError) return <ErrorMessage error={error} />;
 
@@ -34,7 +38,7 @@ export default function VehicleColorSelect({
     <Skeleton className={"h-9 w-full"} />
   ) : (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild className={className}>
+      <PopoverTrigger asChild className={className} disabled={disabled}>
         <Button
           variant="outline"
           role="combobox"
@@ -43,19 +47,9 @@ export default function VehicleColorSelect({
             !value && "text-muted-foreground",
           )}
         >
-          {value ? (
-            <div className="flex items-center justify-start gap-2">
-              <div
-                className={"size-4 rounded-full"}
-                style={{
-                  background: data.find((color) => color.value === value)?.hex,
-                }}
-              ></div>
-              {data.find((color) => color.value === value)?.label}
-            </div>
-          ) : (
-            "Select color"
-          )}
+          {value
+            ? data.find((item) => item.value === value)?.label
+            : "Select an option"}
           <ChevronsUpDown className="opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -64,27 +58,25 @@ export default function VehicleColorSelect({
         align="start"
       >
         <Command>
-          <CommandInput placeholder="Search color..." className="h-9" />
+          <CommandInput placeholder={searchPlaceholder} className="h-9" />
           <CommandList>
-            <CommandEmpty>No color found.</CommandEmpty>
+            <CommandEmpty>{emptyMessage}</CommandEmpty>
             <CommandGroup>
-              {data?.map((color) => (
+              {data?.map((item) => (
                 <CommandItem
-                  value={color.label}
-                  key={color.value}
+                  value={item.label}
+                  key={item.value}
                   onSelect={() => {
-                    onChange(color.value);
+                    if (onChange) {
+                      onChange(item.value);
+                    }
                     setOpen(false);
                   }}
                 >
-                  <div
-                    className={"size-4 rounded-full"}
-                    style={{ background: color.hex }}
-                  ></div>{" "}
-                  {color.label}
+                  {item.label}
                   <Check
                     className={cn("ml-auto opacity-0", {
-                      "opacity-100": color.value === value,
+                      "opacity-100": item.value === value,
                     })}
                   />
                 </CommandItem>

@@ -129,6 +129,18 @@ export const sidebarData = [
         ],
         isVisible: true,
       },
+      {
+        title: "Quotations",
+        url: "/quotations",
+        roles: [ROLES.DEALER],
+        isVisible: true,
+      },
+      {
+        title: "Invoices",
+        url: "/invoices",
+        roles: [ROLES.DEALER],
+        isVisible: true,
+      },
     ],
   },
   {

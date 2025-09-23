@@ -193,6 +193,12 @@ export const columns = (
                   >
                     Create order
                   </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem>
+                    <Link href={`/quotations/create?enqId=${id}`}>
+                      Create quotation
+                    </Link>
+                  </DropdownMenuItem>
                 </>
               )}
               {user?.role === "admin" && (

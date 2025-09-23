@@ -34,6 +34,8 @@ export const endpoints = {
   vehicleEnquiries: { getAll: "/vehicle-enquiries" },
   financers: { getAll: "/financers" },
   tickets: { getAll: "/tickets" },
+  quotations: { getAll: "/quotations" },
+  invoices: { getAll: "/invoices" },
   technicians: { getAll: "/technicians" },
   dealerTickets: { getAll: "/dealer-tickets" },
   reports: { getAll: "/reports" },
