@@ -2,6 +2,7 @@
 import constants from "../../lib/constants/index.js";
 import sequelizeFwk, { Deferrable, Op, QueryTypes } from "sequelize";
 import { format, subDays, eachDayOfInterval } from "date-fns";
+import { toPgArray } from "../../helpers/to-pg-array.js";
 const { DataTypes } = sequelizeFwk;
 
 let WalkInEnquiryModel = null;
@@ -215,11 +216,10 @@ const get = async (req) => {
     );
     queryParams.query = `%${q}%`;
   }
-
-  const enquiryType = req.query?.enqt ?? null;
+  const enquiryType = req.query?.enqt ? req.query.enqt.split(".") : null;
   if (enquiryType) {
-    whereConditions.push(`enq.enquiry_type = :enquiryType`);
-    queryParams.enquiryType = enquiryType;
+    whereConditions.push(`enq.enquiry_type = ANY(:enquiryType)`);
+    queryParams.enquiryType = toPgArray(enquiryType);
   }
 
   const status = req.query.status ? req.query.status.split(".") : null;

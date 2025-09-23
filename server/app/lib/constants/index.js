@@ -70,6 +70,8 @@ const constants = {
     VEHICLE_VARIANT_TABLE: "vehicle_variants",
     VEHICLE_VARIANT_MAP_TABLE: "vehicle_variant_maps",
     TECHNICIAN_TABLE: "technicians",
+    QUOTATION_TABLE: "quotations",
+    INVOICE_TABLE: "invoices",
   },
   bcrypt: {
     SALT_ROUNDS: 10,

@@ -2,11 +2,11 @@
 import constants from "../../lib/constants/index.js";
 import { DataTypes, Deferrable, QueryTypes } from "sequelize";
 
-let QuotationModel = null;
+let InvoiceModel = null;
 
 const init = async (sequelize) => {
-  QuotationModel = sequelize.define(
-    constants.models.QUOTATION_TABLE,
+  InvoiceModel = sequelize.define(
+    constants.models.INVOICE_TABLE,
     {
       id: {
         type: DataTypes.UUID,
@@ -15,8 +15,8 @@ const init = async (sequelize) => {
       },
       enquiry_id: {
         type: DataTypes.UUID,
+        unique: { args: true, msg: "Invoice generated already." },
         allowNull: false,
-        unique: { args: true, msg: "Quotation generated already." },
         references: {
           model: constants.models.WALKIN_ENQUIRY_TABLE,
           key: "id",
@@ -36,7 +36,7 @@ const init = async (sequelize) => {
         type: DataTypes.STRING,
         allowNull: true,
       },
-      quotation_no: {
+      invoice_no: {
         type: DataTypes.STRING,
         allowNull: false,
       },
@@ -128,10 +128,6 @@ const init = async (sequelize) => {
         type: DataTypes.STRING,
         allowNull: true,
       },
-      status: {
-        type: DataTypes.ENUM(["pending", "invoice-generated"]),
-        defaultValue: "pending",
-      },
     },
     {
       createdAt: "created_at",
@@ -141,7 +137,7 @@ const init = async (sequelize) => {
         { fields: ["customer_name"] },
         { fields: ["mobile_no"] },
         { fields: ["date"] },
-        { fields: ["quotation_no"] },
+        { fields: ["invoice_no"] },
         { fields: ["model"] },
         { fields: ["variant"] },
         { fields: ["color"] },
@@ -149,36 +145,36 @@ const init = async (sequelize) => {
     }
   );
 
-  await QuotationModel.sync({ alter: true });
+  await InvoiceModel.sync({ alter: true });
 };
 
 const create = async (req, transaction) => {
   const options = {};
   if (transaction) options.transaction = transaction;
 
-  const dealerCode = req.body.dealer_code;
-  const latest = await QuotationModel.findOne({
-    attributes: ["quotation_no"],
+  const dealerCode = req.body?.dealer_code ?? "";
+  const latest = await InvoiceModel.findOne({
+    attributes: ["invoice_no"],
     where: { dealer_id: req.body.dealer_id },
     order: [["created_at", "DESC"]],
     raw: true,
   });
 
-  let newQuotationNo = `${dealerCode}-QT-0001`;
-  if (latest?.quotation_no) {
-    const parts = latest.quotation_no.split("-");
+  let newInvoiceNo = `${dealerCode}-INV-0001`;
+  if (latest?.invoice_no) {
+    const parts = latest.invoice_no.split("-");
     const lastNumber = parseInt(parts[parts.length - 1], 10); // take the last block
     const nextNumber = lastNumber + 1;
-    newQuotationNo = `${dealerCode}-QT-${String(nextNumber).padStart(4, "0")}`;
+    newInvoiceNo = `${dealerCode}-INV-${String(nextNumber).padStart(4, "0")}`;
   }
 
-  const data = await QuotationModel.create(
+  const data = await InvoiceModel.create(
     {
       enquiry_id: req.body.enquiry_id,
       customer_name: req.body.customer_name,
       mobile_no: req.body.mobile_no,
       date: req.body.date,
-      quotation_no: newQuotationNo,
+      invoice_no: newInvoiceNo,
       model: req.body.model,
       variant: req.body.variant,
       color: req.body.color,
@@ -209,12 +205,12 @@ const update = async (req, id, transaction) => {
     raw: true,
   };
   if (transaction) options.transaction = transaction;
-  return await QuotationModel.update(
+  return await InvoiceModel.update(
     {
       customer_name: req.body.customer_name,
       mobile_no: req.body.mobile_no,
       date: req.body.date,
-      quotation_no: req.body.quotation_no,
+      invoice_no: req.body.invoice_no,
       model: req.body.model,
       variant: req.body.variant,
       color: req.body.color,
@@ -228,7 +224,6 @@ const update = async (req, id, transaction) => {
       total_ex_showroom_price: req.body.total_ex_showroom_price,
       discount: req.body.discount,
       on_road_price: req.body.on_road_price,
-      status: req.body.status,
 
       vehicle_id: req.body.vehicle_id,
       vehicle_variant_map_id: req.body.vehicle_variant_map_id,
@@ -239,7 +234,7 @@ const update = async (req, id, transaction) => {
 };
 
 const getById = async (id) => {
-  return await QuotationModel.findOne({
+  return await InvoiceModel.findOne({
     where: {
       id: id,
     },
@@ -262,12 +257,12 @@ const get = async (req) => {
   if (q) {
     whereConditions.push(
       `(
-        qt.customer_name ILIKE :query OR 
-        qt.mobile_no ILIKE :query OR 
-        qt.quotation_no ILIKE :query OR 
-        qt.model ILIKE :query OR 
-        qt.variant ILIKE :query OR 
-        qt.color ILIKE :query
+        inv.customer_name ILIKE :query OR 
+        inv.mobile_no ILIKE :query OR 
+        inv.invoice_no ILIKE :query OR 
+        inv.model ILIKE :query OR 
+        inv.variant ILIKE :query OR 
+        inv.color ILIKE :query
       )`
     );
     queryParams.query = `%${q}%`;
@@ -284,40 +279,40 @@ const get = async (req) => {
 
   const query = `
   SELECT 
-        qt.*
-    FROM ${constants.models.QUOTATION_TABLE} qt
-    LEFT JOIN ${constants.models.DEALER_TABLE} dlr ON dlr.id = qt.dealer_id
+        inv.*
+    FROM ${constants.models.INVOICE_TABLE} inv
+    LEFT JOIN ${constants.models.DEALER_TABLE} dlr ON dlr.id = inv.dealer_id
     ${whereClause}
-    ORDER BY qt.created_at DESC
+    ORDER BY inv.created_at DESC
     LIMIT :limit OFFSET :offset
   `;
 
   const countQuery = `
   SELECT 
-      COUNT(qt.id) OVER()::integer as total
-    FROM ${constants.models.QUOTATION_TABLE} qt
-    LEFT JOIN ${constants.models.DEALER_TABLE} dlr ON dlr.id = qt.dealer_id
+      COUNT(inv.id) OVER()::integer as total
+    FROM ${constants.models.INVOICE_TABLE} inv
+    LEFT JOIN ${constants.models.DEALER_TABLE} dlr ON dlr.id = inv.dealer_id
     ${whereClause}
   `;
 
-  const quotations = await QuotationModel.sequelize.query(query, {
+  const invoices = await InvoiceModel.sequelize.query(query, {
     replacements: { ...queryParams, limit, offset },
     type: QueryTypes.SELECT,
     raw: true,
   });
 
-  const count = await QuotationModel.sequelize.query(countQuery, {
+  const count = await InvoiceModel.sequelize.query(countQuery, {
     replacements: { ...queryParams },
     type: QueryTypes.SELECT,
     raw: true,
     plain: true,
   });
 
-  return { quotations, total: count?.total ?? 0 };
+  return { invoices, total: count?.total ?? 0 };
 };
 
 const deleteById = async (id) => {
-  return await QuotationModel.destroy({
+  return await InvoiceModel.destroy({
     where: { id: id },
   });
 };

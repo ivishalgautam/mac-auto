@@ -20,6 +20,8 @@ import walkinEnquiryRoutes from "../../api/walkin-enquiry/routes.js";
 import dealerTicketRoutes from "../../api/dealer-ticket/routes.js";
 import vehicleVariantRoutes from "../../api/vehicle-variant/routes.js";
 import technicianRoutes from "../../api/technician/routes.js";
+import quotationRoutes from "../../api/quotation/routes.js";
+import invoiceRoutes from "../../api/invoices/routes.js";
 
 export default async function routes(fastify, options) {
   // middlewares
@@ -50,4 +52,6 @@ export default async function routes(fastify, options) {
   fastify.register(dealerTicketRoutes, { prefix: "dealer-tickets" });
   fastify.register(vehicleVariantRoutes, { prefix: "vehicle-variants" });
   fastify.register(technicianRoutes, { prefix: "technicians" });
+  fastify.register(quotationRoutes, { prefix: "quotations" });
+  fastify.register(invoiceRoutes, { prefix: "invoices" });
 }

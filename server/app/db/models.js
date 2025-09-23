@@ -23,6 +23,8 @@ import dealerTicketModel from "./models/dealer-ticket.model.js";
 import technicianModel from "./models/technician.model.js";
 import vehicleVariantModel from "./models/vehicle-variant.model.js";
 import vehicleVariantMapModel from "./models/vehicle-variant-map.model.js";
+import quotationModel from "./models/quotation.model.js";
+import invoiceModel from "./models/invoice.model.js";
 
 export default {
   UserModel: userModel,
@@ -49,4 +51,6 @@ export default {
   VehicleVariantModel: vehicleVariantModel,
   VehicleVariantMapModel: vehicleVariantMapModel,
   TechnicianModel: technicianModel,
+  QuotationModel: quotationModel,
+  InvoiceModel: invoiceModel,
 };
