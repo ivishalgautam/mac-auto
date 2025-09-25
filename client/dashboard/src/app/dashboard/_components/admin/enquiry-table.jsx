@@ -49,7 +49,7 @@ export default function EnquiryTable({ dashboardData }) {
           <TableHeader>
             <TableRow>
               <TableHead>Customer</TableHead>
-              <TableHead>Vehicle</TableHead>
+              <TableHead>Model</TableHead>
               <TableHead>Location</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Dealership</TableHead>

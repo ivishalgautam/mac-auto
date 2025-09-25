@@ -10,7 +10,7 @@ export default function QueryProvider({ children }) {
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: {
-        retry: 2,
+        retry: 0,
         refetchOnWindowFocus: false,
         queryCache: new QueryCache({
           onError: (error, query) => {

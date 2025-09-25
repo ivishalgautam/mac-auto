@@ -26,7 +26,6 @@ export const useGetDealerInventory = (searchParams = "page=1") => {
   return useQuery({
     queryKey: ["dealer-inventory", searchParams],
     queryFn: () => inventory.getDealerInventory(searchParams),
-    enabled: !!searchParams,
   });
 };
 

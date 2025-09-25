@@ -168,7 +168,7 @@ function SchemeCard({ scheme, openModal, setId, user }) {
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex items-start gap-3">
-          <FileText className="text-muted-foreground mt-1 h-4 w-4" />
+          <FileText className="text-muted-foreground mt-1 h-4 w-4 shrink-0" />
           <div>
             <p className="text-sm font-medium">Message</p>
             <p className="text-muted-foreground text-sm">{scheme.message}</p>

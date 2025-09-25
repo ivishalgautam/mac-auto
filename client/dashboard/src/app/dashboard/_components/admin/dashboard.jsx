@@ -1,11 +1,11 @@
 "use client";
 
 import { Heading } from "@/components/ui/heading";
+import KeyMetrics from "./key-metrics";
 import ChartSection from "./chart-section";
 import EnquiryTable from "./enquiry-table";
-import KeyMetrics from "./key-metrics";
 
-export default function Dashboard({ dashboardData }) {
+export default function AdminDashboard({ dashboardData }) {
   return (
     <div className="min-h-screen">
       {/* Header */}
