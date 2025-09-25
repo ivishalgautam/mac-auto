@@ -334,6 +334,39 @@ const getTicketStatusBreakdown = async () => {
   }));
 };
 
+const count = async (req, last_30_days = false) => {
+  const { id } = req.user_data;
+  const whereConditions = ["dlr.user_id = :userId"];
+  const queryParams = { userId: id };
+
+  if (last_30_days) {
+    whereConditions.push("tk.created_at >= :createdAfter");
+    queryParams.createdAfter = moment()
+      .subtract(30, "days")
+      .format("YYYY-MM-DD HH:mm:ss");
+  }
+
+  const whereClause = `WHERE ${whereConditions.join(" AND ")}`;
+
+  let query = `
+  SELECT
+      COUNT(tk.id)
+    FROM ${constants.models.TICKET_TABLE} tk
+    LEFT JOIN ${constants.models.CUSTOMER_PURCHASE_TABLE} cp ON cp.id = tk.purchase_id
+    LEFT JOIN ${constants.models.DEALER_TABLE} dlr ON dlr.id = cp.dealer_id
+    ${whereClause} 
+  `;
+
+  const { count } = await TicketModel.sequelize.query(query, {
+    replacements: { ...queryParams },
+    type: QueryTypes.SELECT,
+    raw: true,
+    plain: true,
+  });
+
+  return count;
+};
+
 export default {
   init: init,
   create: create,
@@ -344,4 +377,5 @@ export default {
   getTicketStatusBreakdown: getTicketStatusBreakdown,
   getTicketDetailsById: getTicketDetailsById,
   getLastCREAssignedTicket: getLastCREAssignedTicket,
+  count: count,
 };

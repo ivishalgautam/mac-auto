@@ -1,6 +1,6 @@
 "use strict";
 import constants from "../../lib/constants/index.js";
-import sequelizeFwk, { QueryTypes } from "sequelize";
+import sequelizeFwk, { Op, QueryTypes } from "sequelize";
 const { DataTypes } = sequelizeFwk;
 
 let SchemeModel = null;
@@ -155,6 +155,21 @@ const deleteById = async (req, id, transaction) => {
   return await SchemeModel.destroy(options);
 };
 
+const todaySchemes = async () => {
+  const where = { is_active: true };
+
+  where.date = {
+    [Op.gte]: new Date(new Date().setHours(0, 0, 0, 0)),
+    [Op.lt]: new Date(new Date().setHours(24, 0, 0, 0)),
+  };
+
+  const schemes = await SchemeModel.findAll({
+    where,
+  });
+
+  return schemes;
+};
+
 export default {
   init: init,
   create: create,
@@ -162,4 +177,5 @@ export default {
   get: get,
   getById: getById,
   deleteById: deleteById,
+  todaySchemes: todaySchemes,
 };

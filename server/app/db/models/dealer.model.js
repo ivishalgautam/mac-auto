@@ -47,6 +47,8 @@ const init = async (sequelize) => {
   );
 
   await DealerModel.sync({ alter: true });
+
+  return DealerModel;
 };
 
 const create = async ({ user_id, location, dealer_code }, transaction) => {

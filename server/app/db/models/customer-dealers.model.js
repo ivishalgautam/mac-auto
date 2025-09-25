@@ -1,6 +1,6 @@
 "use strict";
 import constants from "../../lib/constants/index.js";
-import { DataTypes, Deferrable, QueryTypes } from "sequelize";
+import { DataTypes, Deferrable, Op, QueryTypes } from "sequelize";
 import table from "../../db/models.js";
 
 let CustomerDealersModel = null;
@@ -148,10 +148,43 @@ const deleteById = async (id) => {
   });
 };
 
+const count = async (req, last_30_days = false) => {
+  const { id } = req.user_data;
+  const whereConditions = ["dlr.user_id = :userId"];
+  const queryParams = { userId: id };
+
+  if (last_30_days) {
+    whereConditions.push("cd.created_at >= :createdAfter");
+    queryParams.createdAfter = moment()
+      .subtract(30, "days")
+      .format("YYYY-MM-DD HH:mm:ss");
+  }
+
+  const whereClause = `WHERE ${whereConditions.join(" AND ")}`;
+
+  let query = `
+  SELECT
+      COUNT(cd.id)
+    FROM ${constants.models.CUSTOMER_DEALERS_TABLE} cd
+    LEFT JOIN ${constants.models.DEALER_TABLE} dlr ON dlr.id = cd.dealer_id
+    ${whereClause} 
+  `;
+
+  const { count } = await CustomerDealersModel.sequelize.query(query, {
+    replacements: { ...queryParams },
+    type: QueryTypes.SELECT,
+    raw: true,
+    plain: true,
+  });
+
+  return count;
+};
+
 export default {
   init: init,
   create: create,
   get: get,
   deleteById: deleteById,
   getByCustomerAndDealer: getByCustomerAndDealer,
+  count: count,
 };

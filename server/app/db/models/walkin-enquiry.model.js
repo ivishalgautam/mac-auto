@@ -3,10 +3,13 @@ import constants from "../../lib/constants/index.js";
 import sequelizeFwk, { Deferrable, Op, QueryTypes } from "sequelize";
 import { format, subDays, eachDayOfInterval } from "date-fns";
 import { toPgArray } from "../../helpers/to-pg-array.js";
+import { sequelize } from "../postgres.js";
 const { DataTypes } = sequelizeFwk;
 
-let WalkInEnquiryModel = null;
+import table from "./dealer.model.js";
+const DealerModel = await table.init(sequelize);
 
+let WalkInEnquiryModel = null;
 const init = async (sequelize) => {
   WalkInEnquiryModel = sequelize.define(
     constants.models.WALKIN_ENQUIRY_TABLE,
@@ -336,37 +339,55 @@ const deleteById = async (req, id, transaction) => {
   return await WalkInEnquiryModel.destroy(options);
 };
 
-const getEnquiriesOverTime = async (days = 7) => {
-  // Query last `n` days of enquiry data grouped by date
-  const result = await WalkInEnquiryModel.findAll({
-    attributes: [
-      [sequelizeFwk.fn("DATE", sequelizeFwk.col("created_at")), "date"],
-      [sequelizeFwk.fn("COUNT", "*"), "count"],
-    ],
-    where: {
-      created_at: {
-        [Op.gte]: sequelizeFwk.literal(
-          `CURRENT_DATE - INTERVAL '${days} days'`
-        ),
-      },
-    },
-    group: [sequelizeFwk.fn("DATE", sequelizeFwk.col("created_at"))],
-    order: [[sequelizeFwk.fn("DATE", sequelizeFwk.col("created_at")), "ASC"]],
-    raw: true,
+const getEnquiriesOverTime = async (req, days = 7) => {
+  const { role, id } = req.user_data;
+  const replacements = {
+    startDate: format(subDays(new Date(), days - 1), "yyyy-MM-dd"),
+  };
+
+  let dealerJoin = "";
+  let dealerWhere = "";
+
+  if (role === "dealer") {
+    dealerJoin = `
+      JOIN ${constants.models.DEALER_TABLE} d ON d.id = we.dealer_id
+    `;
+    dealerWhere = `AND d.user_id = :userId`;
+    replacements.userId = id;
+  }
+
+  const query = `
+    SELECT 
+      DATE(we.created_at) AS date,
+      COUNT(*) AS count
+    FROM ${constants.models.WALKIN_ENQUIRY_TABLE} we
+    ${dealerJoin}
+    WHERE we.enquiry_type = 'mac-auto'
+      AND we.created_at >= :startDate
+      ${dealerWhere}
+    GROUP BY DATE(we.created_at)
+    ORDER BY DATE(we.created_at) ASC
+  `;
+
+  const rows = await sequelize.query(query, {
+    replacements,
+    type: QueryTypes.SELECT,
   });
 
-  // Map results to a dictionary for fast lookup
+  // Map to date-count format
   const countByDate = Object.fromEntries(
-    result.map((r) => [format(new Date(r.date), "yyyy-MM-dd"), Number(r.count)])
+    rows.map((row) => [
+      format(new Date(row.date), "yyyy-MM-dd"),
+      Number(row.count),
+    ])
   );
 
-  // Generate past `days` date range
+  // Full date range
   const dateRange = eachDayOfInterval({
     start: subDays(new Date(), days - 1),
     end: new Date(),
   });
 
-  // Create full graph-ready array
   const labels = dateRange.map((d) => format(d, "yyyy-MM-dd"));
   const data = labels.map((date) => countByDate[date] ?? 0);
 
@@ -381,27 +402,74 @@ const getEnquiriesOverTime = async (days = 7) => {
   };
 };
 
-const getLatestEnquiries = async (limit = 10) => {
+const getLatestEnquiries = async (req, limit = 10) => {
+  const whereConditions = ["eq.enquiry_type = 'mac-auto'"];
+  const queryParams = {};
+  const { role, id } = req.user_data;
+  if (role === "dealer") {
+    whereConditions.push(`dlr.user_id = :userId`);
+    queryParams.userId = id;
+  }
+
+  let whereClause = "";
+  if (whereConditions.length)
+    whereClause = `WHERE ${whereConditions.join(" AND ")}`;
+
   const query = `
-      SELECT 
-        eq.*,
-        vh.title AS vehicle_title,
-        CASE 
-          WHEN dlr.id IS NULL THEN 'Not assigned'
-          ELSE CONCAT(usr.first_name, ' ', usr.last_name, ' (', dlr.location, ')')
-        END AS dealership
-      FROM ${constants.models.WALKIN_ENQUIRY_TABLE} eq
-      LEFT JOIN ${constants.models.VEHICLE_TABLE} vh ON vh.id = eq.vehicle_id
-      LEFT JOIN ${constants.models.DEALER_TABLE} dlr ON dlr.id = eq.dealer_id
-      LEFT JOIN ${constants.models.USER_TABLE} usr ON usr.id = dlr.user_id
-      ORDER BY eq.created_at DESC
-      LIMIT :limit
-    `;
+    SELECT 
+      eq.*,
+      vh.title AS vehicle_title,
+      CASE 
+        WHEN dlr.id IS NULL THEN 'Not assigned'
+        ELSE CONCAT(usr.first_name, ' ', usr.last_name, ' (', dlr.location, ')')
+      END AS dealership
+    FROM ${constants.models.WALKIN_ENQUIRY_TABLE} eq
+    LEFT JOIN ${constants.models.VEHICLE_TABLE} vh ON vh.id = eq.vehicle_id
+    LEFT JOIN ${constants.models.DEALER_TABLE} dlr ON dlr.id = eq.dealer_id
+    LEFT JOIN ${constants.models.USER_TABLE} usr ON usr.id = dlr.user_id
+    ${whereClause}
+    ORDER BY eq.created_at DESC
+    LIMIT :limit
+  `;
 
   return await WalkInEnquiryModel.sequelize.query(query, {
-    replacements: { limit },
+    replacements: { ...queryParams, limit },
     type: QueryTypes.SELECT,
   });
+};
+
+const count = async (req, last_30_days = false) => {
+  const { id } = req.user_data;
+
+  const whereConditions = ["dlr.user_id = :userId"];
+  const queryParams = { userId: id };
+
+  if (last_30_days) {
+    whereConditions.push("cd.created_at >= :createdAfter");
+    queryParams.createdAfter = moment()
+      .subtract(30, "days")
+      .format("YYYY-MM-DD HH:mm:ss");
+  }
+
+  const whereClause = `WHERE ${whereConditions.join(" AND ")}`;
+
+  const query = `
+    SELECT
+      cd.enquiry_type,
+      COUNT(cd.id) AS count
+    FROM ${constants.models.WALKIN_ENQUIRY_TABLE} cd
+    LEFT JOIN ${constants.models.DEALER_TABLE} dlr ON dlr.id = cd.dealer_id
+    ${whereClause}
+    GROUP BY cd.enquiry_type
+  `;
+
+  const results = await WalkInEnquiryModel.sequelize.query(query, {
+    replacements: queryParams,
+    type: QueryTypes.SELECT,
+    raw: true,
+  });
+
+  return results;
 };
 
 export default {
@@ -413,4 +481,5 @@ export default {
   deleteById: deleteById,
   getEnquiriesOverTime: getEnquiriesOverTime,
   getLatestEnquiries: getLatestEnquiries,
+  count: count,
 };
