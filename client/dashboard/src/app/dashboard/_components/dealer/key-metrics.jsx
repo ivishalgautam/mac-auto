@@ -12,7 +12,7 @@ export default function KeyMetrics({ dashboardData }) {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">
-            {dashboardData.customer_count}
+            {dashboardData?.customer_count ?? 0}
           </div>
         </CardContent>
       </Card>
@@ -24,14 +24,16 @@ export default function KeyMetrics({ dashboardData }) {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">
-            {dashboardData.enquiries?.reduce(
-              (acc, curr) => parseInt(acc.count) + parseInt(curr.count),
+            {dashboardData?.enquiries?.reduce(
+              (acc, curr) =>
+                parseInt(acc?.count ?? 0) + parseInt(curr?.count ?? 0),
+              0,
             )}
           </div>
           <p className="text-muted-foreground space-x-2 text-xs uppercase">
             {dashboardData.enquiries?.map((e, ind) => (
               <span key={ind}>
-                {e.enquiry_type.split("-").join(" ")}: {e.count}
+                {e?.enquiry_type?.split("-").join(" ")}: {e?.count ?? 0}
               </span>
             ))}
           </p>
@@ -45,11 +47,13 @@ export default function KeyMetrics({ dashboardData }) {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">
-            {dashboardData.customer_tickets + dashboardData.dealer_tickets}
+            {dashboardData?.customer_tickets ??
+              0 + dashboardData?.dealer_tickets ??
+              0}
           </div>
           <p className="text-muted-foreground text-xs">
-            Customer tickets: {dashboardData.customer_tickets}, My tickets:{" "}
-            {dashboardData.dealer_tickets}
+            Customer tickets: {dashboardData?.customer_tickets ?? 0}, My
+            tickets: {dashboardData?.dealer_tickets ?? 0}
           </p>
         </CardContent>
       </Card>
