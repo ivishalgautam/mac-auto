@@ -19,7 +19,11 @@ export const endpoints = {
   dealerCustomers: { getAll: "/dealer-customers" },
   vehicles: { getAll: "/vehicles", variant: "/vehicle-colors" },
   pdiChecks: { getAll: "/pdi-checks" },
-  dealers: { getAll: "/dealers", inventory: "/dealers/inventory" },
+  dealers: {
+    getAll: "/dealers",
+    inventory: "/dealers/inventory",
+    import: "/dealers/import",
+  },
   inventories: {
     getAll: "/inventories",
     getByVehicle: "/inventories/by-vehicle",

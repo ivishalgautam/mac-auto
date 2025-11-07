@@ -1,21 +1,14 @@
 "use client";
 import { columns } from "../columns";
 import { useEffect, useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { DataTable } from "@/components/ui/table/data-table";
-import {
-  useParams,
-  usePathname,
-  useRouter,
-  useSearchParams,
-} from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { DataTableSkeleton } from "@/components/ui/table/data-table-skeleton";
 import { DeleteDialog } from "../followups/_components/delete-dialog";
-import { deleteEnquiry, fetchEnquiries } from "@/services/enquiry";
+import { fetchEnquiries } from "@/services/enquiry";
 import { CreateDialog } from "./dialog/create-dialog";
-import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
 import { ConvertDialog } from "./dialog/convert-dialog";
 import { InquiryAssignDialog } from "./dialog/inquiry-assign-dialog";
 import { useAuth } from "@/providers/auth-provider";
@@ -36,7 +29,6 @@ export default function Listing() {
   const [id, setId] = useState(null);
   const [selectedEnq, setSelectedEnq] = useState({});
 
-  const queryClient = useQueryClient();
   const searchParams = useSearchParams();
   const searchParamStr = searchParams.toString();
   const router = useRouter();

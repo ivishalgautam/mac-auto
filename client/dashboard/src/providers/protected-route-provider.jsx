@@ -36,13 +36,18 @@ export default function ProtectedRouteProvider({ children }) {
     }
 
     const currRoute = pathname.replace(params.id, ":id");
-    const protectedRoute = protectedRoutes.find((route) => {
+    const protectedRoute = protectedRoutes.filter((route) => {
       const routePattern = route.url.split("?")[0];
       return routePattern === currRoute;
     });
-    if (!protectedRoute) return;
 
-    const hasPermission = protectedRoute.roles.includes(user.role);
+    const uniqueProtectedRoutes = [
+      ...new Set(protectedRoute.flatMap(({ roles = [] }) => roles)),
+    ];
+
+    if (!uniqueProtectedRoutes.length) return;
+
+    const hasPermission = uniqueProtectedRoutes.includes(user.role);
 
     if (!hasPermission) {
       router.replace("/unauthorized");

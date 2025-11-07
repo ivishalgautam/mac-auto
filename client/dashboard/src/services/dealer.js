@@ -5,6 +5,10 @@ const createInventory = async (data) => {
   return await http().post(`${endpoints.dealers.inventory}`, data);
 };
 
+const importDealers = async (data) => {
+  return await http().post(`${endpoints.dealers.import}`, data, true);
+};
+
 const get = async (searchParams = "") => {
   const { data } = await http().get(
     `${endpoints.dealers.getAll}?${searchParams}`,
@@ -31,6 +35,7 @@ const getDealerInventoryByVehicleColorId = async (
 
 const dealer = {
   createInventory: createInventory,
+  importDealers: importDealers,
   get: get,
   getDealerInventoryByVehicleId: getDealerInventoryByVehicleId,
   getDealerInventoryByVehicleColorId: getDealerInventoryByVehicleColorId,

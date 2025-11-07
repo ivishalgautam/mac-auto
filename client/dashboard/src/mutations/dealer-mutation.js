@@ -1,5 +1,5 @@
 import dealer from "@/services/dealer";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export function useGetDealers(searchParams) {
   return useQuery({
@@ -20,3 +20,21 @@ export function useGetFormattedDealers() {
     },
   });
 }
+
+export const useImportDealers = (handleSuccess) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: dealer.importDealers,
+    onSuccess: () => {
+      toast("Dealers imported.");
+      queryClient.invalidateQueries(["dealers"]);
+      typeof handleSuccess === "function" && handleSuccess();
+    },
+    onError: (error) => {
+      toast.error(
+        error?.response?.data?.message ?? error?.message ?? "An error occurred",
+      );
+    },
+  });
+};
