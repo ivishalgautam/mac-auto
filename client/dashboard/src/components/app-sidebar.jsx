@@ -78,13 +78,6 @@ export function AppSidebar({ ...props }) {
           <NavMain items={getSidebarDataForRole(user?.role)} />
         </ScrollArea>
       </SidebarContent>
-      <SidebarFooter>
-        {isUserLoading ? (
-          <Skeleton className={"h-12 bg-white/5"} />
-        ) : (
-          <NavUser user={user} />
-        )}
-      </SidebarFooter>
     </Sidebar>
   );
 }

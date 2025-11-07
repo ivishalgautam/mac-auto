@@ -21,7 +21,10 @@ import { InquiryAssignDialog } from "./dialog/inquiry-assign-dialog";
 import { useAuth } from "@/providers/auth-provider";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { useUpdateWalkInEnquiryMutation } from "@/mutations/walkin-enquiries-mutation";
+import {
+  useDeleteWalkInEnquiryMutation,
+  useUpdateWalkInEnquiryMutation,
+} from "@/mutations/walkin-enquiries-mutation";
 
 export default function Listing() {
   const pathname = usePathname();
@@ -57,17 +60,9 @@ export default function Listing() {
     enabled: !!searchParamStr,
   });
 
-  const deleteMutation = useMutation({
-    mutationFn: () => deleteEnquiry(id),
-    onSuccess: () => {
-      toast.success("Enquiry deleted.");
-      queryClient.invalidateQueries(["enquiries", searchParamStr]);
-      setIsDeleteOpen(false);
-    },
-    onError: (error) => {
-      toast.error(error.response?.data?.message ?? error?.message ?? "error");
-    },
-  });
+  const deleteMutation = useDeleteWalkInEnquiryMutation(id, () =>
+    setIsDeleteOpen(false),
+  );
 
   useEffect(() => {
     if (!searchParamStr) {

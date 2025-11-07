@@ -1,60 +1,42 @@
 "use client";
 import AuthProvider from "@/providers/auth-provider";
 import QueryProvider from "@/providers/query-client-provider";
-import { useParams, usePathname } from "next/navigation";
-import RoleContext from "@/providers/role-context";
-import SidebarContext from "@/providers/sidebar-context";
-import { SidebarInset, SidebarTrigger, useSidebar } from "../ui/sidebar";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { usePathname } from "next/navigation";
+import { SidebarInset, SidebarProvider, SidebarTrigger } from "../ui/sidebar";
 import { AppSidebar } from "../app-sidebar";
-import { cn } from "@/lib/utils";
+import { SiteHeader } from "../site-header";
+import ProtectedRouteProvider from "@/providers/protected-route-provider";
 import { publicRoutes } from "@/data/routes";
 
 export default function Layout({ children }) {
   const pathname = usePathname();
-  const { id } = useParams();
-
   const getContent = () => {
-    if (publicRoutes.includes(pathname.replace(id, ":id"))) {
+    if (publicRoutes.includes(pathname)) {
       return children;
     }
 
-    // const currRoute =
-
     return (
       <AuthProvider>
-        <RoleContext>
-          <SidebarContext>
-            <AppSidebar />
-            <SidebarInset>
-              <header className="flex h-8 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-8">
-                <div className="flex items-center gap-2 px-2">
-                  <SidebarTrigger className="-ml-1" />
-                </div>
-              </header>
-              <Children>{children}</Children>
-            </SidebarInset>
-          </SidebarContext>
-        </RoleContext>
+        <ProtectedRouteProvider>
+          <div className="[--header-height:calc(--spacing(14))]">
+            <SidebarProvider className="flex flex-col">
+              <SiteHeader />
+              <div className="flex flex-1">
+                <AppSidebar />
+                <SidebarInset className={"h-[calc(100%] overflow-hidden"}>
+                  <div className="h-full p-4">{children}</div>
+                </SidebarInset>
+              </div>
+            </SidebarProvider>
+          </div>
+        </ProtectedRouteProvider>
       </AuthProvider>
     );
   };
 
-  return <QueryProvider>{getContent()}</QueryProvider>;
-}
-
-function Children({ children }) {
-  const { state } = useSidebar();
-  const isMobile = useIsMobile();
-
   return (
-    <div
-      className={cn("w-[calc(99vw-var(--sidebar-width))] px-4 py-2", {
-        "w-full": typeof window !== "undefined" && isMobile,
-        "w-[calc(99vw-var(--sidebar-icon-width))]": state === "collapsed",
-      })}
-    >
-      {children}
+    <div className="bg-gray-50">
+      <QueryProvider>{getContent()}</QueryProvider>
     </div>
   );
 }
