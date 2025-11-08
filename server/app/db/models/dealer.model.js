@@ -132,7 +132,7 @@ const get = async (req) => {
 
   const query = `
   SELECT 
-    dlr.*,
+    dlr.id, dlr.location, dlr.dealer_code, dlr.created_at,
     usr.id as user_id, CONCAT(usr.first_name, ' ', usr.last_name) as fullname,
     usr.username, usr.mobile_number, usr.email, usr.is_active
   FROM ${constants.models.DEALER_TABLE} dlr

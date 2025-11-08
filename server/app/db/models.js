@@ -25,6 +25,8 @@ import vehicleVariantModel from "./models/vehicle-variant.model.js";
 import vehicleVariantMapModel from "./models/vehicle-variant-map.model.js";
 import quotationModel from "./models/quotation.model.js";
 import invoiceModel from "./models/invoice.model.js";
+import orderModel from "./models/order.model.js";
+import orderItemModel from "./models/order-item.model.js";
 
 export default {
   UserModel: userModel,
@@ -53,4 +55,7 @@ export default {
   TechnicianModel: technicianModel,
   QuotationModel: quotationModel,
   InvoiceModel: invoiceModel,
+
+  OrderModel: orderModel,
+  OrderItemModel: orderItemModel,
 };

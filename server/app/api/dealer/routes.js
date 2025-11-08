@@ -1,9 +1,15 @@
 "use strict";
 
+import { multipartPreHandler } from "../../middlewares/multipart-prehandler.js";
 import controller from "./controller.js";
 
 export default async function routes(fastify, opts) {
   fastify.get("/", {}, controller.get);
+  fastify.post(
+    "/import",
+    { preHandler: (req, res) => multipartPreHandler(req, res, []) },
+    controller.importDealers
+  );
   fastify.post("/inventory", {}, controller.createInventory);
   fastify.get("/inventory", {}, controller.getDealerInventory);
   fastify.get("/inventory/chassis", {}, controller.getChassis);

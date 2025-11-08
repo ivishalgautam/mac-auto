@@ -130,6 +130,16 @@ const create = async (req, transaction) => {
   return data.dataValues;
 };
 
+const bulkCreate = async (bulkData, transaction) => {
+  const options = { returning: true };
+  if (transaction) options.transaction = transaction;
+
+  const result = await UserModel.bulkCreate(bulkData, options);
+
+  const data = result.map((item) => item.get({ plain: true }));
+
+  return data;
+};
 const get = async (req) => {
   const whereConditions = ["usr.role != 'admin'"];
   const queryParams = {};
@@ -416,6 +426,7 @@ const getUserRoleBreakdown = async () => {
 export default {
   init: init,
   create: create,
+  bulkCreate: bulkCreate,
   get: get,
   getById: getById,
   getCREs: getCREs,

@@ -3,6 +3,11 @@ import table from "../../db/models.js";
 import { sequelize } from "../../db/postgres.js";
 import { dealerInventorySchema } from "./schema.js";
 import constants from "../../lib/constants/index.js";
+import fs from "fs";
+import path from "path";
+import xlsx from "xlsx";
+import hash from "../../lib/encryption/index.js";
+import { cleanupFiles } from "../../helpers/cleanup-files.js";
 
 const status = constants.http.status;
 
@@ -10,6 +15,52 @@ const get = async (req, res) => {
   try {
     const data = await table.DealerModel.get(req);
     res.send({ status: true, data });
+  } catch (error) {
+    throw error;
+  }
+};
+
+const importDealers = async (req, res) => {
+  const transaction = await sequelize.transaction();
+  try {
+    const csvPath = req.filePaths[0];
+    const file = path.join(process.cwd(), csvPath);
+
+    const workbook = xlsx.readFile(file);
+    const sheetName = workbook.SheetNames[0];
+    const sheet = workbook.Sheets[sheetName];
+    const data = xlsx.utils.sheet_to_json(sheet);
+
+    const promises = data.slice(0, 10).map(async (dealer) => {
+      const user = await table.UserModel.create(
+        {
+          body: {
+            first_name: dealer.first_name,
+            last_name: dealer.last_name,
+            username: dealer.username,
+            password: dealer.password,
+            email: dealer.email,
+            mobile_number: dealer.mobile_number,
+            role: "dealer",
+          },
+        },
+        transaction
+      );
+
+      return await table.DealerModel.create(
+        {
+          user_id: user.id,
+          location: dealer.location,
+          dealer_code: dealer.dealer_code,
+        },
+        transaction
+      );
+    });
+
+    await Promise.all(promises);
+    await transaction.commit();
+    await cleanupFiles(req.filePaths);
+    res.send({ status: true, message: "Dealers imported." });
   } catch (error) {
     throw error;
   }
@@ -185,6 +236,7 @@ const getInventoryItemById = async (req, res) => {
 
 export default {
   get: get,
+  importDealers: importDealers,
   getDealerInventory: getDealerInventory,
   createInventory: createInventory,
   getInventoryByVehicleId: getInventoryByVehicleId,

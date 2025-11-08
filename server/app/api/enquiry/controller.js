@@ -67,7 +67,7 @@ const create = async (req, res) => {
           .code(404)
           .send({ status: false, message: "Dealer not found." });
 
-      req.body.dealer_id = dealerRecord.iid;
+      req.body.dealer_id = dealerRecord.id;
     }
 
     res.send({ status: true, data: await table.EnquiryModel.create(req) });

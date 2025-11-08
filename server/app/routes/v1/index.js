@@ -22,6 +22,7 @@ import vehicleVariantRoutes from "../../api/vehicle-variant/routes.js";
 import technicianRoutes from "../../api/technician/routes.js";
 import quotationRoutes from "../../api/quotation/routes.js";
 import invoiceRoutes from "../../api/invoices/routes.js";
+import orderRoutes from "../../api/order/routes.js";
 
 export default async function routes(fastify, options) {
   // middlewares
@@ -54,4 +55,5 @@ export default async function routes(fastify, options) {
   fastify.register(technicianRoutes, { prefix: "technicians" });
   fastify.register(quotationRoutes, { prefix: "quotations" });
   fastify.register(invoiceRoutes, { prefix: "invoices" });
+  fastify.register(orderRoutes, { prefix: "orders" });
 }
