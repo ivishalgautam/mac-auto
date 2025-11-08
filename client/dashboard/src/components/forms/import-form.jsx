@@ -50,9 +50,9 @@ export default function ImportForm({ createMutation }) {
       <Button
         type="submit"
         className="w-full"
-        disabled={isSubmitting || createMutation.isPending}
+        disabled={createMutation.isPending}
       >
-        {isSubmitting || createMutation.isPending ? "Submitting..." : "Submit"}
+        {createMutation.isPending ? "Submitting..." : "Submit"}
       </Button>
     </form>
   );

@@ -26,20 +26,10 @@ export default async function DealersPage({ searchParams }) {
           title="Dealers"
           description="Manage Dealers (Create, Update, Delete)."
         />
-        <div className="space-x-2">
-          <Link
-            href="/dealers/import"
-            className={buttonVariants({ variant: "outline", size: "sm" })}
-          >
-            <FileDown size="15" /> Import Dealers
-          </Link>
-          <Link
-            href="/dealers/create"
-            className={buttonVariants({ size: "sm" })}
-          >
-            <Plus size="15" /> Add Dealer
-          </Link>
-        </div>
+
+        <Link href="/dealers/create" className={buttonVariants({ size: "sm" })}>
+          <Plus size="15" /> Add Dealer
+        </Link>
       </div>
       <UserTableActions />
       <Suspense

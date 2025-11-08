@@ -21,6 +21,10 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { ConvertDialog } from "./dialog/convert-dialog";
 import { WalkInEnquiryAssignDialog } from "./dialog/inquiry-assign-dialog";
+import { Button } from "@/components/ui/button";
+import { Download } from "lucide-react";
+import http from "@/utils/http";
+import { endpoints } from "@/utils/endpoints";
 
 export default function Listing() {
   const { user } = useAuth();
@@ -57,12 +61,16 @@ export default function Listing() {
     setIsDeleteOpen(false),
   );
 
-  function downloadCSV() {
+  async function downloadCSV() {
+    const { data } = await http().get(
+      `${endpoints.walkInEnquiries.getAll}?enqt=walk-in`,
+    );
+
     const csvData = data.enquiries.map(flattenEnquiry);
     const csvString = Papa.unparse(csvData);
 
     const blob = new Blob([csvString], { type: "text/csv;charset=utf-8;" });
-    saveAs(blob, `walkin-enquiries-page-${searchParams.get("page") ?? 1}.csv`);
+    saveAs(blob, `walkin-enquiries.csv`);
   }
 
   useEffect(() => {
@@ -79,12 +87,12 @@ export default function Listing() {
 
   return (
     <div className="border-input space-y-2 rounded-lg">
-      {/* <div className="text-end">
+      <div className="text-end">
         <Button type="button" onClick={downloadCSV} variant="outline">
           <Download size={15} className="mr-1" />
           Export CSV
         </Button>
-      </div> */}
+      </div>
 
       <div className="mb-4 flex w-max gap-2 rounded-full border p-1 text-sm">
         <Link

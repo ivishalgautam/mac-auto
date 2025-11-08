@@ -18,6 +18,12 @@ import {
   useDeleteWalkInEnquiryMutation,
   useUpdateWalkInEnquiryMutation,
 } from "@/mutations/walkin-enquiries-mutation";
+import { saveAs } from "file-saver";
+import Papa from "papaparse";
+import { endpoints } from "@/utils/endpoints";
+import { Button } from "@/components/ui/button";
+import { Download } from "lucide-react";
+import http from "@/utils/http";
 
 export default function Listing() {
   const pathname = usePathname();
@@ -65,6 +71,18 @@ export default function Listing() {
     }
   }, [searchParamStr, router]);
 
+  async function downloadCSV() {
+    const { data } = await http().get(
+      `${endpoints.enquiries.getAll}?enqt=mac-auto`,
+    );
+
+    const csvData = data.enquiries;
+    const csvString = Papa.unparse(csvData);
+
+    const blob = new Blob([csvString], { type: "text/csv;charset=utf-8;" });
+    saveAs(blob, `enquiries.csv`);
+  }
+
   if (isLoading) return <DataTableSkeleton columnCount={5} rowCount={10} />;
   if (isError) error?.message ?? "error";
 
@@ -77,6 +95,13 @@ export default function Listing() {
           </Button>
         </div>
       )} */}
+
+      <div className="text-end">
+        <Button type="button" onClick={downloadCSV} variant="outline">
+          <Download size={15} className="mr-1" />
+          Export CSV
+        </Button>
+      </div>
 
       <div className="mb-4 flex w-max gap-2 rounded-full border p-1 text-sm">
         <Link
