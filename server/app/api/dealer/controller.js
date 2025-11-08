@@ -31,7 +31,7 @@ const importDealers = async (req, res) => {
     const sheet = workbook.Sheets[sheetName];
     const data = xlsx.utils.sheet_to_json(sheet);
 
-    const promises = data.slice(0, 10).map(async (dealer) => {
+    const promises = data.map(async (dealer) => {
       const user = await table.UserModel.create(
         {
           body: {
