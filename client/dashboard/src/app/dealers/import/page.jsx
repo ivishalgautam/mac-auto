@@ -3,10 +3,14 @@ import ImportForm from "@/components/forms/import-form";
 import PageContainer from "@/components/layout/page-container";
 import { Heading } from "@/components/ui/heading";
 import { useImportDealers } from "@/mutations/dealer-mutation";
+import { useRouter } from "next/navigation";
 import React from "react";
 
 export default function ImportPage() {
-  const createMutation = useImportDealers();
+  const router = useRouter();
+  const createMutation = useImportDealers(() =>
+    router.push("/dealers?page=1&limit=10"),
+  );
 
   return (
     <PageContainer>

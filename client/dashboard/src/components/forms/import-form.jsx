@@ -14,8 +14,6 @@ export default function ImportForm({ createMutation }) {
     reset,
   } = useForm({
     defaultValues: {
-      name: "",
-      email: "",
       file: null,
     },
   });

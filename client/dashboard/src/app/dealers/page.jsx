@@ -5,7 +5,7 @@ import { searchParamsCache, serialize } from "@/lib/searchparams";
 import { Suspense } from "react";
 import UserTableActions from "./_component/table-actions";
 import Link from "next/link";
-import { Plus } from "lucide-react";
+import { FileDown, Plus } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import Listing from "./_component/listing";
 
@@ -26,9 +26,20 @@ export default async function DealersPage({ searchParams }) {
           title="Dealers"
           description="Manage Dealers (Create, Update, Delete)."
         />
-        <Link href="/dealers/create" className={buttonVariants({ size: "sm" })}>
-          <Plus size="15" /> Add Dealer
-        </Link>
+        <div className="space-x-2">
+          <Link
+            href="/dealers/import"
+            className={buttonVariants({ variant: "outline", size: "sm" })}
+          >
+            <FileDown size="15" /> Import Dealers
+          </Link>
+          <Link
+            href="/dealers/create"
+            className={buttonVariants({ size: "sm" })}
+          >
+            <Plus size="15" /> Add Dealer
+          </Link>
+        </div>
       </div>
       <UserTableActions />
       <Suspense
