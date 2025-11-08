@@ -12,6 +12,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ROLES } from "@/data/routes";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 
 const orderStatuses = [
   { value: "pending", label: "Pending", color: "bg-amber-500" },
@@ -25,7 +34,7 @@ const orderStatuses = [
   { value: "delivered", label: "Delivered", color: "bg-green-500" },
 ];
 
-export const columns = (setId, updateMutation, user) =>
+export const columns = (setId, updateMutation, user, openModal) =>
   [
     {
       accessorKey: "order_code",
@@ -138,40 +147,40 @@ export const columns = (setId, updateMutation, user) =>
         );
       },
     },
-    // {
-    //   id: "actions",
-    //   enableHiding: false,
-    //   cell: ({ row }) => {
-    //     const id = row.original.id;
-    //     const role = row.original.role;
-    //     return (
-    //       <DropdownMenu>
-    //         <DropdownMenuTrigger asChild>
-    //           <Button variant="ghost" className="h-8 w-8 p-0">
-    //             <span className="sr-only">Open menu</span>
-    //             <DotsHorizontalIcon className="h-4 w-4" />
-    //           </Button>
-    //         </DropdownMenuTrigger>
-    //         <DropdownMenuContent align="end">
-    //           <DropdownMenuLabel>Actions</DropdownMenuLabel>
-    //           {/* <DropdownMenuSeparator />
-    //           <DropdownMenuItem>
-    //             <Link href={`/books/${id}/edit`} className="w-full">
-    //               Edit
-    //             </Link>
-    //           </DropdownMenuItem> */}
-    //           <DropdownMenuSeparator />
-    //           <DropdownMenuItem
-    //             onClick={() => {
-    //               setId(id);
-    //               openModal();
-    //             }}
-    //           >
-    //             Delete
-    //           </DropdownMenuItem>
-    //         </DropdownMenuContent>
-    //       </DropdownMenu>
-    //     );
-    //   },
-    // },
+    user?.role === "admin" && {
+      id: "actions",
+      enableHiding: false,
+      cell: ({ row }) => {
+        const id = row.original.id;
+        const role = row.original.role;
+        return (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0">
+                <span className="sr-only">Open menu</span>
+                <DotsHorizontalIcon className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              {/* <DropdownMenuSeparator />
+              <DropdownMenuItem>
+                <Link href={`/books/${id}/edit`} className="w-full">
+                  Edit
+                </Link>
+              </DropdownMenuItem> */}
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={() => {
+                  setId(id);
+                  openModal();
+                }}
+              >
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        );
+      },
+    },
   ].filter(Boolean);

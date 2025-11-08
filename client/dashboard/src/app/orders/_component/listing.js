@@ -31,7 +31,7 @@ export default function Listing() {
   return (
     <div className="border-input w-full rounded-lg">
       <DataTable
-        columns={columns(setId, updateMutation, user)}
+        columns={columns(setId, updateMutation, user, () => setIsModal(true))}
         data={data?.orders ?? []}
         totalItems={data?.total ?? 0}
       />
