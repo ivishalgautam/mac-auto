@@ -13,6 +13,11 @@ import {
 import { DeleteDialog } from "./delete-dialog";
 import { ViewPicturesDialog } from "./view-pictures-dialog";
 import { useAuth } from "@/providers/auth-provider";
+import { saveAs } from "file-saver";
+import Papa from "papaparse";
+import { Button } from "@/components/ui/button";
+import { Download } from "lucide-react";
+import { toast } from "sonner";
 
 export default function Listing() {
   const { user } = useAuth();
@@ -38,11 +43,31 @@ export default function Listing() {
     }
   }, [searchParamsStr, router]);
 
+  async function downloadCSV() {
+    if (!data.tickets.length) return toast.warning("No data found");
+    const { data: ticketsData } = await http().get(
+      endpoints.dealerTickets.getAll,
+    );
+    const csvData = ticketsData.tickets ?? [];
+
+    const csvString = Papa.unparse(csvData);
+
+    const blob = new Blob([csvString], { type: "text/csv;charset=utf-8;" });
+    saveAs(blob, `dealer-tickets.csv`);
+  }
+
   if (isLoading) return <DataTableSkeleton columnCount={6} rowCount={10} />;
   if (isError) return <ErrorMessage error={error?.message ?? "error"} />;
 
   return (
     <div className="border-input w-full rounded-lg">
+      <div className="mb-2 space-x-2 text-end">
+        <Button type="button" onClick={downloadCSV} variant="outline">
+          <Download size={15} className="mr-1" />
+          Export CSV
+        </Button>
+      </div>
+
       <DataTable
         columns={columns(
           updateMutation,

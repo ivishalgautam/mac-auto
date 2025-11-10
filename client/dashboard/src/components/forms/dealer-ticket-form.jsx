@@ -12,7 +12,10 @@ import Loader from "../loader";
 import ErrorMessage from "../ui/error";
 import { Textarea } from "../ui/textarea";
 import { useRouter } from "next/navigation";
-import { dealerTicketSchema } from "@/utils/schema/ticket.schema";
+import {
+  dealerTicketForAdminSchema,
+  dealerTicketForDealerSchema,
+} from "@/utils/schema/ticket.schema";
 import { useAuth } from "@/providers/auth-provider";
 import CustomSelect from "../ui/custom-select";
 import { dealerComplaintTypes } from "@/data";
@@ -23,6 +26,7 @@ import {
   useUpdateDealerTicket,
 } from "@/mutations/dealer-ticket-mutation";
 import UserSelect from "@/features/user-select";
+import DealerSelect from "@/features/dealer-select";
 
 const defaultValues = {
   assigned_technician: "",
@@ -34,7 +38,11 @@ export default function DealerTicketForm({ id, type }) {
   const { user } = useAuth();
   const router = useRouter();
   const methods = useForm({
-    resolver: zodResolver(dealerTicketSchema),
+    resolver: zodResolver(
+      user?.role === "admin"
+        ? dealerTicketForAdminSchema
+        : dealerTicketForDealerSchema,
+    ),
     defaultValues,
   });
 
@@ -81,6 +89,24 @@ export default function DealerTicketForm({ id, type }) {
     <FormProvider {...methods}>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
         <div className="grid grid-cols-3 gap-4">
+          {/* dealer select */}
+          {user?.role === "admin" && (
+            <div className="space-y-2">
+              <Label htmlFor="dealer_id">Dealer *</Label>
+              <Controller
+                name="dealer_id"
+                control={control}
+                render={({ field }) => (
+                  <DealerSelect
+                    onChange={field.onChange}
+                    value={field.value}
+                    key={"dealer_id"}
+                  />
+                )}
+              />
+            </div>
+          )}
+
           {/* complaint type */}
           <div className="space-y-2">
             <Label htmlFor="complaint_type">Complaint type *</Label>

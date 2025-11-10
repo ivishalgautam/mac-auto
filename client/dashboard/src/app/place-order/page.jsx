@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
-import { z } from "zod";
+import { object, z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
@@ -19,6 +19,8 @@ import DealerSelect from "@/features/dealer-select";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useRouter } from "next/navigation";
+import { H3 } from "@/components/ui/typography";
+import { ROLES } from "@/data/routes";
 
 // --- Schema ---
 const orderItemSchema = z.object({
@@ -53,11 +55,11 @@ const createOrderSchema = z.object({
 
 export const CATEGORIES = [
   { value: "passenger", label: "Passenger" },
-  { value: "cargo", label: "Cargo" },
+  // { value: "cargo", label: "Cargo" },
   { value: "garbage", label: "Garbage" },
   { value: "loader", label: "Loader" },
-  { value: "e-cycle", label: "E-Cycle" },
-  { value: "e-scooter", label: "E-Scooter" },
+  // { value: "e-cycle", label: "E-Cycle" },
+  // { value: "e-scooter", label: "E-Scooter" },
   { value: "golf", label: "Golf" },
 ];
 
@@ -68,7 +70,7 @@ export default function OrderStepperForm() {
   const { user } = useAuth();
   const [step, setStep] = useState(1);
   const [stepError, setStepError] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState([]);
   const [selectedVehicles, setSelectedVehicles] = useState([]);
   const [batteryType, setBatteryType] = useState("");
   const router = useRouter();
@@ -100,38 +102,38 @@ export default function OrderStepperForm() {
   const handleNext = () => setStep((s) => s + 1);
   const handleNextWithValidation = () => {
     setStepError(""); // reset previous error
-
+    console.log({ step });
     switch (step) {
       case 1: // Category
-        if (!selectedCategory) {
+        if (!selectedCategory.length) {
           setStepError("Please select a category");
           return;
         }
         break;
-      case 2: // Dealer (if admin)
-        if (user?.role === "admin" && !watch("dealer_id")) {
-          setStepError("Please select a dealer");
-          return;
-        }
-        break;
-      case 3: // Vehicle
+      case 2: // Vehicle
         if (selectedVehicles.length === 0) {
           setStepError("Please select at least one vehicle");
           return;
         }
         break;
-      case 4: // Battery Type
+      case 3: // Vehicle
         if (!batteryType) {
           setStepError("Please select battery type");
           return;
         }
         break;
-      case 5: // Color
+      case 4: // Battery Type
         const allColorsValid = fields.every(
           (f, i) => (watch(`order_items.${i}.colors`) || []).length > 0,
         );
         if (!allColorsValid) {
           setStepError("Please select at least one color for each vehicle");
+          return;
+        }
+        break;
+      case 6: // Color
+        if (user?.role === "admin" && !watch("dealer_id")) {
+          setStepError("Please select a dealer");
           return;
         }
         break;
@@ -146,15 +148,26 @@ export default function OrderStepperForm() {
   const filteredVehicles = useMemo(() => {
     if (!vehicles) return [];
     return (
-      vehicles?.vehicles?.filter((v) => v.category === selectedCategory) ?? []
+      vehicles?.vehicles?.filter((v) =>
+        selectedCategory.includes(v.category),
+      ) ?? []
     );
   }, [vehicles, selectedCategory]);
+
+  const groupedVehicles = useMemo(() => {
+    return Object.groupBy(filteredVehicles, ({ category }) => category) ?? {};
+  }, [filteredVehicles]);
 
   const createMutation = useCreateOrder(() => {
     router.push("/orders?page=1&limit=10");
   });
 
   const onSubmit = (data) => {
+    if (user?.role === "admin" && !watch("dealer_id")) {
+      setStepError("Please select a dealer");
+      return;
+    }
+
     console.log("Final Data:", data);
     createMutation.mutate(data);
   };
@@ -166,12 +179,12 @@ export default function OrderStepperForm() {
           <Card
             key={c.value}
             onClick={() => {
-              setSelectedCategory(c.value);
-              handleNextWithValidation();
+              setSelectedCategory((prev) => [...prev, c.value]);
             }}
             className={cn(
               "hover:border-primary cursor-pointer transition-all",
-              selectedCategory === c.value && "border-primary bg-primary/10",
+              selectedCategory.includes(c.value) &&
+                "border-primary bg-primary/10",
             )}
           >
             <CardHeader>{c.label}</CardHeader>
@@ -196,46 +209,62 @@ export default function OrderStepperForm() {
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-2 gap-4">
-            {filteredVehicles.length
-              ? filteredVehicles.map((v) => {
-                  const selected = selectedVehicles.includes(v.id);
-                  return (
-                    <Card
-                      key={v.id}
-                      onClick={() => {
-                        setSelectedVehicles((prev) =>
-                          selected
-                            ? prev.filter((x) => x !== v.id)
-                            : [...prev, v.id],
-                        );
-                      }}
-                      className={cn(
-                        "relative cursor-pointer p-4 transition-all",
-                        selected
-                          ? "border-primary bg-primary/10"
-                          : "border-muted",
-                      )}
-                    >
-                      <figure>
-                        <Image
-                          src={config.file_base + v.carousel[0]}
-                          width={200}
-                          height={200}
-                          alt={v.title}
-                          className="mx-auto aspect-square"
-                        />
-                      </figure>
-                      <div className="text-center">
-                        <span>{v.title}</span>
+          <div className="space-y-4 divide-y-2">
+            {(() => {
+              const categories = Object.keys(groupedVehicles);
+              return categories.length
+                ? categories.map((cat) => {
+                    return (
+                      <div className="space-y-2" key={cat}>
+                        <H3>{cat}</H3>
+                        <div className="grid grid-cols-2 gap-4 pb-6">
+                          {groupedVehicles[cat]?.length
+                            ? groupedVehicles[cat].map((v) => {
+                                const selected = selectedVehicles.includes(
+                                  v.id,
+                                );
+                                return (
+                                  <Card
+                                    key={v.id}
+                                    onClick={() => {
+                                      setSelectedVehicles((prev) =>
+                                        selected
+                                          ? prev.filter((x) => x !== v.id)
+                                          : [...prev, v.id],
+                                      );
+                                    }}
+                                    className={cn(
+                                      "relative cursor-pointer p-4 transition-all",
+                                      selected
+                                        ? "border-primary bg-primary/10"
+                                        : "border-muted",
+                                    )}
+                                  >
+                                    <figure>
+                                      <Image
+                                        src={config.file_base + v.carousel[0]}
+                                        width={200}
+                                        height={200}
+                                        alt={v.title}
+                                        className="mx-auto aspect-square"
+                                      />
+                                    </figure>
+                                    <div className="text-center">
+                                      <span>{v.title}</span>
+                                    </div>
+                                    {selected && (
+                                      <Check className="absolute top-4 right-4 h-5 w-5 text-green-600" />
+                                    )}
+                                  </Card>
+                                );
+                              })
+                            : "Products not found!"}
+                        </div>
                       </div>
-                      {selected && (
-                        <Check className="absolute top-4 right-4 h-5 w-5 text-green-600" />
-                      )}
-                    </Card>
-                  );
-                })
-              : "No vehicle found!"}
+                    );
+                  })
+                : "Please selact atleast 1 category!";
+            })()}
           </div>
           {stepError && (
             <p className="mt-2 text-sm text-red-600">{stepError}</p>
@@ -264,8 +293,10 @@ export default function OrderStepperForm() {
             key={b}
             onClick={() => setBatteryType(b)}
             className={cn(
-              "cursor-pointer px-4 py-2 text-sm",
-              batteryType === b ? "bg-primary text-white" : "bg-muted",
+              "text-foreground cursor-pointer px-4 py-2 text-sm",
+              batteryType === b
+                ? "bg-primary text-primary-foreground"
+                : "bg-muted",
             )}
           >
             {b}
@@ -390,22 +421,25 @@ export default function OrderStepperForm() {
         <Button variant="outline" onClick={handleBack}>
           Back
         </Button>
-        <Button
-          disabled={createMutation.isPending}
-          onClick={handleSubmit(onSubmit)}
-        >
-          {createMutation.isPending && (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          )}
-          Submit
-        </Button>
+        {[ROLES.CRE, ROLES.MANAGER, ROLES.ADMIN].includes(user.role) ? (
+          <Button onClick={handleNextWithValidation}>Next</Button>
+        ) : (
+          <Button
+            disabled={createMutation.isPending}
+            onClick={handleSubmit(onSubmit)}
+          >
+            {createMutation.isPending && (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            )}
+            Submit
+          </Button>
+        )}
       </div>
     </div>
   );
 
   const StepDealer = () => {
     // you can fetch dealers using a hook if needed
-
     return (
       <div className="space-y-4">
         <Label className="font-medium">Select Dealer</Label>
@@ -420,16 +454,23 @@ export default function OrderStepperForm() {
           <Button variant="outline" onClick={handleBack}>
             Back
           </Button>
-          <Button onClick={handleNextWithValidation}>Next</Button>
+          <Button
+            disabled={createMutation.isPending}
+            onClick={handleSubmit(onSubmit)}
+          >
+            {createMutation.isPending && (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            )}
+            Submit
+          </Button>
         </div>
       </div>
     );
   };
 
   const steps = useMemo(() => {
-    const baseSteps = ["Category"];
+    const baseSteps = ["Category", "Vehicle", "Battery", "Color", "Message"];
     if (user?.role === "admin") baseSteps.push("Dealer");
-    baseSteps.push("Vehicle", "Battery", "Color", "Message");
     return baseSteps;
   }, [user]);
 
@@ -451,15 +492,11 @@ export default function OrderStepperForm() {
       </CardHeader>
       <CardContent>
         {step === 1 && <StepCategory />}
-        {step === 2 && user?.role === "admin" && <StepDealer />}
-        {step === 2 && user?.role !== "admin" && <StepVehicle />}
-        {step === 3 &&
-          (user?.role === "admin" ? <StepVehicle /> : <StepBatteryType />)}
-        {step === 4 &&
-          (user?.role === "admin" ? <StepBatteryType /> : <StepColor />)}
-        {step === 5 &&
-          (user?.role === "admin" ? <StepColor /> : <StepMessage />)}
-        {step === 6 && user?.role === "admin" && <StepMessage />}
+        {step === 2 && <StepVehicle />}
+        {step === 3 && <StepBatteryType />}
+        {step === 4 && <StepColor />}
+        {step === 5 && <StepMessage />}
+        {step === 6 && user?.role === "admin" && <StepDealer />}
       </CardContent>
     </Card>
   );

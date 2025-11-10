@@ -184,12 +184,12 @@ export const sidebarData = [
       //   roles: [ROLES.ADMIN, ROLES.CRE, ROLES.MANAGER, ROLES.DEALER],
       //   isVisible: true,
       // },
-      // {
-      //   title: "Service Complaints",
-      //   url: "/dealer-tickets?page=1&limit=10",
-      //   roles: [ROLES.DEALER],
-      //   isVisible: true,
-      // },
+      {
+        title: "Service Complaints",
+        url: "/dealer-tickets?page=1&limit=10",
+        roles: [ROLES.DEALER],
+        isVisible: true,
+      },
       // {
       //   title: "Vehicles Enquiries",
       //   url: "/vehicle-enquiries?page=1&limit=10",

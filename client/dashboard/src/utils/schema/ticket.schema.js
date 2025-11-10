@@ -37,7 +37,17 @@ export const customerTicketSchema = z.object({
     .default([]),
 });
 
-export const dealerTicketSchema = z.object({
+export const dealerTicketForAdminSchema = z.object({
+  dealer_id: z.string().uuid({ message: "Please select valid dealer" }),
+  message: z
+    .string({ required_error: "Message is required*" })
+    .min(1, { message: "Message is required*" }),
+  complaint_type: z.string().min(1, { message: "Complaint type is required" }),
+  expected_closure_date: z.coerce.date().nullable(),
+  assigned_manager: z.string().optional().nullable(),
+});
+
+export const dealerTicketForDealerSchema = z.object({
   message: z
     .string({ required_error: "Message is required*" })
     .min(1, { message: "Message is required*" }),
