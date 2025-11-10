@@ -10,16 +10,30 @@ const responseMessage = constants.error.message;
 const create = async (req, res) => {
   try {
     const validateData = ticketSchema.parse(req.body);
-    const dealerRecord = await table.DealerModel.getByUserId(req.user_data.id);
+    const { role, id } = req.user_data;
+    const dealerId = role === "admin" ? req.body.dealer_id : id;
+
+    let dealerRecord = null;
+
+    if (["admin", "cre", "manager"].includes(role)) {
+      dealerRecord = await table.DealerModel.getById(dealerId);
+    } else {
+      dealerRecord = await table.DealerModel.getByUserId(dealerId);
+    }
+
     if (!dealerRecord)
       return res
         .code(status.NOT_FOUND)
         .send({ status: false, message: "Dealer not found!" });
-    console.log({ dealerRecord });
+
+    const creUsers = await table.UserModel.getCREs();
+    if (!creUsers.length)
+      return res
+        .code(status.NOT_FOUND)
+        .send({ status: false, message: "Please create atleast 1 CRE." });
 
     const lastCREAssignedTicket =
       await table.DealerTicketModel.getLastCREAssignedTicket();
-    const creUsers = await table.UserModel.getCREs();
 
     let creToBeAssign = null;
     if (creUsers.length > 0) {
@@ -32,8 +46,8 @@ const create = async (req, res) => {
           ? creUsers[0]
           : creUsers[assignedCREIndex + 1];
     }
-    if (req.user_data.role === "cre") {
-      req.body.assigned_cre = req.user_data.id;
+    if (role === "cre") {
+      req.body.assigned_cre = id;
     } else {
       req.body.assigned_cre = creToBeAssign.id;
     }

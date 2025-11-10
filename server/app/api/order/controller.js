@@ -10,6 +10,12 @@ const create = async (req, res) => {
   try {
     const validateData = createOrderSchema.parse(req.body);
 
+    const { role, id } = req.user_data;
+    if (role === "dealer") {
+      const dealerRecord = await table.DealerModel.getByUserId(id);
+      req.body.dealer_id = dealerRecord.id;
+    }
+
     const orderRecord = await table.OrderModel.create(req, transaction);
     const itemRecords = await Promise.all(
       validateData.order_items.map(async (item) => {

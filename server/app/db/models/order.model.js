@@ -29,7 +29,7 @@ const init = async (sequelize) => {
       // },
       dealer_id: {
         type: DataTypes.UUID,
-        allowNull: true,
+        allowNull: false,
         references: {
           model: constants.models.DEALER_TABLE,
           key: "id",

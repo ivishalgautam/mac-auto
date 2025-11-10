@@ -1,15 +1,13 @@
 "use strict";
 import table from "../../db/models.js";
 import { sequelize } from "../../db/postgres.js";
-import {
-  convertToCustomerSchema,
-  inquiryAssignToDealer,
-  walkInEnquirySchema,
-} from "./schema.js";
+import { inquiryAssignToDealer, walkInEnquirySchema } from "./schema.js";
 import { cleanupFiles } from "../../helpers/cleanup-files.js";
 import { getItemsToDelete } from "../../helpers/filter.js";
 import { createNewCustomerOrderSchema } from "../enquiry/schema.js";
 import { StatusCodes } from "http-status-codes";
+import xlsx from "xlsx";
+import path from "path";
 
 const create = async (req, res) => {
   try {
@@ -30,6 +28,43 @@ const create = async (req, res) => {
       status: true,
       data: await table.WalkinEnquiryModel.create(req),
     });
+  } catch (error) {
+    throw error;
+  }
+};
+
+const importEnquiries = async (req, res) => {
+  const transaction = await sequelize.transaction();
+  try {
+    const csvPath = req.filePaths[0];
+    const file = path.join(process.cwd(), csvPath);
+
+    const workbook = xlsx.readFile(file);
+    const sheetName = workbook.SheetNames[0];
+    const sheet = workbook.Sheets[sheetName];
+    const data = xlsx.utils.sheet_to_json(sheet);
+
+    const promises = data.map(async (dealer) => {
+      const user = await table.UserModel.create(
+        {
+          body: {
+            first_name: dealer.first_name,
+            last_name: dealer.last_name,
+            username: dealer.username,
+            password: dealer.password,
+            email: dealer.email,
+            mobile_number: dealer.mobile_number,
+            role: "dealer",
+          },
+        },
+        transaction
+      );
+    });
+
+    await Promise.all(promises);
+    await transaction.commit();
+    await cleanupFiles(req.filePaths);
+    res.send({ status: true, message: "Dealers imported." });
   } catch (error) {
     throw error;
   }

@@ -3,10 +3,8 @@ import table from "../../db/models.js";
 import { sequelize } from "../../db/postgres.js";
 import { dealerInventorySchema } from "./schema.js";
 import constants from "../../lib/constants/index.js";
-import fs from "fs";
 import path from "path";
 import xlsx from "xlsx";
-import hash from "../../lib/encryption/index.js";
 import { cleanupFiles } from "../../helpers/cleanup-files.js";
 
 const status = constants.http.status;
