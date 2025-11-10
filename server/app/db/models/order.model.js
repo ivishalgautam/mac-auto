@@ -129,7 +129,7 @@ const get = async (req) => {
   const q = req.query.q ? req.query.q : null;
   if (q) {
     whereConditions.push(
-      `(usr.first_name ILIKE :query OR usr.last_name ILIKE :query))`
+      `(order_code ILIKE :query OR usr.first_name ILIKE :query OR usr.last_name ILIKE :query OR dlr.location ILIKE :query))`
     );
     queryParams.query = `%${q}%`;
   }
@@ -149,15 +149,18 @@ const get = async (req) => {
       FROM ${constants.models.ORDER_TABLE} ord
       LEFT JOIN ${constants.models.USER_TABLE} punchusr ON punchusr.id = ord.user_id
       LEFT JOIN ${constants.models.DEALER_TABLE} dlr ON dlr.id = ord.dealer_id
+      LEFT JOIN ${constants.models.USER_TABLE} usr ON usr.id = dlr.user_id
       ${whereClause}
     `;
 
   let query = `
     SELECT
-        ord.*
+        ord.id, ord.order_code, ord.punch_by, ord.status, ord.message, ord.created_at,
+        CONCAT(usr.first_name, ' ', COALESCE(usr.last_name, ''), ' (', dlr.location, ')') as dealership_name
       FROM ${constants.models.ORDER_TABLE} ord
       LEFT JOIN ${constants.models.USER_TABLE} punchusr ON punchusr.id = ord.user_id
       LEFT JOIN ${constants.models.DEALER_TABLE} dlr ON dlr.id = ord.dealer_id
+      LEFT JOIN ${constants.models.USER_TABLE} usr ON usr.id = dlr.user_id
       ${whereClause}
       ORDER BY ord.created_at DESC
       LIMIT :limit OFFSET :offset
