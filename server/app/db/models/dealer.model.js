@@ -146,7 +146,8 @@ const get = async (req) => {
   const countQuery = `
   SELECT 
     COUNT(usr.id) OVER()::integer as total
-  FROM ${constants.models.DEALER_TABLE} usr
+  FROM ${constants.models.DEALER_TABLE} dlr
+  LEFT JOIN ${constants.models.USER_TABLE} usr ON usr.id = dlr.user_id
   ${whereClause}
   `;
 

@@ -8,6 +8,7 @@ import { userSchema } from "../../validation-schema/user.schema.js";
 const create = async (req, res) => {
   const transaction = await sequelize.transaction();
   try {
+    const { role, id } = req.user_data;
     const validateData = userSchema.parse(req.body);
     const record = await table.UserModel.getByUsername(req);
     if (record) {
@@ -29,7 +30,14 @@ const create = async (req, res) => {
       );
     }
     if (validateData.role === "customer") {
-      await table.CustomerModel.create(user.id, transaction);
+      const customer = await table.CustomerModel.create(user.id, transaction);
+      if (role === "dealer") {
+        const dealer = await table.DealerModel.getByUserId(id);
+        await table.CustomerDealersModel.create(
+          { body: { dealer_id: dealer.id, customer_id: customer.id } },
+          transaction
+        );
+      }
     }
 
     await transaction.commit();

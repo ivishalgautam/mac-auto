@@ -77,6 +77,7 @@ const get = async (req) => {
   const { role, id } = req.user_data;
 
   if (role === "dealer") {
+    console.log({ role, id });
     whereConditions.push(`dlr.user_id = :userId`);
     queryParams.userId = id;
   }

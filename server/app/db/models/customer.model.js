@@ -1,7 +1,6 @@
 "use strict";
 import constants from "../../lib/constants/index.js";
 import { DataTypes, Deferrable, QueryTypes } from "sequelize";
-import table from "../../db/models.js";
 
 let CustomerModel = null;
 
@@ -56,6 +55,12 @@ const get = async (req) => {
     queryParams.query = `%${q}%`;
   }
 
+  const dealers = req.query?.dealers ? req.query.dealers.split(".") : null;
+  if (dealers) {
+    whereConditions.push(`cstdlr.dealer_id = ANY(:dealers)`);
+    queryParams.dealers = `{${dealers.join(",")}}`;
+  }
+
   const page = req.query.page ? Number(req.query.page) : 1;
   const limit = req.query.limit ? Number(req.query.limit) : null;
   const offset = (page - 1) * limit;
@@ -74,6 +79,7 @@ const get = async (req) => {
     FROM ${constants.models.CUSTOMER_TABLE} cst
     LEFT JOIN ${constants.models.USER_TABLE} usr ON usr.id = cst.user_id
     LEFT JOIN ${constants.models.CUSTOMER_PURCHASE_TABLE} cpt ON cpt.customer_id = cst.id
+    LEFT JOIN ${constants.models.CUSTOMER_DEALERS_TABLE} cstdlr ON cstdlr.customer_id = cst.id
     ${whereClause}
     GROUP BY cst.id, usr.id
     ORDER BY usr.created_at DESC
@@ -86,6 +92,7 @@ const get = async (req) => {
     FROM ${constants.models.CUSTOMER_TABLE} cst
     LEFT JOIN ${constants.models.USER_TABLE} usr ON usr.id = cst.user_id
     LEFT JOIN ${constants.models.CUSTOMER_PURCHASE_TABLE} cpt ON cpt.customer_id = cst.id
+    LEFT JOIN ${constants.models.CUSTOMER_DEALERS_TABLE} cstdlr ON cstdlr.customer_id = cst.id
   ${whereClause}
   `;
 
