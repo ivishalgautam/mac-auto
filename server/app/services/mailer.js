@@ -8,7 +8,7 @@ import config from "../config/index.js";
 const transporter = nodemailer.createTransport({
   host: config.smtp_host,
   port: config.smtp_port,
-  secure: false,
+  secure: true,
   auth: {
     user: config.smtp_user,
     pass: config.smtp_password,
@@ -16,11 +16,11 @@ const transporter = nodemailer.createTransport({
 });
 
 // Function to send a simple email
-async function sendSimpleEmail() {
+async function sendSimpleEmail(email) {
   try {
     const mailOptions = {
-      from: '"Bharat Shakti Tenders" <no-reply@bharatshaktitenders.com>',
-      to: "recipient@example.com",
+      from: config.smtp_from_email,
+      to: email,
       subject: "Hello from Brevo + Nodemailer",
       text: "This is a plain text email sent via Brevo SMTP!",
       html: "<p>This is an <b>HTML email</b> sent via Brevo SMTP!</p>",
@@ -38,76 +38,37 @@ async function sendSimpleEmail() {
   }
 }
 
-// Function to send email with attachments
-async function sendEmailWithAttachment() {
+async function sendResetPasswordEmail(userEmail, token, role) {
   try {
+    const templatePath = path.join(
+      process.cwd(),
+      "views",
+      "forgot-password.ejs"
+    );
+    const templateString = fs.readFileSync(templatePath, "utf-8");
+    const resetLink = `${role === "dealer" ? config.dealerDashboardLink : role === "customer" ? config.customerDashboardLink : config.adminDashboardLink}/reset-password?t=${token}`;
+    const htmlContent = ejs.render(templateString, {
+      resetLink,
+    });
+
     const mailOptions = {
-      from: '"Your App Name" <your-email@domain.com>',
-      to: "recipient@example.com",
-      subject: "Email with Attachment",
-      html: `
-        <h2>Hello!</h2>
-        <p>This email contains an attachment.</p>
-        <p>Best regards,<br>Your Team</p>
-      `,
-      attachments: [
-        {
-          filename: "document.pdf",
-          path: "./files/document.pdf", // file path
-        },
-        {
-          filename: "image.png",
-          content: Buffer.from("base64-encoded-content", "base64"),
-        },
-      ],
+      from: config.smtp_from_email,
+      to: userEmail,
+      subject: "Reset Your Password – Mac Auto India",
+      html: htmlContent,
     };
 
     const info = await transporter.sendMail(mailOptions);
-    console.log("Email with attachment sent successfully!");
+    console.log("Password reset email sent successfully!");
     return info;
   } catch (error) {
-    console.error("Error sending email with attachment:", error);
-    // throw error;
+    console.error("Error sending password reset email:", error);
+    throw error;
   }
 }
 
-// Function to send bulk emails
-async function sendBulkEmails(recipients) {
-  const promises = recipients.map(async (recipient) => {
-    const mailOptions = {
-      from: '"Your App Name" <your-email@domain.com>',
-      to: recipient.email,
-      subject: `Hello ${recipient.name}!`,
-      html: `
-        <h2>Hi ${recipient.name}!</h2>
-        <p>This is a personalized email sent to you.</p>
-        <p>Thank you for being our valued customer!</p>
-      `,
-    };
-
-    try {
-      const info = await transporter.sendMail(mailOptions);
-      console.log(`Email sent to ${recipient.email}`);
-      return {
-        success: true,
-        email: recipient.email,
-        messageId: info.messageId,
-      };
-    } catch (error) {
-      console.error(
-        `Failed to send email to ${recipient.email}:`,
-        error.message
-      );
-      return { success: false, email: recipient.email, error: error.message };
-    }
-  });
-
-  return await Promise.allSettled(promises);
-}
-
-export const Brevo = {
+export const mailer = {
   transporter: transporter,
   sendSimpleEmail: sendSimpleEmail,
-  sendEmailWithAttachment: sendEmailWithAttachment,
-  sendBulkEmails: sendBulkEmails,
+  sendResetPasswordEmail: sendResetPasswordEmail,
 };

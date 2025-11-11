@@ -24,6 +24,11 @@ const config = {
   smtp_host: process.env.SMTP_HOST || "smtp.gmail.com",
   smtp_user: process.env.SMTP_USER,
   smtp_password: process.env.SMTP_PASSWORD,
+
+  // dashboard client links
+  adminDashboardLink: process.env.ADMIN_DASHBOARD,
+  dealerDashboardLink: process.env.DEALER_DASHBOARD,
+  customerDashboardLink: process.env.CUSTOMER_DASHBOARD,
 };
 
 export default config;

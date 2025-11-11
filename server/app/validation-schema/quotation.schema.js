@@ -9,7 +9,7 @@ export const quotationSchema = z.object({
     .string()
     .min(10, "Mobile number must be at least 10 digits.")
     .max(15, "Mobile number must not exceed 15 digits."),
-  date: z.union([z.date(), z.null()]).default(null),
+  date: z.union([z.coerce.date(), z.null()]).default(null),
   vehicle_id: z.string().uuid(),
   vehicle_variant_map_id: z.string().uuid(),
   vehicle_color_id: z.string().uuid(),

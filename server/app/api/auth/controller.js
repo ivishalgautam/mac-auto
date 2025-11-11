@@ -11,7 +11,7 @@ import {
 import { sequelize } from "../../db/postgres.js";
 import moment from "moment";
 import { otpGenerator } from "../../utils/otp-generator.js";
-import { Brevo } from "../../services/mailer.js";
+import { mailer } from "../../services/mailer.js";
 import { sendOtp } from "../../services/otp-sender.js";
 import waffly from "../../services/waffly.js";
 
@@ -332,6 +332,37 @@ const verifyRefreshToken = async (req, res) => {
   return authToken.verifyRefreshToken(req, res);
 };
 
+const sendResetToken = async (req, res) => {
+  const transaction = await sequelize.transaction();
+  try {
+    const record = await table.UserModel.getByEmailId(req);
+    if (!record || record.provider !== "credentials") {
+      return res
+        .code(401)
+        .send({ status: false, message: "Email not registered!" });
+    }
+    const [jwtToken, expiresIn] = authToken.generateAccessToken(record);
+    const updateConfirmation = await table.UserModel.update(
+      { body: { reset_password_token: jwtToken } },
+      record.id,
+      transaction
+    );
+
+    if (updateConfirmation) {
+      await mailer.sendResetPasswordEmail(record.email, jwtToken, record.role);
+    }
+    await transaction.commit();
+    return res.send({
+      status: true,
+      message:
+        "We have sent an reset password link to your registered email id.",
+    });
+  } catch (error) {
+    await transaction.rollback();
+    throw error;
+  }
+};
+
 export default {
   verifyUserCredentials: verifyUserCredentials,
   registerRequest: registerRequest,
@@ -339,4 +370,5 @@ export default {
   verifyRefreshToken: verifyRefreshToken,
   loginRequest: loginRequest,
   loginVerify: loginVerify,
+  sendResetToken: sendResetToken,
 };
