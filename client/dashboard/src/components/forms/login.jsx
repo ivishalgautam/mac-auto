@@ -20,6 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
+import Link from "next/link";
 
 // Form validation schema
 const loginSchema = z.object({
@@ -156,10 +157,21 @@ export default function LoginForm({}) {
             })}
             {...register("password")}
           />
+          {errors.password && (
+            <p className="text-destructive text-sm">
+              {errors.password.message}
+            </p>
+          )}
         </div>
-        {errors.password && (
-          <p className="text-destructive text-sm">{errors.password.message}</p>
-        )}
+
+        <p className="text-muted-foreground mt-1 text-end text-sm">
+          <Link
+            href="/forgot-password"
+            className="text-primary font-medium hover:underline"
+          >
+            Forgot your password?
+          </Link>
+        </p>
       </div>
 
       <Button className="w-full" disabled={loginMutation.isPending}>

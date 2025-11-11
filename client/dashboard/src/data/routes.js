@@ -571,6 +571,8 @@ export const sidebarData = [
 export const publicRoutes = [
   "/",
   "/register",
+  "/forgot-password",
+  "/reset-password",
   "/unauthorized",
   "/walkin-enquiries/:id/view",
 ];

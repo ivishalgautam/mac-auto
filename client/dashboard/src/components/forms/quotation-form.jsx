@@ -38,6 +38,7 @@ import PhoneSelect from "../ui/phone-input";
 import { cn } from "@/lib/utils";
 import { useGetVehicle } from "@/mutations/vehicle-mutation";
 import CustomCommandMenu from "../custom-command-menu";
+import moment from "moment";
 
 const defaultValues = {
   customer_name: "",
@@ -136,9 +137,10 @@ export default function QuotationForm({
   });
 
   const onSubmit = (data) => {
+    console.log({});
     type === "create"
-      ? createMutation.mutate(data)
-      : updateMutation.mutate(data);
+      ? createMutation.mutate({ ...data, date: moment(data.date).format() })
+      : updateMutation.mutate({ ...data, date: moment(data.date).format() });
   };
 
   const isFormPending =

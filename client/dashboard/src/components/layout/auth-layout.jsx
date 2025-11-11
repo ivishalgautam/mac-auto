@@ -15,7 +15,7 @@ export default function AuthLayout({
   return (
     <div
       className={cn(
-        "from-background to-muted/20 flex h-screen w-screen items-center justify-center overflow-hidden bg-gradient-to-br",
+        "bg-background flex h-screen w-screen items-center justify-center overflow-hidden",
         className,
       )}
     >
