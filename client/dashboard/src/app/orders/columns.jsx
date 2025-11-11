@@ -62,6 +62,14 @@ export const columns = (setId, updateMutation, user, openModal) =>
         );
       },
     },
+    user.role === "admin" && {
+      accessorKey: "dealership_name",
+      header: "Dealership",
+      cell: ({ row }) => {
+        const dealer = row.getValue("dealership_name");
+        return <div className="capitalize">{dealer}</div>;
+      },
+    },
 
     // {
     //   accessorKey: "email",

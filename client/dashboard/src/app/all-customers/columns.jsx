@@ -19,7 +19,7 @@ import { ExternalLink } from "lucide-react";
 export const columns = (setCustomerId, openModal) => [
   {
     accessorKey: "fullname",
-    header: "FULLNAME",
+    header: "Fullname",
     cell: ({ row }) => {
       const fullname = row.getValue("fullname");
       const role = row.original.role;
@@ -34,11 +34,11 @@ export const columns = (setCustomerId, openModal) => [
   },
   {
     accessorKey: "mobile_number",
-    header: "PHONE",
+    header: "Phone",
   },
   {
     accessorKey: "email",
-    header: "EMAIL",
+    header: "Email",
   },
   {
     accessorKey: "total_purchases",
@@ -46,7 +46,7 @@ export const columns = (setCustomerId, openModal) => [
     cell: ({ row }) => {
       const id = row.original.id;
       return (
-        <Link href={`/users/customers/purchases/${id}?page=1&limit=10`}>
+        <Link href={`/all-customers/purchases/${id}?page=1&limit=10`}>
           <Badge variant="outline">
             {row.getValue("total_purchases")}{" "}
             <ExternalLink className="size-3" />
@@ -58,7 +58,7 @@ export const columns = (setCustomerId, openModal) => [
   {
     accessorKey: "created_at",
     header: ({ column }) => {
-      return <Button variant="ghost">REGISTERED ON</Button>;
+      return <Button variant="ghost">Registered on</Button>;
     },
     cell: ({ row }) => {
       return (

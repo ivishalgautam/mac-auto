@@ -69,7 +69,7 @@ export default function Listing() {
   }
 
   if (isLoading) return <DataTableSkeleton columnCount={6} rowCount={10} />;
-  if (isError) return <ErrorMessage error={error?.message ?? "error"} />;
+  if (isError) return <ErrorMessage error={error} />;
 
   return (
     <div className="border-input w-full rounded-lg">

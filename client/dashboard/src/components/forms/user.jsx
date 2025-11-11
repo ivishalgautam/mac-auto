@@ -55,7 +55,13 @@ export default function UserForm({ id, type, role = "" }) {
 
   const selectedRole = watch("role");
   const createMutation = useCreateUser(function () {
-    router.push("/users?page=1&limit=10");
+    router.push(
+      selectedRole === "dealer"
+        ? "/dealers?page=1&limit=10"
+        : selectedRole === "customer"
+          ? "/customers?page=1&limit=10"
+          : "/users?page=1&limit=10",
+    );
   });
   const updateMutation = useUpdateUser(id, function () {
     router.back();

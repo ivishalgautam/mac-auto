@@ -18,17 +18,22 @@ export function useTableFilters() {
     "role",
     searchParams.role.withDefault(""),
   );
+  const [dealerFilter, setDealerFilter] = useQueryState(
+    "dealers",
+    searchParams.role.withDefault(""),
+  );
 
   const resetFilters = useCallback(() => {
     setSearchQuery(null);
     setRoleFilter(null);
+    setDealerFilter(null);
 
     setPage(1);
-  }, [setSearchQuery, setRoleFilter, setPage]);
+  }, [setSearchQuery, setRoleFilter, setPage, setDealerFilter]);
 
   const isAnyFilterActive = useMemo(() => {
-    return !!searchQuery || !!roleFilter;
-  }, [searchQuery, roleFilter]);
+    return !!searchQuery || !!roleFilter || !!dealerFilter;
+  }, [searchQuery, roleFilter, dealerFilter]);
 
   return {
     searchQuery,
@@ -37,6 +42,8 @@ export function useTableFilters() {
     setPage,
     roleFilter,
     setRoleFilter,
+    dealerFilter,
+    setDealerFilter,
     resetFilters,
     isAnyFilterActive,
   };

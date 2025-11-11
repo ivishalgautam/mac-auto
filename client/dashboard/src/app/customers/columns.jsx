@@ -46,7 +46,7 @@ export const columns = (setUserId, openModal, user) => [
     cell: ({ row }) => {
       const id = row.original.customer_id;
       return (
-        <Link href={`/users/customers/purchases/${id}?page=1&limit=10`}>
+        <Link href={`/all-customers/purchases/${id}?page=1&limit=10`}>
           <Badge variant="outline">
             {row.getValue("total_purchases")}{" "}
             <ExternalLink className="size-3" />

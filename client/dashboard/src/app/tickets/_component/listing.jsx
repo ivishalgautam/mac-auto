@@ -18,6 +18,8 @@ import Papa from "papaparse";
 import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
 import { toast } from "sonner";
+import { endpoints } from "@/utils/endpoints";
+import http from "@/utils/http";
 
 export default function Listing() {
   const { user } = useAuth();
@@ -45,15 +47,13 @@ export default function Listing() {
 
   async function downloadCSV() {
     if (!data.tickets.length) return toast.warning("No data found");
-    const { data: ticketsData } = await http().get(
-      endpoints.dealerTickets.getAll,
-    );
+    const { data: ticketsData } = await http().get(endpoints.tickets.getAll);
     const csvData = ticketsData.tickets ?? [];
 
     const csvString = Papa.unparse(csvData);
 
     const blob = new Blob([csvString], { type: "text/csv;charset=utf-8;" });
-    saveAs(blob, `dealer-tickets.csv`);
+    saveAs(blob, `customer-tickets.csv`);
   }
 
   if (isLoading) return <DataTableSkeleton columnCount={6} rowCount={10} />;

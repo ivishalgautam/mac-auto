@@ -215,21 +215,27 @@ export const sidebarData = [
   },
   {
     title: "Customers",
-    url: "/customers?page=1&limit=10",
+    url: "/all-customers?page=1&limit=10",
     roles: [ROLES.ADMIN, ROLES.CRE, ROLES.MANAGER],
     isVisible: true,
     icon: Users,
     items: [
       {
         title: "Create",
-        url: "/customers/create",
+        url: "/all-customers/create",
         roles: [ROLES.ADMIN, ROLES.CRE, ROLES.MANAGER],
         isVisible: true,
       },
       {
         title: "Edit",
-        url: "/customers/:id/edit",
+        url: "/all-customers/:id/edit",
         roles: [ROLES.ADMIN, ROLES.CRE, ROLES.MANAGER],
+        isVisible: false,
+      },
+      {
+        title: "Edit",
+        url: "/all-customers/purchases/:id",
+        roles: [ROLES.ADMIN, ROLES.CRE, ROLES.MANAGER, ROLES.DEALER],
         isVisible: false,
       },
     ],
