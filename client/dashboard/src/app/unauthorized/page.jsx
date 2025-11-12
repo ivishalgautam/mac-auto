@@ -6,7 +6,7 @@ import { Home, LogIn, ShieldAlert } from "lucide-react";
 
 export default function Forbidden() {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center px-4 text-center">
+    <div className="bg-background flex min-h-screen flex-col items-center justify-center px-4 text-center">
       <div className="max-w-md space-y-6">
         <ShieldAlert className="text-destructive mx-auto h-16 w-16" />
         <h1 className="text-6xl font-bold">403</h1>

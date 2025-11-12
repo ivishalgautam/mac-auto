@@ -5,6 +5,7 @@ import {
   deleteOrderItem,
   fetchOrder,
   fetchOrderInvoice,
+  fetchOrderItem,
   fetchOrderItems,
   fetchOrders,
   fetchOrderShippingLabel,
@@ -101,6 +102,14 @@ export const useOrderItems = (orderId, searchParams = "") => {
     queryKey: ["orders-items", orderId, searchParams],
     queryFn: () => fetchOrderItems(orderId, searchParams),
     enabled: !!orderId,
+  });
+};
+
+export const useOrderItem = (itemId) => {
+  return useQuery({
+    queryKey: ["orders-items", itemId],
+    queryFn: () => fetchOrderItem(itemId),
+    enabled: !!itemId,
   });
 };
 

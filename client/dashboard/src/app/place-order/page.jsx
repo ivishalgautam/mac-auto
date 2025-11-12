@@ -58,7 +58,7 @@ export const CATEGORIES = [
   // { value: "cargo", label: "Cargo" },
   { value: "garbage", label: "Garbage" },
   { value: "loader", label: "Loader" },
-  // { value: "e-cycle", label: "E-Cycle" },
+  { value: "e-cycle", label: "E-Cycle" },
   // { value: "e-scooter", label: "E-Scooter" },
   { value: "golf", label: "Golf" },
 ];

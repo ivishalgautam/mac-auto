@@ -1,7 +1,8 @@
 import moment from "moment";
-import { ArrowUpDown, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ArrowUpDown, Plus, X } from "lucide-react";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import Link from "next/link";
 
 // optional: define your color palette mapping
 const colorMap = {
@@ -58,6 +59,22 @@ export const columns = (openModal, setId, updateMutation) => [
             );
           })}
         </div>
+      );
+    },
+  },
+  {
+    accessorKey: "",
+    header: "Action",
+    cell: ({ row }) => {
+      const id = row.original.id;
+
+      return (
+        <Link
+          href={`items/add-details?itemId=${id}`}
+          className={buttonVariants({ variant: "outline", size: "sm" })}
+        >
+          <Plus size={15} /> Add details
+        </Link>
       );
     },
   },

@@ -130,9 +130,11 @@ export const columns = (setId, updateMutation, user, openModal) =>
         return <Button variant="ghost">Message</Button>;
       },
       cell: ({ row }) => {
+        const message = row.getValue("message");
+
         return (
           <div className="line-clamp-2 max-w-96 text-wrap">
-            {row.getValue("message") ?? "-"}
+            {message && message !== "" ? message : "-"}
           </div>
         );
       },

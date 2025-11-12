@@ -39,6 +39,12 @@ export const fetchOrderItems = async (orderId, searchParams) => {
   );
   return data;
 };
+export const fetchOrderItem = async (itemId) => {
+  const { data } = await http().get(
+    `${endpoints.orders.getAll}/items/${itemId}`,
+  );
+  return data;
+};
 
 export const fetchOrderInvoice = async (orderId) => {
   const { data } = await http().get(

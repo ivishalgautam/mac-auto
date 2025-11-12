@@ -417,6 +417,20 @@ export const sidebarData = [
         isVisible: true,
         items: [],
       },
+      {
+        title: "Order items",
+        url: "/orders/:id/items",
+        roles: [ROLES.ADMIN, ROLES.CRE, ROLES.MANAGER, ROLES.DEALER],
+        isVisible: false,
+        items: [],
+      },
+      {
+        title: "Order items",
+        url: "/orders/:id/items/add-details",
+        roles: [ROLES.ADMIN, ROLES.CRE, ROLES.MANAGER, ROLES.DEALER],
+        isVisible: false,
+        items: [],
+      },
     ],
   },
   {
