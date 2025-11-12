@@ -62,22 +62,22 @@ export const columns = (openModal, setId, updateMutation) => [
       );
     },
   },
-  {
-    accessorKey: "",
-    header: "Action",
-    cell: ({ row }) => {
-      const id = row.original.id;
+  // {
+  //   accessorKey: "",
+  //   header: "Action",
+  //   cell: ({ row }) => {
+  //     const id = row.original.id;
 
-      return (
-        <Link
-          href={`items/add-details?itemId=${id}`}
-          className={buttonVariants({ variant: "outline", size: "sm" })}
-        >
-          <Plus size={15} /> Add details
-        </Link>
-      );
-    },
-  },
+  //     return (
+  //       <Link
+  //         href={`items/add-details?itemId=${id}`}
+  //         className={buttonVariants({ variant: "outline", size: "sm" })}
+  //       >
+  //         <Plus size={15} /> Add details
+  //       </Link>
+  //     );
+  //   },
+  // },
   {
     accessorKey: "created_at",
     header: ({ column }) => (
