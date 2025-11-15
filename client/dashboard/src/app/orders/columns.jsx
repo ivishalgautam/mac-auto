@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 
-const orderStatuses = [
+export const orderStatuses = [
   { value: "pending", label: "Pending", color: "bg-amber-500" },
   { value: "in process", label: "In Process", color: "bg-blue-500" },
   { value: "dispatched", label: "Dispatched", color: "bg-violet-500" },
@@ -98,8 +98,14 @@ export const columns = (setId, updateMutation, user, openModal) =>
             value={status}
             onValueChange={(value) => {
               setId(id);
+              if (value === "out for delivery") {
+                return openModal("delivery-details");
+              }
               setTimeout(() => {
-                updateMutation.mutate({ status: value });
+                const formData = new FormData();
+                formData.append("status", value);
+
+                updateMutation.mutate(formData);
               }, 0);
             }}
           >
@@ -107,18 +113,27 @@ export const columns = (setId, updateMutation, user, openModal) =>
               <SelectValue placeholder="Select a status" />
             </SelectTrigger>
             <SelectContent>
-              {orderStatuses.map((option) => (
-                <SelectItem
-                  key={option.value}
-                  value={option.value}
-                  className={`flex items-center gap-2 capitalize`}
-                >
-                  <span
-                    className={`inline-block h-2 w-2 rounded-full ${option.color}`}
-                  />
-                  {option.label}
-                </SelectItem>
-              ))}
+              {orderStatuses.map((option) => {
+                const statusOrder = orderStatuses.map((o) => o.value);
+                const currentIndex = statusOrder.indexOf(status);
+                const optionIndex = statusOrder.indexOf(option.value);
+
+                const disabled = optionIndex < currentIndex;
+
+                return (
+                  <SelectItem
+                    key={option.value}
+                    value={option.value}
+                    className={`flex items-center gap-2 capitalize`}
+                    disabled={disabled}
+                  >
+                    <span
+                      className={`inline-block h-2 w-2 rounded-full ${option.color}`}
+                    />
+                    {option.label}
+                  </SelectItem>
+                );
+              })}
             </SelectContent>
           </Select>
         );
@@ -175,7 +190,7 @@ export const columns = (setId, updateMutation, user, openModal) =>
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
               {/* <DropdownMenuSeparator />
               <DropdownMenuItem>
-                <Link href={`/books/${id}/edit`} className="w-full">
+                <Link href={`/orders/${id}/edit`} className="w-full">
                   Edit
                 </Link>
               </DropdownMenuItem> */}
@@ -183,7 +198,7 @@ export const columns = (setId, updateMutation, user, openModal) =>
               <DropdownMenuItem
                 onClick={() => {
                   setId(id);
-                  openModal();
+                  openModal("delete");
                 }}
               >
                 Delete

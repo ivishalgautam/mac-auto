@@ -45,7 +45,7 @@ const init = async (sequelize) => {
       },
       vehicle_variant_map_id: {
         type: DataTypes.UUID,
-        allowNull: false,
+        allowNull: true,
         references: {
           model: constants.models.VEHICLE_VARIANT_MAP_TABLE,
           key: "id",
@@ -57,6 +57,22 @@ const init = async (sequelize) => {
         type: DataTypes.STRING,
         allowNull: false,
         unique: { args: true, msg: "Chassis no. exist" },
+      },
+      motor_no: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      battery_no: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      controller_no: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      charger_no: {
+        type: DataTypes.STRING,
+        allowNull: true,
       },
       status: {
         type: DataTypes.ENUM("active", "inactive", "sold", "scrapped"),
@@ -75,6 +91,10 @@ const init = async (sequelize) => {
           fields: ["chassis_no"],
           unique: true,
         },
+        { fields: ["motor_no"] },
+        { fields: ["battery_no"] },
+        { fields: ["controller_no"] },
+        { fields: ["charger_no"] },
       ],
     }
   );
@@ -103,10 +123,11 @@ const create = async (
 };
 
 const bulkCreate = async (data, transaction) => {
-  const options = {};
+  const options = { returning: true, raw: true };
   if (transaction) options.transaction = transaction;
 
-  return await DealerInventoryModel.bulkCreate(data, options);
+  const newRecord = await DealerInventoryModel.bulkCreate(data, options);
+  return newRecord.map((item) => item.dataValues);
 };
 
 const update = async (req, id, transaction) => {

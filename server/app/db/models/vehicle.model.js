@@ -59,6 +59,10 @@ const init = async (sequelize) => {
         type: DataTypes.BOOLEAN,
         defaulValue: false,
       },
+      is_active: {
+        type: DataTypes.BOOLEAN,
+        defaulValue: false,
+      },
       base_price: {
         type: DataTypes.DECIMAL(10, 2),
         allowNull: true,
@@ -211,6 +215,7 @@ const update = async (req, id, transaction) => {
       specifications: req.body.specifications,
       slug: req.body.slug,
       pricing: req.body.pricing,
+      is_active: req.body.is_active,
       emi_calculator: req.body.emi_calculator,
       carousel: req.body.carousel,
       gallery: req.body.gallery,
@@ -313,6 +318,11 @@ const get = async (req) => {
   const q = req.query.q ? req.query.q : null;
   const type = req?.query?.type ?? null;
   const category = req.query.category ? req.query.category.split(".") : null;
+  const status = req.query.status ? req.query.status.split(".") : [];
+
+  if (status.includes("active") !== status.includes("inactive")) {
+    whereConditions.push(`(vh.is_active IS ${status.includes("active")})`);
+  }
 
   if (q) {
     whereConditions.push(
@@ -343,7 +353,8 @@ const get = async (req) => {
 
   const query = `
   SELECT 
-      vh.id, vh.title, vh.description, vh.category, vh.slug, vh.carousel, vh.marketing_material, vh.brochure, vh.dealer_price,
+      vh.id, vh.title, vh.description, vh.category, vh.base_price, vh.is_active, 
+      vh.slug, vh.carousel, vh.marketing_material, vh.brochure, vh.dealer_price,
       (vh.pricing->0->>'base_price')::numeric AS starting_from,
       COALESCE(JSON_AGG(
         DISTINCT JSON_BUILD_OBJECT(

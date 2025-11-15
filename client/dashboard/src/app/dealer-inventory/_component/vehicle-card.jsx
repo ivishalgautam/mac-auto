@@ -85,11 +85,12 @@ export function VehicleCard({ vehicle, onOrderVehicle, onAssignToCustomer }) {
                 </div>
                 <div>
                   <h3 className="text-card-foreground mb-2 text-xl font-semibold">
-                    {vehicle.title}
+                    Model
                   </h3>
                   <div className="space-y-1">
-                    <p className="text-primary text-2xl font-bold">
-                      {rupee.format(vehicle.dealer_price)}
+                    <p className="text-primary font-bold">
+                      {vehicle.title}
+                      {/* {rupee.format(vehicle.dealer_price)} */}
                     </p>
                   </div>
                 </div>
@@ -116,7 +117,7 @@ export function VehicleCard({ vehicle, onOrderVehicle, onAssignToCustomer }) {
               </div>
 
               {/* Stock Information */}
-              <div className="space-y-2">
+              {/* <div className="space-y-2">
                 <Label className="text-muted-foreground text-base font-semibold">
                   Stock Information
                 </Label>
@@ -162,15 +163,7 @@ export function VehicleCard({ vehicle, onOrderVehicle, onAssignToCustomer }) {
                     </Link>
                   </div>
                 </div>
-                {/* <div className="border-border border-t pt-1">
-                  <div className="flex justify-between text-sm">
-                    <span className="font-medium">Active Units:</span>
-                    <span className="font-bold">
-                      {vehicle.active_quantity} available
-                    </span>
-                  </div>
-                </div> */}
-              </div>
+              </div> */}
             </div>
           </div>
 
@@ -235,16 +228,16 @@ export function VehicleCard({ vehicle, onOrderVehicle, onAssignToCustomer }) {
               </Dialog>
 
               {/* Order Vehicle Modal */}
-              <Button
+              {/* <Button
                 className="flex items-center gap-2"
                 onClick={() => onOrderVehicle?.()}
               >
                 <ShoppingCart className="h-4 w-4" />
                 Order
-              </Button>
-            </div>
+              </Button> */}
+              {/* </div> */}
 
-            <div className="grid grid-cols-2 gap-3">
+              {/* <div className="grid grid-cols-2 gap-3"> */}
               {/* Marketing Material Link */}
               <Button
                 variant="outline"
@@ -260,7 +253,7 @@ export function VehicleCard({ vehicle, onOrderVehicle, onAssignToCustomer }) {
               </Button>
 
               {/* Assign to Customer Modal */}
-              <Button
+              {/* <Button
                 variant="secondary"
                 className="flex items-center gap-2"
                 type="button"
@@ -268,7 +261,7 @@ export function VehicleCard({ vehicle, onOrderVehicle, onAssignToCustomer }) {
               >
                 <UserPlus className="h-4 w-4" />
                 Assign to customer
-              </Button>
+              </Button> */}
             </div>
           </div>
         </div>

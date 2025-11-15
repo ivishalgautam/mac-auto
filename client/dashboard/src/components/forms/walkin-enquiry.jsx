@@ -40,6 +40,8 @@ import { H1, H3 } from "../ui/typography";
 import { walkInEnquirySchema } from "@/utils/schema/walking-enquiry.schema";
 import DealerSelect from "@/features/dealer-select";
 import { useAuth } from "@/providers/auth-provider";
+import CustomMultiSelect from "../custom-multi-select";
+import { useGetFormattedVehicles } from "@/mutations/vehicle-mutation";
 
 export default function WalkInEnquiryForm({ onSuccess, type = "create", id }) {
   const { user } = useAuth();
@@ -77,7 +79,7 @@ export default function WalkInEnquiryForm({ onSuccess, type = "create", id }) {
     resolver: zodResolver(walkInEnquirySchema),
     defaultValues: {
       dealer_id: null,
-      vehicle_id: "",
+      vehicle_ids: [],
       name: "",
       phone: "",
       location: "",
@@ -142,6 +144,13 @@ export default function WalkInEnquiryForm({ onSuccess, type = "create", id }) {
     queryFn: () => fetchWalkinEnquiry(id),
     enabled: ["edit", "view"].includes(type) && !!id,
   });
+
+  const {
+    data: vehiclesData,
+    isLoading: isVehiclesLoading,
+    isError: isVehiclesError,
+    error: vehiclesError,
+  } = useGetFormattedVehicles(searchParams);
 
   const onSubmit = async (formDataValues) => {
     const isValid = await trigger([
@@ -270,6 +279,9 @@ export default function WalkInEnquiryForm({ onSuccess, type = "create", id }) {
         guarantor: data.guarantor?.name ? data.guarantor : undefined,
         co_applicant: data.co_applicant?.name ? data.co_applicant : undefined,
         alt_phone: data.alt_phone || undefined,
+        vehicle_ids: vehiclesData.filter(({ value }) =>
+          data.vehicle_ids.includes(value),
+        ),
       };
 
       setFileUrls({
@@ -281,7 +293,7 @@ export default function WalkInEnquiryForm({ onSuccess, type = "create", id }) {
       });
       reset(safeData);
     }
-  }, [data, type, reset]);
+  }, [data, type, reset, vehiclesData]);
 
   const isFormPending =
     (type === "create" && createMutation.isPending) ||
@@ -300,15 +312,21 @@ export default function WalkInEnquiryForm({ onSuccess, type = "create", id }) {
         <div className="space-y-2">
           <Label>Vehicle *</Label>
           <Controller
-            name="vehicle_id"
+            name="vehicle_ids"
             control={control}
             render={({ field }) => (
-              <VehicleSelect
+              <CustomMultiSelect
+                options={vehiclesData}
+                isLoading={isVehiclesLoading}
+                isError={isVehiclesError}
+                error={vehiclesError}
+                async
+                placeholder="Select vehicles"
                 value={field.value}
                 onChange={field.onChange}
                 disabled={type === "view"}
                 className={cn({
-                  "border-red-500 dark:border-red-500": errors.vehicle_id,
+                  "border-destructive": errors.vehicle_ids,
                 })}
               />
             )}
@@ -401,7 +419,7 @@ export default function WalkInEnquiryForm({ onSuccess, type = "create", id }) {
                   value={field.value}
                   onChange={field.onChange}
                   className={cn({
-                    "border-red-500 dark:border-red-500": errors.dealer_id,
+                    "border-destructive": errors.dealer_id,
                   })}
                 />
               )}

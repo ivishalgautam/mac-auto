@@ -94,6 +94,25 @@ export const useUpdateVehiclePrice = (id, handleSuccess) => {
   });
 };
 
+export const useUpdateVehicleStatus = (id, handleSuccess) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data) => vehicle.updateStatus(id, data),
+    onSuccess: () => {
+      toast("Vehicle updated successfully.");
+      queryClient.invalidateQueries(["vehicles"]);
+      typeof handleSuccess === "function" && handleSuccess();
+    },
+    onError: (error) => {
+      console.error("Mutation Error:", error);
+      toast.error(
+        error?.response?.data?.message ?? error?.message ?? "An error occurred",
+      );
+    },
+  });
+};
+
 export const useDeleteVehicle = (id, handleSuccess) => {
   const queryClient = useQueryClient();
 

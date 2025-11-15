@@ -61,7 +61,7 @@ const personDetailsSchema = z.object({
 
 export const walkInEnquirySchema = z
   .object({
-    vehicle_id: z.string().uuid({ message: "Invalid vehicle" }),
+    vehicle_id: z.array(z.string().uuid()).default([]),
     dealer_id: z.string().uuid().nullable(),
 
     name: z

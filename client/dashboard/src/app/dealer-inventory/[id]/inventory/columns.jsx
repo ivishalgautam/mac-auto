@@ -11,8 +11,6 @@ import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 
 import { Button } from "@/components/ui/button";
 import moment from "moment";
-import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
 import {
   Select,
   SelectContent,
@@ -26,6 +24,22 @@ export const columns = (openModal, updateMutation, setId) => [
   {
     accessorKey: "chassis_no",
     header: "Chassis No.",
+  },
+  {
+    accessorKey: "motor_no",
+    header: "Motor No.",
+  },
+  {
+    accessorKey: "battery_no",
+    header: "Battery No.",
+  },
+  {
+    accessorKey: "controller_no",
+    header: "Controller No.",
+  },
+  {
+    accessorKey: "charger_no",
+    header: "Charger No.",
   },
   {
     accessorKey: "status",

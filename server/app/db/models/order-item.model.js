@@ -62,6 +62,11 @@ const init = async (sequelize) => {
           },
         },
       },
+      status: {
+        type: DataTypes.ENUM("pending", "updated"),
+        allowNull: false,
+        defaultValue: "pending",
+      },
     },
     {
       createdAt: "created_at",
@@ -98,6 +103,16 @@ const getById = async (req, id) => {
   });
 };
 
+const update = async (req, id) => {
+  return await OrderItemModel.update(
+    { colors: req.body.colors, status: req.body.status },
+    {
+      where: { id: req.params?.id || id },
+      raw: true,
+    }
+  );
+};
+
 const deleteById = async (req, id) => {
   return await OrderItemModel.destroy({
     where: { id: req.params.id || id },
@@ -131,11 +146,22 @@ const getByOrderId = async (req, orderId) => {
 
   const query = `
   SELECT 
-      oi.id, oi.battery_type, oi.colors, oi.created_at,
-      vh.title
+      oi.id, oi.battery_type, oi.created_at, oi.status,
+      jsonb_agg(
+        jsonb_build_object(
+          'color', elem->>'color',
+          'quantity', elem->>'quantity',
+          'details', elem->'details',
+          'vehicle_color_id', vhclr.id
+        )
+      ) AS colors,
+      vh.id as vehicle_id, vh.title
     FROM ${constants.models.ORDER_ITEM_TABLE} oi
     LEFT JOIN ${constants.models.VEHICLE_TABLE} vh ON vh.id = oi.vehicle_id
+    LEFT JOIN LATERAL jsonb_array_elements(oi.colors) elem ON TRUE
+    LEFT JOIN ${constants.models.VEHICLE_COLOR_TABLE} vhclr ON vhclr.vehicle_id = vh.id AND LOWER(vhclr.color_name) = LOWER(elem->>'color')
     ${whereClause}
+    GROUP BY oi.id, oi.battery_type, oi.created_at, vh.id, vh.title, oi.status
     ORDER BY oi.created_at DESC
     LIMIT :limit OFFSET :offset
   `;
@@ -168,6 +194,7 @@ export default {
   create: create,
   bulkCreate: bulkCreate,
   getById: getById,
+  update: update,
   deleteById: deleteById,
   getByOrderId: getByOrderId,
 };

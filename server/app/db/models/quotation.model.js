@@ -40,18 +40,6 @@ const init = async (sequelize) => {
         type: DataTypes.STRING,
         allowNull: false,
       },
-      model: {
-        type: DataTypes.STRING,
-        allowNull: true,
-      },
-      variant: {
-        type: DataTypes.STRING,
-        allowNull: true,
-      },
-      color: {
-        type: DataTypes.STRING,
-        allowNull: true,
-      },
       dealer_id: {
         type: DataTypes.UUID,
         allowNull: true,
@@ -62,71 +50,13 @@ const init = async (sequelize) => {
         },
         onDelete: "SET NULL",
       },
-      vehicle_id: {
-        type: DataTypes.UUID,
-        allowNull: false,
-        references: {
-          model: constants.models.VEHICLE_TABLE,
-          key: "id",
-          deferrable: Deferrable.INITIALLY_IMMEDIATE,
-        },
-        onDelete: "SET NULL",
+      vehicle_ids: {
+        type: DataTypes.ARRAY(DataTypes.UUID),
+        defaultValue: [],
       },
-      vehicle_variant_map_id: {
-        type: DataTypes.UUID,
-        allowNull: false,
-        references: {
-          model: constants.models.VEHICLE_VARIANT_MAP_TABLE,
-          key: "id",
-          deferrable: Deferrable.INITIALLY_IMMEDIATE,
-        },
-        onDelete: "SET NULL",
-      },
-      vehicle_color_id: {
-        type: DataTypes.UUID,
-        allowNull: false,
-        references: {
-          model: constants.models.VEHICLE_COLOR_TABLE,
-          key: "id",
-          deferrable: Deferrable.INITIALLY_IMMEDIATE,
-        },
-        onDelete: "SET NULL",
-      },
-      base_price_ex_showroom: {
-        type: DataTypes.STRING,
-        allowNull: true,
-      },
-      gst: {
-        type: DataTypes.INTEGER,
-        allowNull: true,
-      },
-      insurance: {
-        type: DataTypes.STRING,
-        allowNull: true,
-      },
-      rto_registration_charges: {
-        type: DataTypes.STRING,
-        allowNull: true,
-      },
-      accessories_fitments: {
-        type: DataTypes.STRING,
-        allowNull: true,
-      },
-      total_ex_showroom_price: {
-        type: DataTypes.STRING,
-        allowNull: true,
-      },
-      discount: {
-        type: DataTypes.STRING,
-        allowNull: true,
-      },
-      //   subsidy: {
-      //     type: DataTypes.STRING,
-      //     allowNull: true,
-      //   },
-      on_road_price: {
-        type: DataTypes.STRING,
-        allowNull: true,
+      vehicle_price_breakups: {
+        type: DataTypes.JSONB,
+        defaultValue: [], //[{model, base_price_ex_showroom, gst, insurance, rto_registration_charges, accessories_fitments, total_ex_showroom_price, discount, on_road_price}]
       },
       status: {
         type: DataTypes.ENUM(["pending", "invoice-generated"]),
@@ -138,13 +68,11 @@ const init = async (sequelize) => {
       updatedAt: "updated_at",
       indexes: [
         { fields: ["dealer_id"] },
+        { fields: ["vehicle_ids"] },
         { fields: ["customer_name"] },
         { fields: ["mobile_no"] },
         { fields: ["date"] },
         { fields: ["quotation_no"] },
-        { fields: ["model"] },
-        { fields: ["variant"] },
-        { fields: ["color"] },
       ],
     }
   );
@@ -179,22 +107,9 @@ const create = async (req, transaction) => {
       mobile_no: req.body.mobile_no,
       date: req.body.date,
       quotation_no: newQuotationNo,
-      model: req.body.model,
-      variant: req.body.variant,
-      color: req.body.color,
       dealer_id: req.body.dealer_id,
-      base_price_ex_showroom: req.body.base_price_ex_showroom,
-      gst: req.body.gst,
-      insurance: req.body.insurance,
-      rto_registration_charges: req.body.rto_registration_charges,
-      accessories_fitments: req.body.accessories_fitments,
-      total_ex_showroom_price: req.body.total_ex_showroom_price,
-      discount: req.body.discount,
-      on_road_price: req.body.on_road_price,
-
-      vehicle_id: req.body.vehicle_id,
-      vehicle_variant_map_id: req.body.vehicle_variant_map_id,
-      vehicle_color_id: req.body.vehicle_color_id,
+      vehicle_price_breakups: req.body.vehicle_price_breakups,
+      vehicle_ids: req.body.vehicle_ids,
     },
     options
   );
@@ -214,25 +129,9 @@ const update = async (req, id, transaction) => {
       customer_name: req.body.customer_name,
       mobile_no: req.body.mobile_no,
       date: req.body.date,
-      quotation_no: req.body.quotation_no,
-      model: req.body.model,
-      variant: req.body.variant,
-      color: req.body.color,
-      customer_id: req.body.customer_id,
       dealer_id: req.body.dealer_id,
-      base_price_ex_showroom: req.body.base_price_ex_showroom,
-      gst: req.body.gst,
-      insurance: req.body.insurance,
-      rto_registration_charges: req.body.rto_registration_charges,
-      accessories_fitments: req.body.accessories_fitments,
-      total_ex_showroom_price: req.body.total_ex_showroom_price,
-      discount: req.body.discount,
-      on_road_price: req.body.on_road_price,
-      status: req.body.status,
-
-      vehicle_id: req.body.vehicle_id,
-      vehicle_variant_map_id: req.body.vehicle_variant_map_id,
-      vehicle_color_id: req.body.vehicle_color_id,
+      vehicle_price_breakups: req.body.vehicle_price_breakups,
+      vehicle_ids: req.body.vehicle_ids,
     },
     options
   );
@@ -264,10 +163,7 @@ const get = async (req) => {
       `(
         qt.customer_name ILIKE :query OR 
         qt.mobile_no ILIKE :query OR 
-        qt.quotation_no ILIKE :query OR 
-        qt.model ILIKE :query OR 
-        qt.variant ILIKE :query OR 
-        qt.color ILIKE :query
+        qt.quotation_no ILIKE :query
       )`
     );
     queryParams.query = `%${q}%`;
@@ -284,10 +180,13 @@ const get = async (req) => {
 
   const query = `
   SELECT 
-        qt.*
+      qt.*,
+      COALESCE(JSON_AGG(vh.title) FILTER (WHERE vh.title IS NOT NULL), '[]') AS vehicles
     FROM ${constants.models.QUOTATION_TABLE} qt
+    LEFT JOIN ${constants.models.VEHICLE_TABLE} vh ON vh.id = ANY(qt.vehicle_ids::uuid[])
     LEFT JOIN ${constants.models.DEALER_TABLE} dlr ON dlr.id = qt.dealer_id
     ${whereClause}
+    GROUP BY qt.id
     ORDER BY qt.created_at DESC
     LIMIT :limit OFFSET :offset
   `;

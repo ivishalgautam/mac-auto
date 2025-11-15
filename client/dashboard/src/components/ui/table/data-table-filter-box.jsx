@@ -87,7 +87,7 @@ export function DataTableFilterBox({
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[200px] p-0" align="start">
+      <PopoverContent className="p-0" align="start">
         <Command>
           <CommandInput placeholder={title} />
           <CommandList>
@@ -100,7 +100,7 @@ export function DataTableFilterBox({
                 >
                   <div
                     className={cn(
-                      "mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary",
+                      "border-primary mr-2 flex h-4 w-4 items-center justify-center rounded-sm border",
                       selectedValuesSet.has(option.value)
                         ? "text-primary-foreground bg-primary"
                         : "opacity-50 [&_svg]:invisible",

@@ -306,6 +306,7 @@ export default function VehicleForm({ id, type }) {
               ))}
             </div>
           </div>
+
           {/* gallery */}
           <div className="col-span-full space-y-4">
             <Label>Gallery</Label>

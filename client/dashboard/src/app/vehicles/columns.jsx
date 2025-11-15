@@ -14,8 +14,10 @@ import moment from "moment";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { rupee } from "@/lib/Intl";
+import { Small } from "@/components/ui/typography";
+import { Switch } from "@/components/ui/switch";
 
-export const columns = (updateMutation, setId, openModal) => [
+export const columns = (setId, openModal, updateStatusMutation) => [
   {
     accessorKey: "title",
     header: "Title",
@@ -54,23 +56,6 @@ export const columns = (updateMutation, setId, openModal) => [
     },
   },
   {
-    accessorKey: "active_quantity",
-    header: "Active Qty.",
-    cell: ({ row }) => {
-      const id = row.original.id;
-      const quantity = row.getValue("active_quantity");
-      return (
-        <Badge>
-          <Link
-            href={`/vehicles/${id}/inventory?page=1&limit=10&status=active`}
-          >
-            {quantity}
-          </Link>
-        </Badge>
-      );
-    },
-  },
-  {
     accessorKey: "sold_quantity",
     header: "Sold Qty.",
     cell: ({ row }) => {
@@ -79,40 +64,6 @@ export const columns = (updateMutation, setId, openModal) => [
       return (
         <Badge variant={"outline"}>
           <Link href={`/vehicles/${id}/inventory?page=1&limit=10&status=sold`}>
-            {quantity}
-          </Link>
-        </Badge>
-      );
-    },
-  },
-  {
-    accessorKey: "inactive_quantity",
-    header: "Inactive Qty.",
-    cell: ({ row }) => {
-      const id = row.original.id;
-      const quantity = row.getValue("inactive_quantity");
-      return (
-        <Badge variant={"secondary"}>
-          <Link
-            href={`/vehicles/${id}/inventory?page=1&limit=10&status=inactive`}
-          >
-            {quantity}
-          </Link>
-        </Badge>
-      );
-    },
-  },
-  {
-    accessorKey: "scrapped_quantity",
-    header: "Scrapped Qty.",
-    cell: ({ row }) => {
-      const id = row.original.id;
-      const quantity = row.getValue("scrapped_quantity");
-      return (
-        <Badge variant={"destructive"}>
-          <Link
-            href={`/vehicles/${id}/inventory?page=1&limit=10&status=scrapped`}
-          >
             {quantity}
           </Link>
         </Badge>
@@ -141,30 +92,28 @@ export const columns = (updateMutation, setId, openModal) => [
       );
     },
   },
-  // {
-  //   accessorKey: "is_active",
-  //   header: ({ column }) => {
-  //     return <Button variant="ghost">STATUS</Button>;
-  //   },
-  //   cell: ({ row }) => {
-  //     const is_active = row.getValue("is_active");
-  //     const id = row.original.id;
-  //     return (
-  //       <div className="flex items-center justify-start gap-2">
-  //         <Switch
-  //           checked={is_active}
-  //           onCheckedChange={(checked) => {
-  //             setId(id);
-  //             return updateMutation.mutate({ is_active: checked });
-  //           }}
-  //         />
-  //         <Small className={is_active ? "text-green-500" : "text-red-500"}>
-  //           {is_active ? "active" : "inactive"}
-  //         </Small>
-  //       </div>
-  //     );
-  //   },
-  // },
+  {
+    accessorKey: "is_active",
+    header: "Status",
+    cell: ({ row }) => {
+      const is_active = row.getValue("is_active");
+      const id = row.original.id;
+      return (
+        <div className="flex items-center justify-start gap-2">
+          <Switch
+            checked={is_active}
+            onCheckedChange={(checked) => {
+              setId(id);
+              return updateStatusMutation.mutate({ is_active: checked });
+            }}
+          />
+          <Small className={is_active ? "text-green-500" : "text-red-500"}>
+            {is_active ? "active" : "inactive"}
+          </Small>
+        </div>
+      );
+    },
+  },
   {
     accessorKey: "created_at",
     header: ({ column }) => {

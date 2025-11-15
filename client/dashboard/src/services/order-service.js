@@ -19,7 +19,8 @@ export const createOrder = async (data) => {
 };
 
 export const updateOrder = async (id, data) => {
-  return await http().put(`${endpoints.orders.getAll}/${id}`, data);
+  console.log("object", data);
+  return await http().put(`${endpoints.orders.getAll}/${id}`, data, true);
 };
 
 export const updateOrderItem = async (orderId, itemId, data) => {

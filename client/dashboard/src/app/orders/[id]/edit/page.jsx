@@ -1,12 +1,7 @@
-import PageContainer from "@/components/layout/page-container";
-import { Heading } from "@/components/ui/heading";
+import React from "react";
+import OrderStepperForm from "../../../../components/forms/order-stepper-form";
 
-export default async function EditPage({ params }) {
+export default async function Page({ params }) {
   const { id } = await params;
-
-  return (
-    <PageContainer>
-      <Heading title={"Edit order"} description="Edit order." />
-    </PageContainer>
-  );
+  return <OrderStepperForm type={"edit"} id={id} />;
 }

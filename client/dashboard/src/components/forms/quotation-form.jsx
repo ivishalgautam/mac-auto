@@ -2,43 +2,32 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useFieldArray, useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   useCreateQuotation,
   useGetQuotation,
   useUpdateQuotation,
 } from "@/mutations/quotation-mutation";
-import VehicleSelect from "@/features/vehicle-select";
-import VehicleVariantMapSelect from "@/features/vehicle-variant-map-select";
-import VehicleColorSelect from "@/features/vehicle-color-select";
 import { DatePicker } from "../ui/date-picker";
-import { H4 } from "../ui/typography";
+import { H4, H5 } from "../ui/typography";
 import {
   useGetFormattedWalkInEnquiries,
-  useGetWalkInEnquiries,
   useGetWalkInEnquiry,
 } from "@/mutations/walkin-enquiries-mutation";
 import Loader from "../loader";
 import ErrorMessage from "../ui/error";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import PhoneSelect from "../ui/phone-input";
 import { cn } from "@/lib/utils";
-import { useGetVehicle } from "@/mutations/vehicle-mutation";
+import { useGetVehicles } from "@/mutations/vehicle-mutation";
 import CustomCommandMenu from "../custom-command-menu";
 import moment from "moment";
+import CustomMultiSelect from "../custom-multi-select";
 
 const defaultValues = {
   customer_name: "",
@@ -47,38 +36,51 @@ const defaultValues = {
   //   model: "",
   //   variant: "",
   //   colour: "",
-  base_price_ex_showroom: "",
-  gst: 5,
-  insurance: "",
-  rto_registration_charges: "",
-  accessories_fitments: "",
-  total_ex_showroom_price: "",
-  discount: "",
-  on_road_price: "",
+  vehicle_price_breakups: [
+    {
+      model: "",
+      base_price_ex_showroom: "",
+      gst: 5,
+      insurance: "",
+      rto_registration_charges: "",
+      accessories_fitments: "",
+      total_ex_showroom_price: "",
+      discount: "",
+      on_road_price: "",
+    },
+  ],
 };
 
 const createSchema = z.object({
   enquiry_id: z.string().uuid(),
-  vehicle_id: z.string().uuid(),
-  vehicle_variant_map_id: z.string().uuid(),
-  vehicle_color_id: z.string().uuid(),
-  enquiry_id: z.string().uuid(),
+  vehicle_ids: z
+    .array(
+      z.object({
+        value: z.string().uuid({ message: "Invalid vehicle" }),
+        label: z.string(),
+      }),
+    )
+    .min(1, { message: "Select vehicle" })
+    .transform((data) => data.map(({ value }) => value))
+    .default([]),
   customer_name: z.string().min(1, "Customer name is required"),
   mobile_no: z.string().min(10, "Enter valid mobile no."),
   date: z.union([z.date(), z.null()]).default(null),
-  model: z.string().optional(),
-  variant: z.string().optional(),
-  colour: z.string().optional(),
-  base_price_ex_showroom: z.string().optional(),
-  gst: z.coerce.number().optional(),
-  insurance: z.string().min(1, { message: "Insurance is required." }),
-  rto_registration_charges: z
-    .string()
-    .min(1, { message: "RTO registration charges is required." }),
-  accessories_fitments: z.string().optional(),
-  total_ex_showroom_price: z.string().optional(),
-  discount: z.string().optional(),
-  on_road_price: z.string().optional(),
+  vehicle_price_breakups: z.array(
+    z.object({
+      model: z.string().optional(),
+      base_price_ex_showroom: z.string().default(0),
+      gst: z.coerce.number().default(0),
+      insurance: z.string().min(1, { message: "Insurance is required." }),
+      rto_registration_charges: z
+        .string()
+        .min(1, { message: "RTO registration charges is required." }),
+      accessories_fitments: z.string().default(0),
+      total_ex_showroom_price: z.string().default(0),
+      discount: z.string().default(0),
+      on_road_price: z.string().default(0),
+    }),
+  ),
 });
 
 export default function QuotationForm({
@@ -95,17 +97,23 @@ export default function QuotationForm({
     control,
     watch,
     reset,
+    setValue,
   } = useForm({
     resolver: zodResolver(createSchema),
     defaultValues: { ...defaultValues, enquiry_id: enquiryId ?? null },
   });
 
-  const basePrice = watch("base_price_ex_showroom") || "0";
-  const gst = watch("gst") || "0";
-  const insurance = watch("insurance") || "0";
-  const rto = watch("rto_registration_charges") || "0";
-  const accessories = watch("accessories_fitments") || "0";
-  const discount = watch("discount") || "0";
+  const selectedVehicles = watch("vehicle_ids");
+
+  const watchPriceBreakUps = useWatch({
+    control,
+    name: "vehicle_price_breakups",
+  });
+
+  const { fields: priceBreakUps } = useFieldArray({
+    name: "vehicle_price_breakups",
+    control,
+  });
 
   const {
     data: enquiriesData,
@@ -120,12 +128,22 @@ export default function QuotationForm({
     isError: isEnquiryError,
     error: enquiryError,
   } = useGetWalkInEnquiry(watch("enquiry_id"));
+
   const {
-    data: vehicleData,
-    isLoading: isVehicleLoading,
-    isError: isVehicleError,
-    error: vehicleError,
-  } = useGetVehicle(enquiryData?.vehicle_id);
+    data: vehiclesData,
+    isLoading: isVehiclesLoading,
+    isError: isVehiclesError,
+    error: vehiclesError,
+  } = useGetVehicles();
+  const formattedVehiclesData = useMemo(() => {
+    return (
+      vehiclesData?.vehicles?.map(({ id: value, title: label }) => ({
+        value,
+        label,
+      })) ?? []
+    );
+  }, [vehiclesData]);
+
   const createMutation = useCreateQuotation(() => {
     reset({});
     router.back();
@@ -137,10 +155,16 @@ export default function QuotationForm({
   });
 
   const onSubmit = (data) => {
-    console.log({});
+    console.log({ data });
     type === "create"
-      ? createMutation.mutate({ ...data, date: moment(data.date).format() })
-      : updateMutation.mutate({ ...data, date: moment(data.date).format() });
+      ? createMutation.mutate({
+          ...data,
+          date: data.date ? moment(data.date).format() : null,
+        })
+      : updateMutation.mutate({
+          ...data,
+          date: data.date ? moment(data.date).format() : null,
+        });
   };
 
   const isFormPending =
@@ -148,25 +172,37 @@ export default function QuotationForm({
     (type === "edit" && updateMutation.isPending);
 
   useEffect(() => {
-    const bp = parseFloat(basePrice) || 0;
-    const gstPercent = parseFloat(gst) || 0;
-    const ins = parseFloat(insurance) || 0;
-    const rtoVal = parseFloat(rto) || 0;
-    const acc = parseFloat(accessories) || 0;
-    const disc = parseFloat(discount) || 0;
+    if (!watchPriceBreakUps) return;
 
-    // GST as percentage
-    const gstValue = (bp * gstPercent) / 100;
+    watchPriceBreakUps.forEach((pb, ind) => {
+      const bp = parseFloat(pb.base_price_ex_showroom) || 0;
+      const gstPercent = parseFloat(pb.gst) || 0;
+      const ins = parseFloat(pb.insurance) || 0;
+      const rtoVal = parseFloat(pb.rto_registration_charges) || 0;
+      const acc = parseFloat(pb.accessories_fitments) || 0;
+      const disc = parseFloat(pb.discount) || 0;
 
-    const totalExShowroom = bp + gstValue + ins + rtoVal + acc;
-    const onRoad = totalExShowroom - disc;
+      const gstValue = (bp * gstPercent) / 100;
+      const totalExShowroom = bp + gstValue + ins + rtoVal + acc;
+      const onRoad = totalExShowroom - disc;
 
-    reset((prev) => ({
-      ...prev,
-      total_ex_showroom_price: totalExShowroom.toFixed(2).toString(),
-      on_road_price: onRoad.toFixed(2).toString(),
-    }));
-  }, [basePrice, gst, insurance, rto, accessories, discount, reset]);
+      if (pb.total_ex_showroom_price !== totalExShowroom.toFixed(2)) {
+        setValue(
+          `vehicle_price_breakups.${ind}.total_ex_showroom_price`,
+          totalExShowroom.toFixed(2),
+          { shouldValidate: false, shouldDirty: false },
+        );
+      }
+
+      if (pb.on_road_price !== onRoad.toFixed(2)) {
+        setValue(
+          `vehicle_price_breakups.${ind}.on_road_price`,
+          onRoad.toFixed(2),
+          { shouldValidate: false, shouldDirty: false },
+        );
+      }
+    });
+  }, [watchPriceBreakUps]);
 
   useEffect(() => {
     if (enquiryData) {
@@ -174,25 +210,38 @@ export default function QuotationForm({
         ...prev,
         customer_name: enquiryData.name,
         mobile_no: enquiryData.phone,
-        vehicle_id: enquiryData.vehicle_id,
+        vehicle_ids: formattedVehiclesData?.filter(({ value }) =>
+          enquiryData.vehicle_ids.includes(value),
+        ),
       }));
     }
-  }, [enquiryData, reset]);
+  }, [enquiryData, reset, formattedVehiclesData]);
 
   useEffect(() => {
-    if (type !== "edit" && vehicleData) {
-      reset((prev) => ({
-        ...prev,
-        base_price_ex_showroom: vehicleData.base_price,
+    if (type === "create" && vehiclesData && selectedVehicles) {
+      const filteredVehicles = vehiclesData?.vehicles?.filter((v) =>
+        selectedVehicles.map(({ value }) => value).includes(v.id),
+      );
+
+      const mapped = filteredVehicles.map((v) => ({
+        model: v.title,
+        base_price_ex_showroom: v.base_price,
       }));
+
+      setValue("vehicle_price_breakups", mapped);
     }
-  }, [vehicleData, reset]);
+  }, [vehiclesData, type, selectedVehicles, setValue]);
 
   useEffect(() => {
-    if (data) {
-      reset({ ...data });
+    if (type === "edit" && data) {
+      reset({
+        ...data,
+        vehicle_ids: formattedVehiclesData.filter(({ value }) =>
+          data.vehicle_ids.includes(value),
+        ),
+      });
     }
-  }, [data, reset]);
+  }, [data, reset, type]);
 
   if (type === "edit" && isLoading) return <Loader />;
   if (type === "edit" && isError) return <ErrorMessage error={error} />;
@@ -285,25 +334,33 @@ export default function QuotationForm({
               />
             </div>
 
-            {/* Model */}
+            {/* vehicle */}
             <div className="space-y-2">
-              <Label htmlFor="vehicle_id">Model</Label>
+              <Label>Models *</Label>
               <Controller
-                name="vehicle_id"
+                name="vehicle_ids"
                 control={control}
-                render={({ field }) => {
-                  return (
-                    <VehicleSelect
-                      onChange={field.onChange}
-                      value={field.value}
-                    />
-                  );
-                }}
+                render={({ field }) => (
+                  <CustomMultiSelect
+                    options={formattedVehiclesData}
+                    isLoading={isVehiclesLoading}
+                    isError={isVehiclesError}
+                    error={vehiclesError}
+                    async
+                    placeholder="Select vehicles"
+                    value={field.value}
+                    onChange={field.onChange}
+                    disabled={type === "edit"}
+                    className={cn({
+                      "border-destructive": errors.vehicle_ids,
+                    })}
+                  />
+                )}
               />
             </div>
 
             {/* Variant */}
-            <div className="space-y-2">
+            {/* <div className="space-y-2">
               <Label htmlFor="vehicle_variant_map_id">Variant</Label>
               <Controller
                 name="vehicle_variant_map_id"
@@ -323,10 +380,10 @@ export default function QuotationForm({
                   {errors.vehicle_variant_map_id.message}
                 </p>
               )}
-            </div>
+            </div> */}
 
             {/* Colour */}
-            <div className="space-y-2">
+            {/* <div className="space-y-2">
               <Label htmlFor="vehicle_color_id">Colour</Label>
               <Controller
                 name="vehicle_color_id"
@@ -346,78 +403,130 @@ export default function QuotationForm({
                   {errors.vehicle_color_id.message}
                 </p>
               )}
-            </div>
+            </div> */}
 
             {/* Pricing Fields */}
             <div className="col-span-full mt-10 space-y-6">
-              <H4>Price breakup</H4>
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                <div>
-                  <Label>Base Price</Label>
-                  <Input
-                    type="number"
-                    {...register("base_price_ex_showroom")}
-                  />
-                  {errors.base_price_ex_showroom && (
-                    <p className="text-destructive text-sm">
-                      {errors.base_price_ex_showroom.message}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <Label>GST (%)</Label>
-                  <Input type="number" {...register("gst")} />
-                  {errors.gst && (
-                    <p className="text-destructive text-sm">
-                      {errors.gst.message}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <Label>Insurance</Label>
-                  <Input type="number" {...register("insurance")} />
-                  {errors.insurance && (
-                    <p className="text-destructive text-sm">
-                      {errors.insurance.message}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <Label>RTO Charges</Label>
-                  <Input
-                    type="number"
-                    {...register("rto_registration_charges")}
-                  />
-                  {errors.rto_registration_charges && (
-                    <p className="text-destructive text-sm">
-                      {errors.rto_registration_charges.message}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <Label>Accessories/Fitments</Label>
-                  <Input type="number" {...register("accessories_fitments")} />
-                </div>
-                <div>
-                  <Label>Total Ex-Showroom</Label>
-                  <Input
-                    type="number"
-                    {...register("total_ex_showroom_price")}
-                    disabled
-                  />
-                </div>
-                <div>
-                  <Label>Discount</Label>
-                  <Input type="number" {...register("discount")} />
-                </div>
-                <div>
-                  <Label>On Road Price</Label>
-                  <Input
-                    type="number"
-                    {...register("on_road_price")}
-                    disabled
-                  />
-                </div>
+              <H4>Price breakups</H4>
+              <div className="space-y-8 divide-y">
+                {priceBreakUps.map((pb, ind) => {
+                  return (
+                    <div className="space-y-3 pb-8 last:pb-0" key={ind}>
+                      <H5 className={"text-primary"}>
+                        {priceBreakUps?.[ind]?.model ?? "-"}
+                      </H5>
+                      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                        <div>
+                          <Label>Base Price</Label>
+                          <Input
+                            type="number"
+                            {...register(
+                              `vehicle_price_breakups.${ind}.base_price_ex_showroom`,
+                            )}
+                          />
+                          {errors?.vehicle_price_breakups?.[ind]
+                            ?.base_price_ex_showroom && (
+                            <p className="text-destructive text-sm">
+                              {
+                                errors?.vehicle_price_breakups?.[ind]
+                                  ?.base_price_ex_showroom.message
+                              }
+                            </p>
+                          )}
+                        </div>
+                        <div>
+                          <Label>GST (%)</Label>
+                          <Input
+                            type="number"
+                            {...register(`vehicle_price_breakups.${ind}.gst`)}
+                          />
+                          {errors?.vehicle_price_breakups?.[ind]?.gst && (
+                            <p className="text-destructive text-sm">
+                              {
+                                errors?.vehicle_price_breakups?.[ind]?.gst
+                                  .message
+                              }
+                            </p>
+                          )}
+                        </div>
+                        <div>
+                          <Label>Insurance</Label>
+                          <Input
+                            type="number"
+                            {...register(
+                              `vehicle_price_breakups.${ind}.insurance`,
+                            )}
+                          />
+                          {errors?.vehicle_price_breakups?.[ind]?.insurance && (
+                            <p className="text-destructive text-sm">
+                              {
+                                errors?.vehicle_price_breakups?.[ind]?.insurance
+                                  ?.message
+                              }
+                            </p>
+                          )}
+                        </div>
+                        <div>
+                          <Label>RTO Charges</Label>
+                          <Input
+                            type="number"
+                            {...register(
+                              `vehicle_price_breakups.${ind}.rto_registration_charges`,
+                            )}
+                          />
+                          {errors?.vehicle_price_breakups?.[ind]
+                            ?.rto_registration_charges && (
+                            <p className="text-destructive text-sm">
+                              {
+                                errors?.vehicle_price_breakups?.[ind]
+                                  ?.rto_registration_charges.message
+                              }
+                            </p>
+                          )}
+                        </div>
+                        <div>
+                          <Label>Accessories/Fitments</Label>
+                          <Input
+                            type="number"
+                            {...register(
+                              `vehicle_price_breakups.${ind}.accessories_fitments`,
+                            )}
+                          />
+                        </div>
+                        <div>
+                          <Label>Total Ex-Showroom</Label>
+                          <Input
+                            type="number"
+                            // value={pb.total_ex_showroom_price || ""}
+                            {...register(
+                              `vehicle_price_breakups.${ind}.total_ex_showroom_price`,
+                            )}
+                            disabled
+                          />
+                        </div>
+                        <div>
+                          <Label>Discount</Label>
+                          <Input
+                            type="number"
+                            {...register(
+                              `vehicle_price_breakups.${ind}.discount`,
+                            )}
+                          />
+                        </div>
+                        <div>
+                          <Label>On Road Price</Label>
+                          <Input
+                            type="number"
+                            {...register(
+                              `vehicle_price_breakups.${ind}.total_ex_showroom_price`,
+                            )}
+                            disabled
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>

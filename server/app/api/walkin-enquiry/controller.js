@@ -14,7 +14,6 @@ const create = async (req, res) => {
     const { role, id } = req.user_data;
     if (role === "dealer") {
       const dealerRecord = await table.DealerModel.getByUserId(id);
-      console.log({ dealerRecord });
       if (!dealerRecord)
         return res
           .code(404)

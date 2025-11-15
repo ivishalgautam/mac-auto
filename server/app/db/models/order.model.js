@@ -38,6 +38,7 @@ const init = async (sequelize) => {
         onDelete: "CASCADE",
       },
       user_id: {
+        //punch by user id
         type: DataTypes.UUID,
         allowNull: true,
         references: {
@@ -69,10 +70,28 @@ const init = async (sequelize) => {
       message: {
         type: DataTypes.TEXT,
       },
+      driver_details: {
+        type: DataTypes.JSONB, // {driver_name, vehicle_number, phone}
+        allowNull: true,
+      },
+      invoice: {
+        type: DataTypes.ARRAY(DataTypes.TEXT),
+        defaultValue: [],
+      },
+      pdi: {
+        type: DataTypes.ARRAY(DataTypes.TEXT),
+        defaultValue: [],
+      },
+      e_way_bill: {
+        type: DataTypes.ARRAY(DataTypes.TEXT),
+        defaultValue: [],
+      },
     },
     {
       createdAt: "created_at",
       updatedAt: "updated_at",
+      deletedAt: "deleted_at",
+      paranoid: true,
       indexes: [
         { fields: ["user_id"] },
         { fields: ["order_code"] },
@@ -91,6 +110,7 @@ const create = async (req, transaction) => {
     attributes: ["order_code"],
     order: [["created_at", "DESC"]],
     raw: true,
+    paranoid: false,
   });
 
   let newOrdCode = "ORD-0001";
@@ -118,7 +138,7 @@ const create = async (req, transaction) => {
 };
 
 const get = async (req) => {
-  let whereConditions = [];
+  let whereConditions = ["ord.deleted_at IS NULL"];
   const queryParams = {};
   const { role, id } = req.user_data;
   if (role === "dealer") {
@@ -129,9 +149,37 @@ const get = async (req) => {
   const q = req.query.q ? req.query.q : null;
   if (q) {
     whereConditions.push(
-      `(order_code ILIKE :query OR usr.first_name ILIKE :query OR usr.last_name ILIKE :query OR dlr.location ILIKE :query))`
+      `(ord.order_code ILIKE :query OR usr.first_name ILIKE :query OR usr.last_name ILIKE :query OR dlr.location ILIKE :query)`
     );
     queryParams.query = `%${q}%`;
+  }
+
+  const status = req.query.status ? req.query.status.split(".") : null;
+  if (status?.length) {
+    whereConditions.push(`ord.status = any(:status)`);
+    queryParams.status = `{${status.join(",")}}`;
+  }
+
+  const dealers = req.query.dealers ? req.query.dealers.split(".") : null;
+  if (dealers?.length) {
+    whereConditions.push(`ord.dealer_id = any(:dealers)`);
+    queryParams.dealers = `{${dealers.join(",")}}`;
+  }
+
+  const startDate = req.query.start_date || null;
+  const endDate = req.query.end_date || null;
+  if (startDate && endDate) {
+    whereConditions.push(
+      `(ord.created_at::date >= :startDate AND ord.created_at::date <= :endDate)`
+    );
+    queryParams.startDate = startDate;
+    queryParams.endDate = endDate;
+  } else if (startDate) {
+    whereConditions.push(`ord.created_at::date >= :startDate`);
+    queryParams.startDate = startDate;
+  } else if (endDate) {
+    whereConditions.push(`ord.created_at::date <= :endDate`);
+    queryParams.endDate = endDate;
   }
 
   const page = req.query.page ? Number(req.query.page) : 1;
@@ -155,7 +203,7 @@ const get = async (req) => {
 
   let query = `
     SELECT
-        ord.id, ord.order_code, ord.punch_by, ord.status, ord.message, ord.created_at,
+        ord.id, ord.order_code, ord.punch_by, ord.status, ord.message, ord.created_at, ord.deleted_at,
         CONCAT(usr.first_name, ' ', COALESCE(usr.last_name, ''), ' (', dlr.location, ')') as dealership_name
       FROM ${constants.models.ORDER_TABLE} ord
       LEFT JOIN ${constants.models.USER_TABLE} punchusr ON punchusr.id = ord.user_id
@@ -183,27 +231,57 @@ const get = async (req) => {
 };
 
 const getById = async (req, id) => {
-  return await OrderModel.findOne({
-    where: { id: req.params?.id || id },
+  let query = `
+  SELECT
+      ord.*,
+      CONCAT(usr.first_name, ' ', usr.last_name) as dealer_name
+    FROM ${constants.models.ORDER_TABLE} ord
+    LEFT JOIN ${constants.models.DEALER_TABLE} dlr ON dlr.id = ord.dealer_id
+    LEFT JOIN ${constants.models.USER_TABLE} usr ON usr.id = dlr.user_id
+    WHERE ord.id = :orderId
+  `;
+
+  return await OrderModel.sequelize.query(query, {
+    type: QueryTypes.SELECT,
+    replacements: { orderId: req.params?.id || id },
     raw: true,
+    plain: true,
   });
 };
 
 const update = async (req, id, transaction) => {
   const options = {
     where: { id: req.params?.id || id },
+    returning: true,
+    plain: true,
+    raw: true,
   };
   if (transaction) options.transaction = transaction;
 
-  return await OrderModel.update(
-    { status: req.body.status, user_id: req.body.user_id },
+  const [, rows] = await OrderModel.update(
+    {
+      status: req.body.status,
+      driver_details: req.body.driver_details,
+      invoice: req.body.invoice,
+      pdi: req.body.pdi,
+      e_way_bill: req.body.e_way_bill,
+    },
     options
   );
+
+  return rows;
 };
 
 const deleteById = async (req, id) => {
   return await OrderModel.destroy({
     where: { id: req.params.id || id },
+  });
+};
+
+const forceDeleteById = async (req, id) => {
+  return await OrderModel.destroy({
+    where: { id: req.params.id || id },
+    force: true,
   });
 };
 
@@ -214,4 +292,5 @@ export default {
   get: get,
   getById: getById,
   deleteById: deleteById,
+  forceDeleteById: forceDeleteById,
 };

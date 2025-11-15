@@ -1,5 +1,5 @@
 import { searchParams } from "@/lib/searchparams";
-import { useQueryState } from "nuqs";
+import { parseAsString, useQueryState } from "nuqs";
 import { useCallback, useMemo } from "react";
 
 export function useTableFilters() {
@@ -18,17 +18,22 @@ export function useTableFilters() {
     "category",
     searchParams.category.withDefault(""),
   );
+  const [statusFilter, setStatusFilter] = useQueryState(
+    "status",
+    parseAsString.withDefault(""),
+  );
 
   const resetFilters = useCallback(() => {
     setSearchQuery(null);
     setCategoryFilter(null);
+    setStatusFilter(null);
 
     setPage(1);
-  }, [setSearchQuery, setCategoryFilter, setPage]);
+  }, [setSearchQuery, setCategoryFilter, setPage, setStatusFilter]);
 
   const isAnyFilterActive = useMemo(() => {
-    return !!searchQuery || !!categoryFilter;
-  }, [searchQuery, categoryFilter]);
+    return !!searchQuery || !!categoryFilter || !!statusFilter;
+  }, [searchQuery, categoryFilter, statusFilter]);
 
   return {
     searchQuery,
@@ -37,6 +42,8 @@ export function useTableFilters() {
     setPage,
     categoryFilter,
     setCategoryFilter,
+    statusFilter,
+    setStatusFilter,
     resetFilters,
     isAnyFilterActive,
   };

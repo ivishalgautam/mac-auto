@@ -34,7 +34,7 @@ const init = async (sequelize) => {
       },
       vehicle_variant_map_id: {
         type: DataTypes.UUID,
-        allowNull: false,
+        allowNull: true,
         references: {
           model: constants.models.VEHICLE_VARIANT_MAP_TABLE,
           key: "id",
@@ -114,10 +114,11 @@ const create = async (req, transaction) => {
 };
 
 const bulkCreate = async (data, transaction) => {
-  const options = {};
+  const options = { returning: true, raw: true };
   if (transaction) options.transaction = transaction;
 
-  return await InventoryModel.bulkCreate(data, options);
+  const newRecord = await InventoryModel.bulkCreate(data, options);
+  return newRecord.map((item) => item.dataValues);
 };
 
 const update = async (req, id) => {
