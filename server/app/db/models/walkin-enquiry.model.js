@@ -414,13 +414,12 @@ const getLatestEnquiries = async (req, limit = 10) => {
   const query = `
     SELECT 
       eq.*,
-      vh.title AS vehicle_title,
       CASE 
         WHEN dlr.id IS NULL THEN 'Not assigned'
         ELSE CONCAT(usr.first_name, ' ', usr.last_name, ' (', dlr.location, ')')
       END AS dealership
     FROM ${constants.models.WALKIN_ENQUIRY_TABLE} eq
-    LEFT JOIN ${constants.models.VEHICLE_TABLE} vh ON vh.id = eq.vehicle_id
+      LEFT JOIN ${constants.models.VEHICLE_TABLE} vh ON vh.id = ANY(enq.vehicle_ids)
     LEFT JOIN ${constants.models.DEALER_TABLE} dlr ON dlr.id = eq.dealer_id
     LEFT JOIN ${constants.models.USER_TABLE} usr ON usr.id = dlr.user_id
     ${whereClause}
