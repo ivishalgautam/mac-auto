@@ -13,6 +13,8 @@ export default function TableActions() {
     setCategoryFilter,
     setSearchQuery,
     isAnyFilterActive,
+    statusFilter,
+    setStatusFilter,
   } = useTableFilters();
 
   return (
@@ -36,6 +38,16 @@ export default function TableActions() {
         ]}
         setFilterValue={setCategoryFilter}
         filterValue={categoryFilter}
+      />
+      <DataTableFilterBox
+        filterKey="status"
+        title="Status"
+        options={[
+          { label: "Active", value: "active" },
+          { label: "Inactive", value: "inactive" },
+        ]}
+        setFilterValue={setStatusFilter}
+        filterValue={statusFilter}
       />
       <DataTableResetFilter
         isFilterActive={isAnyFilterActive}

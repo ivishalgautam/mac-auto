@@ -1,5 +1,5 @@
 import moment from "moment";
-import { ArrowUpDown, Plus, X } from "lucide-react";
+import { ArrowUpDown, Eye, Plus, X } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
@@ -18,7 +18,7 @@ const colorMap = {
   grey: "bg-gray-400",
 };
 
-export const columns = (openModal, setId, updateMutation) => [
+export const columns = () => [
   {
     accessorKey: "title",
     header: "Vehicle",
@@ -62,22 +62,30 @@ export const columns = (openModal, setId, updateMutation) => [
       );
     },
   },
-  // {
-  //   accessorKey: "",
-  //   header: "Action",
-  //   cell: ({ row }) => {
-  //     const id = row.original.id;
+  {
+    accessorKey: "status",
+    header: "Action",
+    cell: ({ row }) => {
+      const id = row.original.id;
+      const status = row.getValue("status");
 
-  //     return (
-  //       <Link
-  //         href={`items/add-details?itemId=${id}`}
-  //         className={buttonVariants({ variant: "outline", size: "sm" })}
-  //       >
-  //         <Plus size={15} /> Add details
-  //       </Link>
-  //     );
-  //   },
-  // },
+      return status === "updated" ? (
+        <Link
+          href={`items/view-details?itemId=${id}`}
+          className={buttonVariants({ variant: "secondary", size: "sm" })}
+        >
+          <Eye size={15} /> View details
+        </Link>
+      ) : (
+        <Link
+          href={`items/add-details?itemId=${id}`}
+          className={buttonVariants({ variant: "outline", size: "sm" })}
+        >
+          <Plus size={15} /> Add details
+        </Link>
+      );
+    },
+  },
   {
     accessorKey: "created_at",
     header: ({ column }) => (

@@ -12,8 +12,6 @@ import { dealerInventorySchema } from "@/utils/schema/dealer-inventory.schema";
 import { toast } from "sonner";
 import VehicleColorSelect from "@/features/vehicle-color-select";
 import ChassisSelect from "@/features/chassis-select";
-import VehicleVariantSelect from "@/features/vehicle-variant-select";
-import VehicleVariantSelectByVehicle from "@/features/vehicle-variant-map-select";
 import VehicleVariantMapSelect from "@/features/vehicle-variant-map-select";
 
 export default function OrderForm({

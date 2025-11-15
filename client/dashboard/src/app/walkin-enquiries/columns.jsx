@@ -60,8 +60,12 @@ export const columns = (
       header: "Location",
     },
     {
-      accessorKey: "vehicle_name",
+      accessorKey: "vehicles",
       header: "Model name",
+      cell: ({ row }) => {
+        const vehicles = row.getValue("vehicles");
+        return vehicles && vehicles.length ? vehicles.join(", ") : "-";
+      },
     },
     {
       accessorKey: "quantity",

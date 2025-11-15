@@ -16,6 +16,13 @@ const updatePrice = async (id, data) => {
   );
 };
 
+const updateStatus = async (id, data) => {
+  return await http().put(
+    `${endpoints.vehicles.getAll}/update-status/${id}`,
+    data,
+  );
+};
+
 const deleteById = async (id) => {
   return await http().delete(`${endpoints.vehicles.getAll}/${id}`);
 };
@@ -62,10 +69,10 @@ const getVehicleVariants = async (vehicleId) => {
 };
 
 const createVehicleVariant = async (data) => {
-  return await http().post(endpoints.vehicles.variant, data, true);
+  return await http().post(endpoints.vehicles.variant, data);
 };
 const updateVehicleVariant = async (id, data) => {
-  return await http().put(`${endpoints.vehicles.variant}/${id}`, data, true);
+  return await http().put(`${endpoints.vehicles.variant}/${id}`, data);
 };
 const deleteVehicleVariant = async (id) => {
   return await http().put(`${endpoints.vehicles.variant}/${id}`);
@@ -79,6 +86,7 @@ const vehicle = {
   create: create,
   update: update,
   updatePrice: updatePrice,
+  updateStatus: updateStatus,
   getByMarketingData: getByMarketingData,
   deleteById: deleteById,
   getById: getById,

@@ -171,19 +171,19 @@ export const sidebarData = [
     roles: [ROLES.DEALER],
     isVisible: true,
     items: [
-      // {
-      //   title: "Stock Inventory",
-      //   url: "/dealer-inventory?page=1",
-      //   roles: [ROLES.DEALER],
-      //   isVisible: true,
-      // },
-      // {
-      //   title: "Stock Orders",
-      //   url: "/dealer-orders?page=1&limit=10",
-      //   icon: Handshake,
-      //   roles: [ROLES.ADMIN, ROLES.CRE, ROLES.MANAGER, ROLES.DEALER],
-      //   isVisible: true,
-      // },
+      {
+        title: "Stock Inventory",
+        url: "/dealer-inventory?page=1",
+        roles: [ROLES.DEALER],
+        isVisible: true,
+      },
+      {
+        title: "Stock Orders",
+        url: "/dealer-orders?page=1&limit=10",
+        icon: Handshake,
+        roles: [ROLES.ADMIN, ROLES.CRE, ROLES.MANAGER, ROLES.DEALER],
+        isVisible: true,
+      },
       {
         title: "Service Complaints",
         url: "/dealer-tickets?page=1&limit=10",
@@ -427,6 +427,13 @@ export const sidebarData = [
       {
         title: "Order items",
         url: "/orders/:id/items/add-details",
+        roles: [ROLES.ADMIN, ROLES.CRE, ROLES.MANAGER, ROLES.DEALER],
+        isVisible: false,
+        items: [],
+      },
+      {
+        title: "Order items",
+        url: "/orders/:id/items/view-details",
         roles: [ROLES.ADMIN, ROLES.CRE, ROLES.MANAGER, ROLES.DEALER],
         isVisible: false,
         items: [],

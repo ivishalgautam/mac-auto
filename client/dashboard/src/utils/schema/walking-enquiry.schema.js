@@ -45,7 +45,16 @@ const personDetailsSchema = z.object({
 
 export const walkInEnquirySchema = z
   .object({
-    vehicle_id: z.string().uuid({ message: "Invalid vehicle" }),
+    vehicle_ids: z
+      .array(
+        z.object({
+          value: z.string().uuid({ message: "Invalid vehicle" }),
+          label: z.string(),
+        }),
+      )
+      .min(1, { message: "Select vehicle" })
+      .transform((data) => data.map(({ value }) => value))
+      .default([]),
     dealer_id: z.string().uuid().nullable(),
 
     name: z
@@ -73,7 +82,7 @@ export const walkInEnquirySchema = z
     rent_agreement: z.array(z.any()).optional(),
     guarantor_aadhaar: z.array(z.any()).optional(),
 
-    house: z.enum(["owned", "rented", "parental"]).optional(),
+    house: z.enum(["owned", "rented", "parental"]).nullable().optional(),
 
     landmark: z
       .string()

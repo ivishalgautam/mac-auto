@@ -11,6 +11,7 @@ import {
   useDeleteVehicle,
   useGetVehicles,
   useUpdateVehicle,
+  useUpdateVehicleStatus,
 } from "@/mutations/vehicle-mutation";
 import { DeleteDialog } from "./delete-dialog";
 import { DealerOrderCreateDialog } from "./order-create-dialog";
@@ -45,6 +46,7 @@ export default function Listing() {
   const { data, isLoading, isError, error } = useGetVehicles(searchParamsStr);
   const deleteMutation = useDeleteVehicle(id, closeModal);
   const updateMutation = useUpdateVehicle(id);
+  const updateStatusMutation = useUpdateVehicleStatus(id);
   const createInventoryMutation = useCreateVehicleInventory(id, () =>
     setIsInventoryModal(false),
   );
@@ -66,7 +68,7 @@ export default function Listing() {
   return (
     <div className="border-input w-full rounded-lg">
       <DataTable
-        columns={columns(updateMutation, setId, openModal)}
+        columns={columns(setId, openModal, updateStatusMutation)}
         data={data?.vehicles ?? []}
         totalItems={data?.total}
       />

@@ -4,6 +4,8 @@ import { DataTableSearch } from "@/components/ui/table/data-table-search";
 import { useTableFilters } from "./use-table-filters";
 import { DataTableFilterBox } from "@/components/ui/table/data-table-filter-box";
 import useGetDealers from "@/hooks/use-get-dealers";
+import { Skeleton } from "@/components/ui/skeleton";
+import ErrorMessage from "@/components/ui/error";
 
 export default function TableActions() {
   const {
@@ -19,7 +21,7 @@ export default function TableActions() {
   } = useTableFilters();
 
   const { data, isLoading, isError, error } = useGetDealers();
-  console.log({ data });
+
   return (
     <div className="my-3 flex flex-wrap items-center gap-4">
       <DataTableSearch
@@ -38,13 +40,19 @@ export default function TableActions() {
         setFilterValue={setRoleFilter}
         filterValue={roleFilter}
       />
-      <DataTableFilterBox
-        filterKey="dealers"
-        title="Dealers"
-        options={data ?? []}
-        setFilterValue={setDealerFilter}
-        filterValue={dealerFilter}
-      />
+      {isLoading ? (
+        <Skeleton className={"h-10 w-32"} />
+      ) : isError ? (
+        <ErrorMessage error={error} />
+      ) : (
+        <DataTableFilterBox
+          filterKey="dealers"
+          title="Dealers"
+          options={data ?? []}
+          setFilterValue={setDealerFilter}
+          filterValue={dealerFilter}
+        />
+      )}
       <DataTableResetFilter
         isFilterActive={isAnyFilterActive}
         onReset={resetFilters}

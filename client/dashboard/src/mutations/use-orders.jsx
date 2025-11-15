@@ -68,7 +68,16 @@ export const useUpdateOrder = (id, callback) => {
     mutationFn: (data) => updateOrder(id, data),
     onSuccess: (_) => {
       queryClient.invalidateQueries({ queryKey: ["orders"] });
-      callback?.();
+      queryClient.invalidateQueries({ queryKey: ["orders", id] });
+      callback?.(_);
+    },
+    onError: (error) => {
+      toast.error("Error", {
+        description:
+          error?.response?.data?.message ??
+          error?.message ??
+          "Something went wrong.",
+      });
     },
   });
 };

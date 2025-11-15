@@ -3,7 +3,7 @@ import { colors } from "@/data";
 import { useFormContext } from "react-hook-form";
 
 export default function ColorsSelect({
-  label = "Select colors",
+  label = "Select",
   inputName,
   className = "",
   value = [],
@@ -16,7 +16,7 @@ export default function ColorsSelect({
       commandProps={{ label }}
       value={value}
       defaultOptions={colors}
-      placeholder="Select colors"
+      placeholder="Select"
       hideClearAllButton={false}
       hidePlaceholderWhenSelected={false}
       emptyIndicator={<p className="text-center text-sm">No results found</p>}

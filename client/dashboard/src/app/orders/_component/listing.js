@@ -1,7 +1,7 @@
 "use client";
 import { DataTable } from "@/components/ui/table/data-table";
 import { DataTableSkeleton } from "@/components/ui/table/data-table-skeleton";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { columns } from "../columns";
 import { DeleteDialog } from "./delete-dialog";
@@ -15,22 +15,44 @@ import { useAuth } from "@/providers/auth-provider";
 import { saveAs } from "file-saver";
 import Papa from "papaparse";
 import { Button } from "@/components/ui/button";
-import { Download } from "lucide-react";
+import { Download, PenBoxIcon } from "lucide-react";
 import { toast } from "sonner";
 import http from "@/utils/http";
 import { endpoints } from "@/utils/endpoints";
+import { DriverDetailsDialog } from "./driver-details-dialog";
 
 export default function Listing() {
   const { user } = useAuth();
+  const router = useRouter();
   const [id, setId] = useState(null);
   const [isModal, setIsModal] = useState(false);
+  const [isDeliveryModal, setIsDeliveryModal] = useState(false);
   const searchParams = useSearchParams();
   const searchParamsStr = searchParams.toString();
   const { data, isLoading, isError, error } = useOrders(searchParamsStr);
   const deleteMutation = useDeleteOrder(id, () => {
     setIsModal(false);
   });
-  const updateMutation = useUpdateOrder(id, () => {});
+
+  const updateMutation = useUpdateOrder(id, (data) => {
+    toast(data?.message ?? "Updated", {
+      action: data.data?.status === "dispatched" && {
+        label: (
+          <div className="flex items-center gap-1">
+            <span>Update vehicle details</span>
+            <PenBoxIcon size={15} />
+          </div>
+        ),
+        onClick: () => router.push(`/orders/${data.data.id}/items`),
+      },
+    });
+    setIsDeliveryModal(false);
+  });
+
+  const openModal = (type) => {
+    if (type === "delete") return setIsModal(true);
+    if (type === "delivery-details") return setIsDeliveryModal(true);
+  };
 
   async function downloadCSV() {
     if (!data.orders.length) return toast.warning("No data found");
@@ -45,7 +67,6 @@ export default function Listing() {
 
   if (isLoading) return <DataTableSkeleton columnCount={4} rowCount={10} />;
   if (isError) return <ErrorMessage error={error} />;
-
   return (
     <div className="border-input w-full rounded-lg">
       <div className="mb-2 space-x-2 text-end">
@@ -56,14 +77,21 @@ export default function Listing() {
       </div>
 
       <DataTable
-        columns={columns(setId, updateMutation, user, () => setIsModal(true))}
+        columns={columns(setId, updateMutation, user, openModal)}
         data={data?.orders ?? []}
         totalItems={data?.total ?? 0}
       />
+
       <DeleteDialog
         deleteMutation={deleteMutation}
         isOpen={isModal}
         setIsOpen={setIsModal}
+        id={id}
+      />
+      <DriverDetailsDialog
+        mutation={updateMutation}
+        isOpen={isDeliveryModal}
+        setIsOpen={setIsDeliveryModal}
         id={id}
       />
     </div>
