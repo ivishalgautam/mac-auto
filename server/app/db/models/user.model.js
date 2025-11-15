@@ -144,7 +144,6 @@ const get = async (req) => {
   const whereConditions = ["usr.role != 'admin'"];
   const queryParams = {};
   const q = req.query.q ? req.query.q : null;
-  const roles = req.query.role ? req.query.role.split(".") : null;
   const onlyRoles = req.query.or ? req.query.or.split(".") : null;
 
   if (q) {
@@ -154,6 +153,7 @@ const get = async (req) => {
     queryParams.query = `%${q}%`;
   }
 
+  const roles = req.query.role ? req.query.role.split(".") : null;
   if (roles?.length) {
     whereConditions.push(`usr.role = any(:roles)`);
     queryParams.roles = `{${roles.join(",")}}`;

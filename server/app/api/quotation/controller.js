@@ -8,52 +8,6 @@ const create = async (req, res) => {
   try {
     const validatedData = quotationSchema.parse(req.body);
 
-    // model: z.string().optional(),
-    // variant: z.string().optional(),
-    // color: z.string().optional(),
-    // customer_id: z.string().uuid().optional(),
-    // dealer_id: z.string().uuid().optional(),
-
-    const vehicle = await table.VehicleModel.getById(
-      0,
-      validatedData.vehicle_id
-    );
-    if (!vehicle) {
-      return res
-        .code(StatusCodes.NOT_FOUND)
-        .send({ status: false, message: "Vehicle not registered." });
-    } else {
-      req.body.model = vehicle.title;
-    }
-
-    const vehicleVariantMap = await table.VehicleVariantMapModel.getById(
-      0,
-      validatedData.vehicle_variant_map_id
-    );
-    if (!vehicleVariantMap) {
-      return res
-        .code(StatusCodes.NOT_FOUND)
-        .send({ status: false, message: "Vehicle variant not found." });
-    } else {
-      const vehicleVariant = await table.VehicleVariantModel.getById(
-        0,
-        vehicleVariantMap.vehicle_variant_id
-      );
-      req.body.variant = vehicleVariant.variant_name;
-    }
-
-    const vehicleColor = await table.VehicleColorModel.getById(
-      0,
-      validatedData.vehicle_color_id
-    );
-    if (!vehicleColor) {
-      return res
-        .code(StatusCodes.NOT_FOUND)
-        .send({ status: false, message: "Vehicle color not found." });
-    } else {
-      req.body.color = vehicleColor.color_name;
-    }
-
     if (req.user_data.role === "dealer") {
       const dealerRecord = await table.DealerModel.getByUserId(
         req.user_data.id

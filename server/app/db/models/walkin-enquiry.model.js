@@ -21,15 +21,9 @@ const init = async (sequelize) => {
         defaultValue: DataTypes.UUIDV4,
         unique: true,
       },
-      vehicle_id: {
-        type: DataTypes.UUID,
-        allowNull: false,
-        references: {
-          model: constants.models.VEHICLE_TABLE,
-          key: "id",
-          deferrable: Deferrable.INITIALLY_IMMEDIATE,
-        },
-        onDelete: "CASCADE",
+      vehicle_ids: {
+        type: DataTypes.ARRAY(DataTypes.UUID),
+        defaultValue: [],
       },
       enquiry_code: {
         type: DataTypes.STRING,
@@ -135,7 +129,7 @@ const init = async (sequelize) => {
       createdAt: "created_at",
       updatedAt: "updated_at",
       indexes: [
-        { fields: ["vehicle_id"] },
+        { fields: ["vehicle_ids"] },
         { fields: ["enquiry_code"] },
         { fields: ["dealer_id"] },
         { fields: ["name"] },
@@ -176,7 +170,7 @@ const create = async (req) => {
   return await WalkInEnquiryModel.create({
     dealer_id: req.body?.dealer_id ?? null,
     enquiry_code: newEnqCode,
-    vehicle_id: req.body.vehicle_id,
+    vehicle_ids: req.body.vehicle_ids,
     quantity: req.body.quantity,
     message: req.body.message,
     name: req.body.name,
@@ -250,7 +244,7 @@ const get = async (req) => {
     SELECT
         COUNT(enq.id) OVER()::integer as total
       FROM ${constants.models.WALKIN_ENQUIRY_TABLE} enq
-      LEFT JOIN ${constants.models.VEHICLE_TABLE} vh ON vh.id = enq.vehicle_id
+      LEFT JOIN ${constants.models.VEHICLE_TABLE} vh ON vh.id = ANY(enq.vehicle_ids)
       LEFT JOIN ${constants.models.DEALER_TABLE} dlr ON dlr.id = enq.dealer_id
       LEFT JOIN ${constants.models.USER_TABLE} dlrusr ON dlrusr.id = dlr.user_id
       ${whereClause}
@@ -258,16 +252,18 @@ const get = async (req) => {
 
   let query = `
       SELECT
-        enq.*, vh.title as vehicle_name, 
+        enq.*,
+        COALESCE(JSON_AGG(vh.title) FILTER (WHERE vh.title IS NOT NULL), '[]') AS vehicles,
         CASE 
           WHEN dlrusr.id IS NOT NULL THEN 
           CONCAT(dlrusr.first_name, ' ', dlrusr.last_name) ELSE null 
           END as dealership, dlr.dealer_code
       FROM ${constants.models.WALKIN_ENQUIRY_TABLE} enq
-      LEFT JOIN ${constants.models.VEHICLE_TABLE} vh ON vh.id = enq.vehicle_id
+      LEFT JOIN ${constants.models.VEHICLE_TABLE} vh ON vh.id = ANY(enq.vehicle_ids)
       LEFT JOIN ${constants.models.DEALER_TABLE} dlr ON dlr.id = enq.dealer_id
       LEFT JOIN ${constants.models.USER_TABLE} dlrusr ON dlrusr.id = dlr.user_id
       ${whereClause}
+      GROUP BY enq.id, dlrusr.id, dlr.dealer_code
       ORDER BY enq.created_at DESC
       LIMIT :limit OFFSET :offset
     `;
@@ -305,7 +301,7 @@ const update = async (req, id, transaction) => {
     {
       status: req.body.status,
       dealer_id: req.body.dealer_id,
-      vehicle_id: req.body.vehicle_id,
+      vehicle_ids: req.body.vehicle_ids,
       message: req.body.message,
       name: req.body.name,
       phone: req.body.phone,

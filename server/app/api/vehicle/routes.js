@@ -37,6 +37,7 @@ export default async function routes(fastify, opts) {
     controller.update
   );
   fastify.put("/update-price/:id", {}, controller.updatePrice);
+  fastify.put("/update-status/:id", {}, controller.updateStatus);
   fastify.delete("/:id", {}, controller.deleteById);
   fastify.get("/:id", {}, controller.getById);
   fastify.get("/marketing-materials", {}, controller.getMarketingMaterials);

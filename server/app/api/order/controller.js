@@ -3,6 +3,9 @@ import table from "../../db/models.js";
 import { sequelize } from "../../db/postgres.js";
 import { createOrderSchema } from "../../validation-schema/order-schema.js";
 import { StatusCodes } from "http-status-codes";
+import { orderSchema } from "../../validation-schema/order.schema.js";
+import { cleanupFiles } from "../../helpers/cleanup-files.js";
+import { getItemsToDelete } from "../../helpers/filter.js";
 
 const create = async (req, res) => {
   const transaction = await sequelize.transaction();
@@ -56,30 +59,108 @@ const get = async (req, res) => {
 
 const update = async (req, res) => {
   const transaction = await sequelize.transaction();
-
   try {
+    const validatedData = orderSchema.parse(req.body);
     const record = await table.OrderModel.getById(req);
-    if (!record)
+    if (!record) {
       return res
         .code(StatusCodes.NOT_FOUND)
         .send({ status: false, message: "Order not found." });
-
-    await table.OrderModel.update(req, 0, transaction);
-    if (req.body.order_status === "Canceled") {
-      const data = await table.OrderItemModel.getByOrderId(req);
-      const updateInventoryPromises = data.items.map(async (item) => {
-        const stockRecord = await table.InventoryModel.getById(0, item.item_id);
-        return table.InventoryModel.update(
-          { body: { stock: stockRecord.stock + item.quantity } },
-          item.item_id,
-          transaction
-        );
-      });
-      await Promise.all(updateInventoryPromises);
     }
+
+    if (
+      validatedData.status === "delivered" &&
+      record.status !== "out for delivery"
+    ) {
+      return res.code(StatusCodes.NOT_FOUND).send({
+        status: false,
+        message: "Please add driver details and invoice details.",
+      });
+    }
+
+    if (record.status === "delivered") {
+      return res.code(StatusCodes.UNPROCESSABLE_ENTITY).send({
+        status: false,
+        message: "Can't update order. The order is already delivered.",
+      });
+    }
+
+    const data = await table.OrderItemModel.getByOrderId(req);
+
+    const documentsToDelete = [];
+
+    const existingInvoiceDocs = record.invoice;
+    const updatedInvoiceDocs = req.body.invoice_urls;
+    if (updatedInvoiceDocs) {
+      req.body.invoice = [...(req.body?.invoice ?? []), ...updatedInvoiceDocs];
+      documentsToDelete.push(
+        ...getItemsToDelete(existingInvoiceDocs, updatedInvoiceDocs)
+      );
+    }
+
+    const existingPDIDocs = record.pdi;
+    const updatedPDIDocs = req.body.pdi_urls;
+    if (updatedPDIDocs) {
+      req.body.pdi = [...(req.body?.pdi ?? []), ...updatedPDIDocs];
+      documentsToDelete.push(
+        ...getItemsToDelete(existingPDIDocs, updatedPDIDocs)
+      );
+    }
+
+    const existingEWayBillDocs = record.e_way_bill;
+    const updatedEWayBillDocs = req.body.e_way_bill_urls;
+    if (updatedEWayBillDocs) {
+      req.body.e_way_bill = [
+        ...(req.body?.e_way_bill ?? []),
+        ...updatedEWayBillDocs,
+      ];
+      documentsToDelete.push(
+        ...getItemsToDelete(existingEWayBillDocs, updatedEWayBillDocs)
+      );
+    }
+
+    const updated = await table.OrderModel.update(req, 0, transaction);
+
+    if (updated.status === "delivered") {
+      const chassisDetails = data.items
+        .flatMap((item) =>
+          item.colors.flatMap(
+            (c) =>
+              c.details &&
+              c.details.map((detail) => ({
+                ...detail,
+                vehicle_id: item.vehicle_id,
+                vehicle_color_id: c.vehicle_color_id,
+              }))
+          )
+        )
+        .filter(Boolean);
+
+      const bulkAddData = chassisDetails.map((no) => ({
+        vehicle_id: no.vehicle_id,
+        vehicle_color_id: no.vehicle_color_id,
+        dealer_id: record.dealer_id,
+        motor_no: no.motor_no,
+        battery_no: no.battery_no,
+        charger_no: no.charger_no,
+        chassis_no: no.chassis_no,
+        controller_no: no.controller_no,
+        status: "active",
+      }));
+
+      const newBulkData = await table.DealerInventoryModel.bulkCreate(
+        bulkAddData,
+        transaction
+      );
+    }
+
+    await cleanupFiles(documentsToDelete);
+
     await transaction.commit();
 
-    res.code(StatusCodes.OK).send({ status: true, message: "Order deleted." });
+    res
+      .code(StatusCodes.OK)
+      .send({ status: true, message: "Order updated.", data: updated });
   } catch (error) {
     await transaction.rollback();
     throw error;
@@ -124,10 +205,20 @@ const getOrderItems = async (req, res) => {
   }
 };
 
+const getOrderItem = async (req, res) => {
+  try {
+    const data = await table.OrderItemModel.getById(req);
+    res.code(StatusCodes.OK).send({ status: true, data: data });
+  } catch (error) {
+    throw error;
+  }
+};
+
 export default {
   create: create,
   get: get,
   getOrderItems: getOrderItems,
+  getOrderItem: getOrderItem,
   update: update,
   deleteById: deleteById,
   getById: getById,

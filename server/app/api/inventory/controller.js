@@ -26,6 +26,7 @@ const create = async (req, res) => {
       battery_no: chassis.battery_no,
       controller_no: chassis.controller_no,
       charger_no: chassis.charger_no,
+      status: "active",
     }));
     await table.InventoryModel.bulkCreate(chassisData, transaction);
     await transaction.commit();

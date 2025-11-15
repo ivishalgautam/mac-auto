@@ -5,66 +5,118 @@ import { sequelize } from "../../db/postgres.js";
 import { cleanupFiles } from "../../helpers/cleanup-files.js";
 import { getItemsToDelete } from "../../helpers/filter.js";
 import constants from "../../lib/constants/index.js";
+import { z } from "zod";
 
 const status = constants.http.status;
 const responseMessage = constants.error.message;
 
+const inventorySchema = z.object({
+  order_item_id: z.string().uuid({ message: "Select valid order item ID" }),
+  colors: z.array(
+    z.object({
+      vehicle_id: z.string().uuid({ message: "Select valid vehicle ID" }),
+      color_name: z.string().min(1, { message: "Color name is required" }),
+      color_hex: z.string().min(1, { message: "Color HEX is required" }),
+      chassis_numbers: z.array(
+        z.object({
+          chassis_no: z
+            .string({ required_error: "required*" })
+            .min(1, { message: "required*" }),
+          motor_no: z
+            .string()
+            .optional()
+            .or(z.literal("").transform(() => undefined)),
+          battery_no: z
+            .string()
+            .optional()
+            .or(z.literal("").transform(() => undefined)),
+          controller_no: z
+            .string()
+            .optional()
+            .or(z.literal("").transform(() => undefined)),
+          charger_no: z
+            .string()
+            .optional()
+            .or(z.literal("").transform(() => undefined)),
+        })
+      ),
+    })
+  ),
+});
+
 const create = async (req, res) => {
   const transaction = await sequelize.transaction();
   try {
-    const colorHex = req.body.color_hex;
-    const vehicleId = req.body.vehicle_id;
-    const vehicleVariantId = req.body.variant_id;
-    const chassisNumbers = req.body.chassis_numbers;
+    const validatedData = inventorySchema.parse(req.body);
 
-    let colorRecord = await table.VehicleColorModel.getByColorAndVehicleId(
-      colorHex,
-      vehicleId
-    );
-    if (!colorRecord) {
-      colorRecord = await table.VehicleColorModel.create(req, transaction);
-    } else {
-      await cleanupFiles(req.filePaths);
-    }
-
-    const variantRecord = await table.VehicleVariantModel.getById(
+    const orderItemRecord = await table.OrderItemModel.getById(
       0,
-      vehicleVariantId
+      validatedData.order_item_id
     );
-    if (!variantRecord)
-      return res
-        .code(StatusCodes.NOT_FOUND)
-        .send({ status: false, message: "Variant not found." });
 
-    let vehicleVariantMapRecord =
-      await table.VehicleVariantMapModel.getByVariantAndVehicleId(
-        vehicleVariantId,
+    const colors = req.body.colors;
+    const updatedColorsWithVehicleDetails = [];
+
+    for (const color of colors) {
+      const colorHex = color.color_hex;
+      const vehicleId = color.vehicle_id;
+      const chassisNumbers = color.chassis_numbers;
+
+      let colorRecord = await table.VehicleColorModel.getByColorAndVehicleId(
+        colorHex,
         vehicleId
       );
-    if (!vehicleVariantMapRecord) {
-      vehicleVariantMapRecord = await table.VehicleVariantMapModel.create(
-        {
-          body: { vehicle_id: vehicleId, vehicle_variant_id: vehicleVariantId },
-        },
-        transaction
-      );
+      if (!colorRecord) {
+        colorRecord = await table.VehicleColorModel.create(
+          {
+            body: {
+              vehicle_id: color.vehicle_id,
+              color_name: color.color_name,
+              color_hex: color.color_hex,
+            },
+          },
+          transaction
+        );
+      } else {
+        await cleanupFiles(req.filePaths);
+      }
+
+      if (chassisNumbers && chassisNumbers.length) {
+        const bulkData = chassisNumbers.map((c) => ({
+          vehicle_color_id: colorRecord.id,
+          vehicle_id: colorRecord.vehicle_id,
+          chassis_no: c.chassis_no,
+          motor_no: c.motor_no,
+          battery_no: c.battery_no,
+          controller_no: c.controller_no,
+          charger_no: c.charger_no,
+          status: "sold",
+        }));
+
+        const newBulkData = await table.InventoryModel.bulkCreate(
+          bulkData,
+          transaction
+        );
+
+        const colorToUpdate = orderItemRecord.colors.find(
+          (c) => c.color === colorRecord.color_name
+        );
+        if (colorToUpdate) {
+          colorToUpdate.details = newBulkData.map((d) => ({
+            chassis_no: d.chassis_no,
+            motor_no: d.motor_no,
+            battery_no: d.battery_no,
+            controller_no: d.controller_no,
+            charger_no: d.charger_no,
+          }));
+        }
+        updatedColorsWithVehicleDetails.push(colorToUpdate);
+      }
     }
-
-    if (chassisNumbers && chassisNumbers.length) {
-      const bulkData = chassisNumbers.map((c) => ({
-        vehicle_color_id: colorRecord.id,
-        vehicle_variant_map_id: vehicleVariantMapRecord.id,
-        vehicle_id: colorRecord.vehicle_id,
-        chassis_no: c.number,
-        motor_no: c.motor_no,
-        battery_no: c.battery_no,
-        controller_no: c.controller_no,
-        charger_no: c.charger_no,
-      }));
-
-      await table.InventoryModel.bulkCreate(bulkData, transaction);
-    }
-
+    await table.OrderItemModel.update(
+      { body: { colors: updatedColorsWithVehicleDetails, status: "updated" } },
+      validatedData.order_item_id
+    );
     await transaction.commit();
     return res.code(201).send({ success: true, data: "Variant added." });
   } catch (error) {
