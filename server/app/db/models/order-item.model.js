@@ -155,7 +155,7 @@ const getByOrderId = async (req, orderId) => {
           'vehicle_color_id', vhclr.id
         )
       ) AS colors,
-      vh.id as vehicle_id, vh.title
+      vh.id as vehicle_id, vh.title, vh.category
     FROM ${constants.models.ORDER_ITEM_TABLE} oi
     LEFT JOIN ${constants.models.VEHICLE_TABLE} vh ON vh.id = oi.vehicle_id
     LEFT JOIN LATERAL jsonb_array_elements(oi.colors) elem ON TRUE

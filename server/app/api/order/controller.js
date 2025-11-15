@@ -6,6 +6,7 @@ import { StatusCodes } from "http-status-codes";
 import { orderSchema } from "../../validation-schema/order.schema.js";
 import { cleanupFiles } from "../../helpers/cleanup-files.js";
 import { getItemsToDelete } from "../../helpers/filter.js";
+import { mailer } from "../../services/mailer.js";
 
 const create = async (req, res) => {
   const transaction = await sequelize.transaction();
@@ -14,9 +15,16 @@ const create = async (req, res) => {
     const validateData = createOrderSchema.parse(req.body);
 
     const { role, id } = req.user_data;
+    let userRecord = null;
     if (role === "dealer") {
       const dealerRecord = await table.DealerModel.getByUserId(id);
       req.body.dealer_id = dealerRecord.id;
+      userRecord = req.user_data;
+    } else {
+      const dealerRecord = await table.DealerModel.getById(
+        validateData.dealer_id
+      );
+      userRecord = await table.UserModel.getById(0, dealerRecord.user_id);
     }
 
     const orderRecord = await table.OrderModel.create(req, transaction);
@@ -37,7 +45,17 @@ const create = async (req, res) => {
     );
 
     await table.OrderItemModel.bulkCreate(itemRecords, transaction);
+
     await transaction.commit();
+
+    if (userRecord?.email) {
+      await mailer.sendOrderCreatedEmail({
+        email: userRecord.email,
+        order_code: orderRecord.order_code,
+        fullname: userRecord.first_name + " " + userRecord?.last_name ?? "",
+        status: orderRecord.status,
+      });
+    }
 
     res
       .code(StatusCodes.CREATED)
@@ -61,12 +79,16 @@ const update = async (req, res) => {
   const transaction = await sequelize.transaction();
   try {
     const validatedData = orderSchema.parse(req.body);
+
     const record = await table.OrderModel.getById(req);
     if (!record) {
       return res
         .code(StatusCodes.NOT_FOUND)
         .send({ status: false, message: "Order not found." });
     }
+
+    const dealerRecord = await table.DealerModel.getById(record.dealer_id);
+    let userRecord = await table.UserModel.getById(0, dealerRecord.user_id);
 
     if (
       validatedData.status === "delivered" &&
@@ -157,6 +179,15 @@ const update = async (req, res) => {
     await cleanupFiles(documentsToDelete);
 
     await transaction.commit();
+
+    if (userRecord?.email) {
+      await mailer.sendOrderStatusUpdateEmail({
+        email: userRecord.email,
+        order_code: record.order_code,
+        fullname: userRecord.first_name + " " + userRecord?.last_name ?? "",
+        status: record.status,
+      });
+    }
 
     res
       .code(StatusCodes.OK)

@@ -3,19 +3,21 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Password Reset - Mack EV</title>
-
+  <title>Application Status Update</title>
   <style>
     body, table, td, p, a, li, blockquote {
       -webkit-text-size-adjust: 100%;
       -ms-text-size-adjust: 100%;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
-
+    table, td {
+      mso-table-lspace: 0pt;
+      mso-table-rspace: 0pt;
+    }
     img {
       -ms-interpolation-mode: bicubic;
       border: 0;
       height: auto;
+      line-height: 100%;
       outline: none;
       text-decoration: none;
     }
@@ -23,30 +25,29 @@
     .email-container {
       max-width: 600px;
       margin: 0 auto;
-      background: #ffffff;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
 
-    /* Header */
     .header {
-      background: #ffffff;
+      background: white;
       padding: 30px 20px;
       text-align: center;
     }
 
-    .logo-wrapper {
-      width: 100%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
+    .logo {
+      color: #ffffff;
+      font-size: 28px;
+      font-weight: bold;
+      margin: 0;
+      text-decoration: none;
     }
 
-    .logo-img {
-      width: 200px;
-      margin: 20px auto 10px auto;
-      display: block;
+    .tagline {
+      color: #7AC943;
+      font-size: 14px;
+      margin: 5px 0 0 0;
     }
 
-    /* Main Content */
     .content {
       background-color: #ffffff;
       padding: 40px 30px;
@@ -66,20 +67,17 @@
       margin-bottom: 20px;
     }
 
-    /* CTA Button */
-    .reset-button {
-      display: inline-block;
-      background-color: #39A935;
-      color: #ffffff !important;
-      text-decoration: none;
-      padding: 14px 28px;
+    .status-box {
+      background-color: #f1f8f5;
+      border-left: 4px solid #39A935;
+      padding: 15px 20px;
+      margin: 20px 0;
       border-radius: 6px;
       font-size: 16px;
-      font-weight: 600;
-      margin: 20px 0;
+      color: #2e7d32;
+      text-transform: capitalize;
     }
 
-    /* Support text */
     .support-text {
       font-size: 15px;
       color: #4a5568;
@@ -88,11 +86,10 @@
 
     .support-email {
       color: #00AEEF;
-      font-weight: 600;
       text-decoration: none;
+      font-weight: 600;
     }
 
-    /* Footer */
     .footer {
       background-color: #5FBA47;
       padding: 30px 20px;
@@ -100,15 +97,14 @@
     }
 
     .footer-text {
-      color: #eaf6e8;
+      color: #c7d4e1;
       font-size: 14px;
       margin: 0 0 10px 0;
     }
 
     .footer-link {
-      color: #ffffff;
+      color: #7AC943;
       text-decoration: none;
-      font-weight: 600;
     }
 
     .footer-link:hover {
@@ -116,44 +112,50 @@
     }
 
     @media only screen and (max-width: 600px) {
-      .email-container { width: 100% !important; }
-      .content { padding: 30px 20px !important; }
+      .email-container {
+        width: 100% !important;
+      }
+      .content {
+        padding: 30px 20px !important;
+      }
     }
   </style>
 </head>
-
 <body style="margin: 0; padding: 0; background-color: #eef3f8;">
   <div class="email-container">
 
     <!-- Header -->
     <div class="header">
-      <div class="logo-wrapper">
+      <div
+        class="logo"
+        style="
+          width: 100%;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+        "
+      >
         <img
           src="https://mack-ev.com/_next/image?url=%2Flogo.png&w=256&q=75"
-          class="logo-img"
-          alt="Mack EV Logo"
+          style="margin: 10px auto; width: 200px; margin-top: 20px"
         />
       </div>
     </div>
 
-    <!-- Content -->
+    <!-- Main Content -->
     <div class="content">
-      <h2 class="greeting">Hello,</h2>
+      <h2 class="greeting">Dear <%= fullname || "Valued User" %>,</h2>
 
       <p class="intro-text">
-        We received a request to reset your password. Click the button below to set a new one:
+        Order created, Your order number <strong><%= order_code %></strong>.
       </p>
 
-      <p style="text-align: center;">
-        <a href="<%= resetLink %>" class="reset-button">🔒 Reset Password</a>
-      </p>
-
-      <p class="intro-text" style="margin-top: 25px;">
-        This reset link will expire in 60 minutes. If you did not request a password reset, you can safely ignore this email.
-      </p>
+      <div class="status-box">
+        📌 <strong>Current Status:</strong> <%= status %>
+      </div>
 
       <p class="support-text">
-        Need help? Contact our support team at
+        If you have any questions, feel free to contact our team at
         <a href="mailto:support@mack-ev.com" class="support-email">
           support@mack-ev.com
         </a>.
@@ -162,7 +164,7 @@
 
     <!-- Footer -->
     <div class="footer">
-      <p class="footer-text">Stay secure,</p>
+      <p class="footer-text">Thank you,</p>
       <p class="footer-text"><strong>Team Mack EV</strong></p>
       <p class="footer-text">
         <a href="https://mack-ev.com" class="footer-link">

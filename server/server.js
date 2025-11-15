@@ -62,8 +62,14 @@ export default (app) => {
       await mailer.sendResetPasswordEmail(
         "vishal.gautam.5812@gmail.com",
         "token",
-        "admin"
+        "role"
       )
+      // await mailer.sendOrderStatusUpdateEmail({
+      //   email: "vishal.gautam.5812@gmail.com",
+      //   fullname: "Vishal Gautam",
+      //   order_code: "ORD-0001",
+      //   status: "Dispatched",
+      // })
     );
   });
 };
