@@ -190,7 +190,7 @@ export const columns = (setId, updateMutation, user, openModal) =>
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
               {/* <DropdownMenuSeparator />
               <DropdownMenuItem>
-                <Link href={`/books/${id}/edit`} className="w-full">
+                <Link href={`/orders/${id}/edit`} className="w-full">
                   Edit
                 </Link>
               </DropdownMenuItem> */}
