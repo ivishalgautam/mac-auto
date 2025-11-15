@@ -419,10 +419,11 @@ const getLatestEnquiries = async (req, limit = 10) => {
         ELSE CONCAT(usr.first_name, ' ', usr.last_name, ' (', dlr.location, ')')
       END AS dealership
     FROM ${constants.models.WALKIN_ENQUIRY_TABLE} eq
-      LEFT JOIN ${constants.models.VEHICLE_TABLE} vh ON vh.id = ANY(enq.vehicle_ids)
+    LEFT JOIN ${constants.models.VEHICLE_TABLE} vh ON vh.id = ANY(eq.vehicle_ids)
     LEFT JOIN ${constants.models.DEALER_TABLE} dlr ON dlr.id = eq.dealer_id
     LEFT JOIN ${constants.models.USER_TABLE} usr ON usr.id = dlr.user_id
     ${whereClause}
+    GROUP BY eq.id, dlr.id, usr.first_name, usr.last_name
     ORDER BY eq.created_at DESC
     LIMIT :limit
   `;
