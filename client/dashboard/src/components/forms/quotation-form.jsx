@@ -155,7 +155,6 @@ export default function QuotationForm({
   });
 
   const onSubmit = (data) => {
-    console.log({ data });
     type === "create"
       ? createMutation.mutate({
           ...data,

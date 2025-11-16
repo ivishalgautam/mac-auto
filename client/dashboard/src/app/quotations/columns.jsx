@@ -66,6 +66,10 @@ export const columns = (openModal, setId, user, updateMutation) => [
               <Link href={`/quotations/${id}/edit`}>Edit</Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
+            <DropdownMenuItem>
+              <Link href={`/quotations/${id}/download`}>Download</Link>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={() => {
                 setId(id);

@@ -503,29 +503,33 @@ export default function OrderStepperForm({ type, id }) {
   if (type === "edit" && isError) return <ErrorMessage error={error} />;
 
   return (
-    <Card className="mx-auto max-w-3xl p-6">
-      <CardHeader>
-        <h2 className="mb-2 text-xl font-semibold">Create Order</h2>
-        <div className="flex items-center gap-2">
-          {steps.map((_, index) => (
-            <div
-              key={index}
-              className={cn(
-                "h-1 w-8 rounded",
-                step > index ? "bg-primary" : "bg-muted-foreground",
-              )}
-            />
-          ))}
-        </div>
-      </CardHeader>
-      <CardContent>
-        {step === 1 && <StepCategory />}
-        {step === 2 && <StepVehicle />}
-        {step === 3 && <StepBatteryType />}
-        {step === 4 && <StepColor />}
-        {step === 5 && <StepMessage />}
-        {step === 6 && user?.role === "admin" && <StepDealer />}
-      </CardContent>
-    </Card>
+    <div>
+      <Card className="mx-auto max-w-3xl p-6">
+        <CardHeader>
+          <h2 className="mb-2 text-xl font-semibold">Create Order</h2>
+          <div className="flex items-center gap-2">
+            {steps.map((_, index) => (
+              <div
+                key={index}
+                className={cn(
+                  "h-1 w-8 rounded",
+                  step > index ? "bg-primary" : "bg-muted-foreground",
+                )}
+              />
+            ))}
+          </div>
+        </CardHeader>
+        <CardContent>
+          {step === 1 && <StepCategory />}
+          {step === 2 && <StepVehicle />}
+          {step === 3 && <StepBatteryType />}
+          {step === 4 && <StepColor />}
+          {step === 5 && <StepMessage />}
+          {step === 6 && user?.role === "admin" && <StepDealer />}
+        </CardContent>
+      </Card>
+
+      <QuotationGenerator data={data?.data ?? {}} />
+    </div>
   );
 }
