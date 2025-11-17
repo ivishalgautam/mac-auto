@@ -102,7 +102,6 @@ export default function OrderStepperForm({ type, id }) {
     control,
     name: "order_items",
   });
-  console.log(watch());
   const handleNext = () => setStep((s) => s + 1);
   const handleNextWithValidation = () => {
     setStepError(""); // reset previous error
@@ -528,8 +527,6 @@ export default function OrderStepperForm({ type, id }) {
           {step === 6 && user?.role === "admin" && <StepDealer />}
         </CardContent>
       </Card>
-
-      <QuotationGenerator data={data?.data ?? {}} />
     </div>
   );
 }
