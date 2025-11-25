@@ -13,7 +13,11 @@ import { useGetVehicles } from "@/mutations/vehicle-mutation";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import config from "@/config";
-import { useCreateOrder, useOrderItems } from "@/mutations/use-orders";
+import {
+  useCreateOrder,
+  useOrder,
+  useOrderItems,
+} from "@/mutations/use-orders";
 import { useAuth } from "@/providers/auth-provider";
 import DealerSelect from "@/features/dealer-select";
 import { Label } from "@/components/ui/label";
@@ -80,6 +84,12 @@ export default function OrderStepperForm({ type, id }) {
   const { data: vehicles, isLoading: isVehiclesLoading } =
     useGetVehicles("page=1");
 
+  const {
+    data: orderData,
+    isLoading: isOrderLoading,
+    isError: isOrderError,
+    error: orderError,
+  } = useOrder(id);
   const { data, isLoading, isError, error } = useOrderItems(id);
 
   const form = useForm({
@@ -97,15 +107,15 @@ export default function OrderStepperForm({ type, id }) {
     watch,
     register,
     formState: { errors },
+    reset,
   } = form;
-  const { fields } = useFieldArray({
+  const { fields, append } = useFieldArray({
     control,
     name: "order_items",
   });
   const handleNext = () => setStep((s) => s + 1);
   const handleNextWithValidation = () => {
     setStepError(""); // reset previous error
-    console.log({ step });
     switch (step) {
       case 1: // Category
         if (!selectedCategory.length) {
@@ -313,15 +323,16 @@ export default function OrderStepperForm({ type, id }) {
         <Button
           disabled={!batteryType}
           onClick={() => {
-            setValue(
-              "order_items",
-              selectedVehicles.map((v) => ({
-                vehicle_id: v,
-                battery_type: batteryType,
-                color: "",
-                quantity: 1,
-              })),
-            );
+            type === "create" &&
+              setValue(
+                "order_items",
+                selectedVehicles.map((v) => ({
+                  vehicle_id: v,
+                  battery_type: batteryType,
+                  // color: "",
+                  quantity: 1,
+                })),
+              );
             handleNextWithValidation();
           }}
         >
@@ -330,12 +341,13 @@ export default function OrderStepperForm({ type, id }) {
       </div>
     </div>
   );
-
   const StepColor = () => (
     <div className="space-y-6">
       {fields.map((field, i) => {
         const vehicle = filteredVehicles.find((v) => v.id === field.vehicle_id);
         const colorFields = watch(`order_items.${i}.colors`) || [];
+        console.log({ fields, items: watch("order_items") });
+        // console.log({ colorFields });
 
         const toggleColor = (color) => {
           const current = [...colorFields];
@@ -477,30 +489,37 @@ export default function OrderStepperForm({ type, id }) {
   }, [user]);
 
   useEffect(() => {
-    if (type === "edit" && data) {
-      setValue(
-        "order_items",
-        data?.items?.map((item) => {
-          return {
-            battery_type: item.battery_type,
-            colors: item.colors.map((c) => ({
+    if (type === "edit" && data && orderData) {
+      reset((prev) => {
+        return {
+          ...prev,
+          dealer_id: orderData.dealer_id,
+          message: orderData?.message ?? "",
+          order_items: data?.items?.map((item) => {
+            const colors = item.colors.map((c) => ({
               color: c.color,
               quantity: parseInt(c.quantity),
-            })),
-            vehicle_id: item.vehicle_id,
-          };
-        }),
+            }));
+            // console.log({ colors });
+            return {
+              battery_type: item.battery_type,
+              colors: colors,
+              vehicle_id: item.vehicle_id,
+            };
+          }),
+        };
+      });
+      setSelectedCategory(data?.items?.map(({ category }) => category) ?? []);
+      setSelectedVehicles(
+        data?.items?.map(({ vehicle_id }) => vehicle_id) ?? [],
       );
+      setBatteryType(data?.items?.[0]?.battery_type);
     }
+  }, [type, data, orderData, reset, setSelectedCategory, setSelectedVehicles]);
 
-    setSelectedCategory(data?.items?.map(({ category }) => category) ?? []);
-    setSelectedVehicles(data?.items?.map(({ vehicle_id }) => vehicle_id) ?? []);
-    setBatteryType(data?.items?.[0]?.battery_type);
-  }, [type, data, setValue, setSelectedCategory, setSelectedVehicles]);
-
-  if (type === "edit" && isLoading) return <Loader />;
-  if (type === "edit" && isError) return <ErrorMessage error={error} />;
-
+  if (type === "edit" && (isLoading || isOrderLoading)) return <Loader />;
+  if (type === "edit" && (isError || isOrderError))
+    return <ErrorMessage error={error || orderError} />;
   return (
     <div>
       <Card className="mx-auto max-w-3xl p-6">
