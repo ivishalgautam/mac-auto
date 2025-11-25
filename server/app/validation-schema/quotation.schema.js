@@ -8,7 +8,7 @@ export const quotationSchema = z.object({
     .default([]),
   customer_name: z.string().min(1, "Customer name is required"),
   mobile_no: z.string().min(10, "Enter valid mobile no."),
-  date: z.union([z.date(), z.null()]).default(null),
+  date: z.union([z.coerce.date(), z.null()]).default(null),
   vehicle_price_breakups: z.array(
     z.object({
       model: z.string().min(1, { message: "Model name is required" }),
