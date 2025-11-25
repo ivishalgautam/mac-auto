@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import ErrorMessage from "@/components/ui/error";
 import { useGetQuotation } from "@/mutations/quotation-mutation";
 import { Download } from "lucide-react";
+import Image from "next/image";
 import { useRef, useState } from "react";
 
 // Sample data structure
@@ -226,37 +227,66 @@ export default function DownloadQuotation({ id }) {
           </div>
 
           {/* Customer Details */}
-          <div style={{ padding: "24px", borderBottom: "1px solid #e5e7eb" }}>
-            <h2
-              style={{
-                fontSize: "18px",
-                fontWeight: "600",
-                color: "#1f2937",
-                marginBottom: "12px",
-                marginTop: 0,
-              }}
-            >
-              Customer Details
-            </h2>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "start",
+              paddingInline: "20px",
+              borderBottom: "1px solid #e5e7eb",
+            }}
+          >
+            <div style={{ flexShrink: 0, flex: 1 }}>
+              <img
+                src={"/logo.png"}
+                width={200}
+                height={200}
+                alt="Mack-Ev"
+                style={{ marginInline: "auto" }}
+              />
+            </div>
+
             <div
               style={{
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr",
-                gap: "16px",
-                fontSize: "14px",
+                width: "100%",
+                padding: "24px",
+
+                flex: 2,
               }}
             >
-              <div>
-                <p style={{ color: "#6b7280", margin: "0 0 4px 0" }}>Name:</p>
-                <p style={{ fontWeight: "500", color: "#111827", margin: 0 }}>
-                  {data.customer_name}
-                </p>
-              </div>
-              <div>
-                <p style={{ color: "#6b7280", margin: "0 0 4px 0" }}>Mobile:</p>
-                <p style={{ fontWeight: "500", color: "#111827", margin: 0 }}>
-                  {data.mobile_no}
-                </p>
+              <h2
+                style={{
+                  fontSize: "18px",
+                  fontWeight: "600",
+                  color: "#1f2937",
+                  marginBottom: "12px",
+                  marginTop: 0,
+                }}
+              >
+                Customer Details
+              </h2>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gap: "16px",
+                  fontSize: "14px",
+                }}
+              >
+                <div>
+                  <p style={{ color: "#6b7280", margin: "0 0 4px 0" }}>Name:</p>
+                  <p style={{ fontWeight: "500", color: "#111827", margin: 0 }}>
+                    {data.customer_name}
+                  </p>
+                </div>
+                <div>
+                  <p style={{ color: "#6b7280", margin: "0 0 4px 0" }}>
+                    Mobile:
+                  </p>
+                  <p style={{ fontWeight: "500", color: "#111827", margin: 0 }}>
+                    {data.mobile_no}
+                  </p>
+                </div>
               </div>
             </div>
           </div>
