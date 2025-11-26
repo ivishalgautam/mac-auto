@@ -105,7 +105,7 @@ const getById = async (req, id) => {
 
 const update = async (req, id) => {
   return await OrderItemModel.update(
-    { colors: req.body.colors, status: req.body.status },
+    { colors: req.body.colors },
     {
       where: { id: req.params?.id || id },
       raw: true,

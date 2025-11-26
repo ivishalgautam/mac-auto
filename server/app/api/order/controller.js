@@ -236,6 +236,37 @@ const getOrderItems = async (req, res) => {
   }
 };
 
+const updateOrderItem = async (req, res) => {
+  try {
+    const orderRecord = await table.OrderModel.getById(0, req.params.id);
+    if (!orderRecord)
+      return res
+        .code(StatusCodes.NOT_FOUND)
+        .send({ status: false, message: "Order not found." });
+
+    if (["out for delivery", "delivered"].includes(orderRecord.status)) {
+      return res.code(StatusCodes.BAD_REQUEST).send({
+        status: false,
+        message: `Order is '${orderRecord?.status ?? ""}', No changes allowed!`,
+      });
+    }
+
+    const record = await table.OrderItemModel.getById(0, req.params.item_id);
+    if (!record)
+      return res
+        .code(StatusCodes.NOT_FOUND)
+        .send({ status: false, message: "Order item not found." });
+
+    const data = await table.OrderItemModel.update({
+      body: req.body,
+      params: { id: req.params.item_id },
+    });
+    res.code(StatusCodes.OK).send({ status: true, data: data });
+  } catch (error) {
+    throw error;
+  }
+};
+
 const getOrderItem = async (req, res) => {
   try {
     const data = await table.OrderItemModel.getById(req);
@@ -249,6 +280,7 @@ export default {
   create: create,
   get: get,
   getOrderItems: getOrderItems,
+  updateOrderItem: updateOrderItem,
   getOrderItem: getOrderItem,
   update: update,
   deleteById: deleteById,

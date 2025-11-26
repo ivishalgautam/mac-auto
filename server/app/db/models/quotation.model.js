@@ -161,8 +161,8 @@ const get = async (req) => {
   if (q) {
     whereConditions.push(
       `(
-        qt.customer_name ILIKE :query OR 
-        qt.mobile_no ILIKE :query OR 
+        qt.customer_name ILIKE :query OR
+        qt.mobile_no ILIKE :query OR
         qt.quotation_no ILIKE :query
       )`
     );
