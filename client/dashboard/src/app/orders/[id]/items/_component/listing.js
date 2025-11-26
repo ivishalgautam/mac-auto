@@ -15,8 +15,10 @@ import {
 import OrderDetails from "@/app/orders/_component/order-details";
 import Loader from "@/components/loader";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useAuth } from "@/providers/auth-provider";
 
 export default function Listing({ orderId }) {
+  const { user } = useAuth();
   const [id, setId] = useState(null);
   const [isModal, setIsModal] = useState(false);
   const searchParams = useSearchParams();
@@ -51,7 +53,7 @@ export default function Listing({ orderId }) {
       )}
 
       <DataTable
-        columns={columns(openModal, setId, updateMutation)}
+        columns={columns(user)}
         data={data?.items ?? []}
         totalItems={data?.total ?? 0}
       />

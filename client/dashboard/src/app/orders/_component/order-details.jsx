@@ -29,6 +29,8 @@ import { toast } from "sonner";
 import { Label } from "@/components/ui/label";
 import config from "@/config";
 import { buttonVariants } from "@/components/ui/button";
+import { useAuth } from "@/providers/auth-provider";
+import { ROLES } from "@/data/routes";
 
 const statusConfig = {
   pending: {
@@ -64,6 +66,8 @@ const statusConfig = {
 };
 
 export default function OrderDetails({ data }) {
+  const { user } = useAuth();
+
   const [id, setId] = useState(null);
   const [isDeliveryModal, setIsDeliveryModal] = useState(false);
 
@@ -118,6 +122,11 @@ export default function OrderDetails({ data }) {
                       updateMutation.mutate({ status: value });
                     }, 0);
                   }}
+                  disabled={
+                    ![ROLES.ADMIN, ROLES.CRE, ROLES.MANAGER].includes(
+                      user?.role,
+                    )
+                  }
                 >
                   <SelectTrigger className={"capitalize"}>
                     <SelectValue placeholder="Select a status" />

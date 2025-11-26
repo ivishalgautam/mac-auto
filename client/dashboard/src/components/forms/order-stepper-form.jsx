@@ -17,6 +17,7 @@ import {
   useCreateOrder,
   useOrder,
   useOrderItems,
+  useUpdateOrder,
 } from "@/mutations/use-orders";
 import { useAuth } from "@/providers/auth-provider";
 import DealerSelect from "@/features/dealer-select";
@@ -109,7 +110,7 @@ export default function OrderStepperForm({ type, id }) {
     formState: { errors },
     reset,
   } = form;
-  const { fields, append } = useFieldArray({
+  const { fields } = useFieldArray({
     control,
     name: "order_items",
   });
@@ -175,13 +176,19 @@ export default function OrderStepperForm({ type, id }) {
     router.push("/orders?page=1&limit=10");
   });
 
+  const updateMutation = useUpdateOrder(id, () => {
+    router.push("/orders?page=1&limit=10");
+  });
+
   const onSubmit = (data) => {
     if (user?.role === "admin" && !watch("dealer_id")) {
       setStepError("Please select a dealer");
       return;
     }
 
-    createMutation.mutate(data);
+    type === "create"
+      ? createMutation.mutate(data)
+      : updateMutation.mutate(data);
   };
 
   const StepCategory = () => (

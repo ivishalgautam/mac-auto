@@ -3,6 +3,7 @@ import { ArrowUpDown, Eye, Plus, X } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
+import { ROLES } from "@/data/routes";
 
 // optional: define your color palette mapping
 const colorMap = {
@@ -18,86 +19,87 @@ const colorMap = {
   grey: "bg-gray-400",
 };
 
-export const columns = () => [
-  {
-    accessorKey: "title",
-    header: "Vehicle",
-  },
-  {
-    accessorKey: "battery_type",
-    header: "Battery type",
-  },
-  {
-    accessorKey: "colors",
-    header: "Colors",
-    cell: ({ row }) => {
-      const colors = row.getValue("colors") || [];
-
-      if (!Array.isArray(colors) || colors.length === 0) return <div>-</div>;
-
-      return (
-        <div className="flex flex-wrap gap-1">
-          {colors.map((c, i) => {
-            const colorName = (c.color || "").toLowerCase().trim();
-            const colorClass = colorMap[colorName] || "bg-gray-200";
-
-            return (
-              <div
-                key={i}
-                className="flex items-center gap-1 rounded-full border p-1 px-1.5"
-              >
-                <span
-                  className={`inline-block h-4 w-4 rounded-full ${colorClass}`}
-                  title={colorName}
-                />
-                <span className="capitalize">{c.color}</span>
-                <Badge variant="secondary" className="ml-auto">
-                  <X className="size-2" />
-                  {c.quantity}
-                </Badge>
-              </div>
-            );
-          })}
-        </div>
-      );
+export const columns = (user) =>
+  [
+    {
+      accessorKey: "title",
+      header: "Vehicle",
     },
-  },
-  {
-    accessorKey: "status",
-    header: "Action",
-    cell: ({ row }) => {
-      const id = row.original.id;
-      const status = row.getValue("status");
-
-      return status === "updated" ? (
-        <Link
-          href={`items/view-details?itemId=${id}`}
-          className={buttonVariants({ variant: "secondary", size: "sm" })}
-        >
-          <Eye size={15} /> View details
-        </Link>
-      ) : (
-        <Link
-          href={`items/add-details?itemId=${id}`}
-          className={buttonVariants({ variant: "outline", size: "sm" })}
-        >
-          <Plus size={15} /> Add details
-        </Link>
-      );
+    {
+      accessorKey: "battery_type",
+      header: "Battery type",
     },
-  },
-  {
-    accessorKey: "created_at",
-    header: ({ column }) => (
-      <Button
-        variant="ghost"
-        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-      >
-        Created on <ArrowUpDown />
-      </Button>
-    ),
-    cell: ({ row }) => (
-      <div>{moment(row.getValue("created_at")).format("DD/MM/YYYY")}</div>
-    ),
-  },
-];
+    {
+      accessorKey: "colors",
+      header: "Colors",
+      cell: ({ row }) => {
+        const colors = row.getValue("colors") || [];
+
+        if (!Array.isArray(colors) || colors.length === 0) return <div>-</div>;
+
+        return (
+          <div className="flex flex-wrap gap-1">
+            {colors.map((c, i) => {
+              const colorName = (c.color || "").toLowerCase().trim();
+              const colorClass = colorMap[colorName] || "bg-gray-200";
+
+              return (
+                <div
+                  key={i}
+                  className="flex items-center gap-1 rounded-full border p-1 px-1.5"
+                >
+                  <span
+                    className={`inline-block h-4 w-4 rounded-full ${colorClass}`}
+                    title={colorName}
+                  />
+                  <span className="capitalize">{c.color}</span>
+                  <Badge variant="secondary" className="ml-auto">
+                    <X className="size-2" />
+                    {c.quantity}
+                  </Badge>
+                </div>
+              );
+            })}
+          </div>
+        );
+      },
+    },
+    [ROLES.ADMIN, ROLES.CRE, ROLES.MANAGER].includes(user?.role) && {
+      accessorKey: "status",
+      header: "Action",
+      cell: ({ row }) => {
+        const id = row.original.id;
+        const status = row.getValue("status");
+
+        return status === "updated" ? (
+          <Link
+            href={`items/view-details?itemId=${id}`}
+            className={buttonVariants({ variant: "secondary", size: "sm" })}
+          >
+            <Eye size={15} /> View details
+          </Link>
+        ) : (
+          <Link
+            href={`items/add-details?itemId=${id}`}
+            className={buttonVariants({ variant: "outline", size: "sm" })}
+          >
+            <Plus size={15} /> Add details
+          </Link>
+        );
+      },
+    },
+    {
+      accessorKey: "created_at",
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Created on <ArrowUpDown />
+        </Button>
+      ),
+      cell: ({ row }) => (
+        <div>{moment(row.getValue("created_at")).format("DD/MM/YYYY")}</div>
+      ),
+    },
+  ].filter(Boolean);
