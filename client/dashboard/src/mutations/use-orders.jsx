@@ -91,6 +91,14 @@ export const useUpdateOrderItem = (orderId, itemId, callback) => {
       queryClient.invalidateQueries({ queryKey: ["orders-items"] });
       callback?.();
     },
+    onError: (error) => {
+      toast.error("Error", {
+        description:
+          error?.response?.data?.message ??
+          error?.message ??
+          "Something went wrong.",
+      });
+    },
   });
 };
 
