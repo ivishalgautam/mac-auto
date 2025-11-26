@@ -26,7 +26,7 @@ import {
 import { useRouter, useSearchParams } from "next/navigation";
 import Loader from "@/components/loader";
 import ErrorMessage from "@/components/ui/error";
-import { useOrderItem } from "@/mutations/use-orders";
+import { useOrderItem, useUpdateOrderItem } from "@/mutations/use-orders";
 import { useEffect } from "react";
 import z from "zod";
 
@@ -56,6 +56,13 @@ const inventorySchema = z.object({
             .min(1, { message: "required*" }),
         }),
       ),
+      quantity: z
+        .number({
+          required_error: "Quantity is required",
+          invalid_type_error: "Quantity must be a number",
+        })
+        .int()
+        .positive({ message: "Quantity must be greater than 0" }),
     }),
   ),
 });
@@ -80,7 +87,7 @@ const defaultValues = {
   ],
 };
 
-export default function OrderItemDetailsFOrm({ type = "create", id }) {
+export default function OrderItemDetailsForm({ type = "create", id }) {
   const searchParams = useSearchParams();
   const itemId = searchParams.get("itemId");
   const router = useRouter();
@@ -108,19 +115,28 @@ export default function OrderItemDetailsFOrm({ type = "create", id }) {
     name: "colors",
   });
 
-  const callback = () => {
-    router.back();
-  };
+  const callback = () => router.back();
 
   const createMutation = useCreateVehicleColor(callback);
-  const updateMutation = useUpdateVehicleColor(id, callback);
-
+  const updateMutation = useUpdateOrderItem(id, itemId, callback);
   const { data, isLoading, isError, error } = useOrderItem(itemId);
 
   const onSubmit = (data) => {
-    type === "create"
-      ? createMutation.mutate(data)
-      : updateMutation.mutate(data);
+    console.log(data);
+    if (type === "create") {
+      createMutation.mutate(data);
+    }
+    if (type === "edit") {
+      const payload = {
+        colors: data.colors.map((color) => ({
+          color: color.color_name,
+          details: color.chassis_numbers,
+          quantity: color.quantity,
+        })),
+      };
+
+      updateMutation.mutate(payload);
+    }
   };
 
   useEffect(() => {
@@ -144,6 +160,7 @@ export default function OrderItemDetailsFOrm({ type = "create", id }) {
                     charger_no: "",
                   })
                 : c.details,
+            quantity: c.quantity,
           };
         }),
       });
