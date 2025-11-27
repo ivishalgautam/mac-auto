@@ -72,7 +72,7 @@ const convertToInvoice = async (req, res) => {
       return res
         .code(StatusCodes.NOT_FOUND)
         .send({ message: "Quotation not found!" });
-
+    console.log({ record });
     if (req.user_data.role === "dealer") {
       const dealerRecord = await table.DealerModel.getByUserId(
         req.user_data.id

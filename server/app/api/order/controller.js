@@ -100,10 +100,10 @@ const update = async (req, res) => {
       });
     }
 
-    if (record.status === "delivered") {
+    if (["delivered", "cancel"].includes(record.status)) {
       return res.code(StatusCodes.UNPROCESSABLE_ENTITY).send({
         status: false,
-        message: "Can't update order. The order is already delivered.",
+        message: `Can't update order. The order is '${record.status}'.`,
       });
     }
 
@@ -244,7 +244,9 @@ const updateOrderItem = async (req, res) => {
         .code(StatusCodes.NOT_FOUND)
         .send({ status: false, message: "Order not found." });
 
-    if (["out for delivery", "delivered"].includes(orderRecord.status)) {
+    if (
+      ["out for delivery", "delivered", "cancel"].includes(orderRecord.status)
+    ) {
       return res.code(StatusCodes.BAD_REQUEST).send({
         status: false,
         message: `Order is '${orderRecord?.status ?? ""}', No changes allowed!`,

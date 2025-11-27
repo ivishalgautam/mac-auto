@@ -35,6 +35,7 @@ const orderItemSchema = z.object({
 
 export const createOrderSchema = z.object({
   dealer_id: z.string().uuid({ message: "Invalid dealer_id" }).optional(),
+  oc_number: z.string().min(1, "OC Number is required*"),
   order_items: z
     .array(orderItemSchema)
     .min(1, { message: "At least one order item is required" }),

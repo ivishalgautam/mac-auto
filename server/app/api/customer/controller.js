@@ -1,7 +1,9 @@
 "use strict";
+import { StatusCodes } from "http-status-codes";
 import table from "../../db/models.js";
 import constants from "../../lib/constants/index.js";
 import { assignCustomerToDealer } from "./schema.js";
+import { sequelize } from "../../db/postgres.js";
 
 const status = constants.http.status;
 
@@ -9,6 +11,22 @@ const get = async (req, res) => {
   try {
     const data = await table.CustomerModel.get(req);
     res.send({ status: true, data });
+  } catch (error) {
+    throw error;
+  }
+};
+
+const deleteById = async (req, res) => {
+  try {
+    const record = await table.CustomerModel.getById(req);
+    if (!record)
+      return res
+        .code(StatusCodes.NOT_FOUND)
+        .send({ status: false, message: "Customer not found!" });
+
+    await table.UserModel.deleteById(0, record.user_id);
+
+    res.send({ status: true, data: record });
   } catch (error) {
     throw error;
   }
@@ -57,5 +75,6 @@ export default {
   getDealerCustomers: getDealerCustomers,
   get: get,
   assignToDealer: assignToDealer,
+  deleteById: deleteById,
   getCustomerPurchases: getCustomerPurchases,
 };

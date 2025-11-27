@@ -2,7 +2,11 @@
 
 import table from "../../db/models.js";
 import { sequelize } from "../../db/postgres.js";
+import { cleanupFiles } from "../../helpers/cleanup-files.js";
+import { getItemsToDelete } from "../../helpers/filter.js";
+import { generatePassword } from "../../helpers/generate-password.js";
 import hash from "../../lib/encryption/index.js";
+import { mailer } from "../../services/mailer.js";
 import { userSchema } from "../../validation-schema/user.schema.js";
 
 const create = async (req, res) => {
@@ -10,12 +14,14 @@ const create = async (req, res) => {
   try {
     const { role, id } = req.user_data;
     const validateData = userSchema.parse(req.body);
-    const record = await table.UserModel.getByUsername(req);
-    if (record) {
-      return res.code(409).send({
-        message:
-          "User already exists with this username. Please try with different username",
-      });
+    if (validateData.role !== "customer") {
+      const record = await table.UserModel.getByUsername(req);
+      if (record) {
+        return res.code(409).send({
+          message:
+            "User already exists with this username. Please try with different username",
+        });
+      }
     }
 
     const user = await table.UserModel.create(req, transaction);
@@ -25,10 +31,14 @@ const create = async (req, res) => {
           user_id: user.id,
           location: validateData.location,
           dealer_code: req.body.dealer_code,
+          aadhaar: req.body.aadhaar,
+          pan: req.body.pan,
+          gst: req.body.gst,
         },
         transaction
       );
     }
+
     if (validateData.role === "customer") {
       const customer = await table.CustomerModel.create(user.id, transaction);
       if (role === "dealer") {
@@ -38,6 +48,16 @@ const create = async (req, res) => {
           transaction
         );
       }
+
+      await mailer.sendCustomerCredentialsEmail({
+        email: validateData.email,
+        fullname: user.first_name + " " + user?.last_name ?? "",
+        username: user.username,
+        password: generatePassword(
+          validateData.first_name,
+          validateData.mobile_number
+        ),
+      });
     }
 
     await transaction.commit();
@@ -58,12 +78,50 @@ const update = async (req, res) => {
     }
     const user = await table.UserModel.update(req, 0, transaction);
 
+    const documentsToDelete = [];
     if (user.role === "dealer") {
+      // Aadhaar
+      const existingAadhaarDocs = record.aadhaar;
+      const updatedAadhaarDocs = req.body.aadhaar_urls;
+      if (updatedAadhaarDocs) {
+        req.body.aadhaar = [
+          ...(req.body?.aadhaar ?? []),
+          ...updatedAadhaarDocs,
+        ];
+        documentsToDelete.push(
+          ...getItemsToDelete(existingAadhaarDocs, updatedAadhaarDocs)
+        );
+      }
+
+      // PAN
+      const existingPanDocs = record.pan;
+      const updatedPanDocs = req.body.pan_urls;
+      if (updatedPanDocs) {
+        req.body.pan = [...(req.body?.pan ?? []), ...updatedPanDocs];
+        documentsToDelete.push(
+          ...getItemsToDelete(existingPanDocs, updatedPanDocs)
+        );
+      }
+
+      // GST
+      const existingGstDocs = record.gst;
+      const updatedGstDocs = req.body.gst_urls;
+      if (updatedGstDocs) {
+        req.body.gst = [...(req.body?.gst ?? []), ...updatedGstDocs];
+        documentsToDelete.push(
+          ...getItemsToDelete(existingGstDocs, updatedGstDocs)
+        );
+      }
+
       const location = req.body.location;
       const data = await table.DealerModel.updateByUser(
-        { body: { location } },
+        { body: { location, ...req.body } },
         user.id
       );
+    }
+
+    if (documentsToDelete.length) {
+      await cleanupFiles(documentsToDelete);
     }
 
     await transaction.commit();

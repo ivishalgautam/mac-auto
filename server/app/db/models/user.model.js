@@ -4,6 +4,7 @@ import hash from "../../lib/encryption/index.js";
 import { DataTypes, QueryTypes, Sequelize } from "sequelize";
 import { Op } from "sequelize";
 import moment from "moment";
+import { generatePassword } from "../../helpers/generate-password.js";
 
 let UserModel = null;
 
@@ -98,6 +99,8 @@ const init = async (sequelize) => {
     {
       createdAt: "created_at",
       updatedAt: "updated_at",
+      deletedAt: "deleted_at",
+      paranoid: true,
     }
   );
 
@@ -107,6 +110,31 @@ const init = async (sequelize) => {
 const create = async (req, transaction) => {
   const options = {};
   if (transaction) options.transaction = transaction;
+  const isCustomer = req.body.role === "customer";
+
+  if (isCustomer) {
+    let newCustomerUsername = "CUST1000";
+    const latest = await UserModel.findOne({
+      where: { role: "customer" },
+      attributes: ["username"],
+      order: [["created_at", "DESC"]],
+      raw: true,
+      paranoid: false,
+    });
+
+    if (latest?.username) {
+      const number = parseInt(latest.username.split("CUST")[1]);
+      const nextNumber = number + 1;
+      newCustomerUsername = `CUST${String(nextNumber)}`;
+    }
+
+    req.body.username = newCustomerUsername;
+    req.body.password = generatePassword(
+      req.body.first_name,
+      req.body.mobile_number
+    );
+  }
+
   const hash_password = req.body.password
     ? hash.encrypt(req.body.password)
     : "";
@@ -141,7 +169,7 @@ const bulkCreate = async (bulkData, transaction) => {
   return data;
 };
 const get = async (req) => {
-  const whereConditions = ["usr.role != 'admin'"];
+  const whereConditions = ["usr.role != 'admin'", "usr.deleted_at IS NULL"];
   const queryParams = {};
   const q = req.query.q ? req.query.q : null;
   const onlyRoles = req.query.or ? req.query.or.split(".") : null;
@@ -210,7 +238,7 @@ const getById = async (req, user_id) => {
   let query = `
   SELECT
       usr.id, usr.username, usr.first_name, usr.last_name, usr.email, usr.blocked, usr.role, usr.mobile_number, usr.is_verified, usr.image_url,
-      dlr.location
+      dlr.location, dlr.aadhaar, dlr.gst, dlr.pan, dlr.dealer_code
     FROM ${constants.models.USER_TABLE} usr
     LEFT JOIN ${constants.models.DEALER_TABLE} dlr ON usr.role = 'dealer' AND dlr.user_id = usr.id
     WHERE usr.id = :user_id
@@ -293,8 +321,8 @@ const update = async (req, id, transaction = null) => {
       image_url: req.body?.image_url,
       is_active: req.body?.is_active,
       is_verified: req.body?.is_verified,
-      reset_password_token: req.body.reset_password_token,
-      confirmation_token: req.body.confirmation_token,
+      reset_password_token: req.body?.reset_password_token,
+      confirmation_token: req.body?.confirmation_token,
     },
     options
   );

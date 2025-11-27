@@ -100,6 +100,44 @@ export const sendOrderStatusUpdateEmail = async ({
   }
 };
 
+export const sendCustomerCredentialsEmail = async ({
+  email,
+  fullname,
+  username,
+  password,
+}) => {
+  try {
+    // Load EJS template
+    const templatePath = path.join(
+      process.cwd(),
+      "views",
+      "customer-credentials.ejs"
+    );
+
+    const templateContent = fs.readFileSync(templatePath, "utf-8");
+
+    // Render HTML
+    const html = ejs.render(templateContent, { fullname, username, password });
+
+    // Configure email
+    const mailOptions = {
+      from: config.smtp_from_email,
+      to: email,
+      subject: "Welcome to Mack EV – Your Login Credentials",
+      html,
+    };
+
+    // Send email
+    const info = await transporter.sendMail(mailOptions);
+
+    console.log(`Customer credentials email sent successfully to ${email}`);
+    return info;
+  } catch (error) {
+    console.error("Error sending customer credentials email:", error);
+    throw error; // propagate error to caller
+  }
+};
+
 export const sendOrderCreatedEmail = async ({
   email,
   fullname,
@@ -135,4 +173,5 @@ export const mailer = {
   sendResetPasswordEmail: sendResetPasswordEmail,
   sendOrderStatusUpdateEmail: sendOrderStatusUpdateEmail,
   sendOrderCreatedEmail: sendOrderCreatedEmail,
+  sendCustomerCredentialsEmail: sendCustomerCredentialsEmail,
 };

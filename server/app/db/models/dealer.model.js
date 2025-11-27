@@ -31,6 +31,18 @@ const init = async (sequelize) => {
         type: DataTypes.STRING,
         allowNull: false,
       },
+      aadhaar: {
+        type: DataTypes.ARRAY(DataTypes.TEXT),
+        defaultValue: [],
+      },
+      pan: {
+        type: DataTypes.ARRAY(DataTypes.TEXT),
+        defaultValue: [],
+      },
+      gst: {
+        type: DataTypes.ARRAY(DataTypes.TEXT),
+        defaultValue: [],
+      },
     },
     {
       createdAt: "created_at",
@@ -51,7 +63,10 @@ const init = async (sequelize) => {
   return DealerModel;
 };
 
-const create = async ({ user_id, location, dealer_code }, transaction) => {
+const create = async (
+  { user_id, location, dealer_code, aadhaar, gst, pan },
+  transaction
+) => {
   const options = {};
   if (transaction) options.transaction = transaction;
 
@@ -68,7 +83,14 @@ const create = async ({ user_id, location, dealer_code }, transaction) => {
   // }
 
   const data = await DealerModel.create(
-    { user_id: user_id, location: location, dealer_code: dealer_code },
+    {
+      user_id: user_id,
+      location: location,
+      dealer_code: dealer_code,
+      aadhaar: aadhaar,
+      pan: pan,
+      gst: gst,
+    },
     options
   );
 
@@ -88,7 +110,12 @@ const update = async (req, id) => {
 
 const updateByUser = async (req, id) => {
   return await DealerModel.update(
-    { location: req.body.location },
+    {
+      location: req.body.location,
+      aadhaar: req.body.aadhaar,
+      pan: req.body.pan,
+      gst: req.body.gst,
+    },
     {
       where: { user_id: id },
       returning: true,

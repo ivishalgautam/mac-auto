@@ -73,15 +73,21 @@ const get = async (req) => {
   const query = `
   SELECT 
       cst.*,
+      dlrusr.id as dealer_user_id, 
+      CASE WHEN dlrusr.id IS NOT NULL 
+        THEN CONCAT(dlrusr.first_name, ' ', dlrusr.last_name) 
+        ELSE '-' END as dealership,
       usr.id as user_id, CONCAT(usr.first_name, ' ', usr.last_name) as fullname,
-      usr.mobile_number, usr.email,
+      usr.mobile_number, usr.email, usr.username,
       COUNT(cpt.id) as total_purchases
     FROM ${constants.models.CUSTOMER_TABLE} cst
     LEFT JOIN ${constants.models.USER_TABLE} usr ON usr.id = cst.user_id
     LEFT JOIN ${constants.models.CUSTOMER_PURCHASE_TABLE} cpt ON cpt.customer_id = cst.id
     LEFT JOIN ${constants.models.CUSTOMER_DEALERS_TABLE} cstdlr ON cstdlr.customer_id = cst.id
+    LEFT JOIN ${constants.models.DEALER_TABLE} dlr ON dlr.id = cstdlr.dealer_id
+    LEFT JOIN ${constants.models.USER_TABLE} dlrusr ON dlrusr.id = dlr.user_id
     ${whereClause}
-    GROUP BY cst.id, usr.id
+    GROUP BY cst.id, usr.id, dlrusr.id
     ORDER BY usr.created_at DESC
     LIMIT :limit OFFSET :offset
   `;
@@ -118,6 +124,13 @@ const getById = async (req, id) => {
   });
 };
 
+const deleteById = async (req, id, transaction) => {
+  return await CustomerModel.destroy({
+    where: { id: req.params?.id || id },
+    transaction,
+  });
+};
+
 const getByUserId = async (req, id) => {
   return await CustomerModel.findOne({
     where: { user_id: req.params?.id || id },
@@ -129,5 +142,6 @@ export default {
   create: create,
   get: get,
   getById: getById,
+  deleteById: deleteById,
   getByUserId: getByUserId,
 };

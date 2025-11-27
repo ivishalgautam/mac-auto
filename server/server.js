@@ -16,7 +16,7 @@ import publicRoutes from "./app/routes/v1/public.js";
 import uploadFileRoutes from "./app/api/upload_files/routes.js";
 import { ErrorHandler } from "./app/utils/error-handler.js";
 import constants from "./app/lib/constants/index.js";
-import { mailer } from "./app/services/mailer.js";
+
 /*
     Register External packages, routes, database connection
 */
@@ -56,20 +56,4 @@ export default (app) => {
   app.register(publicRoutes, { prefix: "v1" });
   app.register(authRoutes, { prefix: "v1/auth" });
   app.register(uploadFileRoutes, { prefix: "v1/upload" });
-
-  app.get("/test-mail", {}, async (req, res) => {
-    res.send(
-      await mailer.sendResetPasswordEmail(
-        "vishal.gautam.5812@gmail.com",
-        "token",
-        "role"
-      )
-      // await mailer.sendOrderStatusUpdateEmail({
-      //   email: "vishal.gautam.5812@gmail.com",
-      //   fullname: "Vishal Gautam",
-      //   order_code: "ORD-0001",
-      //   status: "Dispatched",
-      // })
-    );
-  });
 };

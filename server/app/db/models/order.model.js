@@ -64,11 +64,16 @@ const init = async (sequelize) => {
           "dispatched",
           "out for delivery",
           "delivered",
+          "cancel",
         ]),
         defaultValue: "pending",
       },
       message: {
         type: DataTypes.TEXT,
+      },
+      oc_number: {
+        type: DataTypes.STRING,
+        allowNull: true,
       },
       driver_details: {
         type: DataTypes.JSONB, // {driver_name, vehicle_number, phone}
@@ -96,6 +101,7 @@ const init = async (sequelize) => {
         { fields: ["user_id"] },
         { fields: ["order_code"] },
         { fields: ["status"] },
+        { fields: ["oc_number"] },
       ],
     }
   );
@@ -132,6 +138,7 @@ const create = async (req, transaction) => {
       dealer_id: req.body.dealer_id,
       vehicle_id: req.body.vehicle_id,
       message: req.body.message,
+      oc_number: req.body.oc_number,
     },
     options
   );
@@ -203,7 +210,7 @@ const get = async (req) => {
 
   let query = `
     SELECT
-        ord.id, ord.order_code, ord.punch_by, ord.status, ord.message, ord.created_at, ord.deleted_at,
+        ord.id, ord.order_code, ord.punch_by, ord.status, ord.message, ord.created_at, ord.oc_number, ord.deleted_at,
         CONCAT(usr.first_name, ' ', COALESCE(usr.last_name, ''), ' (', dlr.location, ')') as dealership_name
       FROM ${constants.models.ORDER_TABLE} ord
       LEFT JOIN ${constants.models.USER_TABLE} punchusr ON punchusr.id = ord.user_id

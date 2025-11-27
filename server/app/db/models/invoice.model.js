@@ -62,36 +62,40 @@ const init = async (sequelize) => {
         },
         onDelete: "SET NULL",
       },
-      vehicle_id: {
-        type: DataTypes.UUID,
-        allowNull: false,
-        references: {
-          model: constants.models.VEHICLE_TABLE,
-          key: "id",
-          deferrable: Deferrable.INITIALLY_IMMEDIATE,
-        },
-        onDelete: "SET NULL",
+      // vehicle_ids: {
+      //   type: DataTypes.UUID,
+      //   allowNull: false,
+      //   references: {
+      //     model: constants.models.VEHICLE_TABLE,
+      //     key: "id",
+      //     deferrable: Deferrable.INITIALLY_IMMEDIATE,
+      //   },
+      //   onDelete: "SET NULL",
+      // },
+      vehicle_ids: {
+        type: DataTypes.ARRAY(DataTypes.UUID),
+        defaultValue: [],
       },
-      vehicle_variant_map_id: {
-        type: DataTypes.UUID,
-        allowNull: false,
-        references: {
-          model: constants.models.VEHICLE_VARIANT_MAP_TABLE,
-          key: "id",
-          deferrable: Deferrable.INITIALLY_IMMEDIATE,
-        },
-        onDelete: "SET NULL",
-      },
-      vehicle_color_id: {
-        type: DataTypes.UUID,
-        allowNull: false,
-        references: {
-          model: constants.models.VEHICLE_COLOR_TABLE,
-          key: "id",
-          deferrable: Deferrable.INITIALLY_IMMEDIATE,
-        },
-        onDelete: "SET NULL",
-      },
+      // vehicle_variant_map_id: {
+      //   type: DataTypes.UUID,
+      //   allowNull: true,
+      //   references: {
+      //     model: constants.models.VEHICLE_VARIANT_MAP_TABLE,
+      //     key: "id",
+      //     deferrable: Deferrable.INITIALLY_IMMEDIATE,
+      //   },
+      //   onDelete: "SET NULL",
+      // },
+      // vehicle_color_id: {
+      //   type: DataTypes.UUID,
+      //   allowNull: false,
+      //   references: {
+      //     model: constants.models.VEHICLE_COLOR_TABLE,
+      //     key: "id",
+      //     deferrable: Deferrable.INITIALLY_IMMEDIATE,
+      //   },
+      //   onDelete: "SET NULL",
+      // },
       base_price_ex_showroom: {
         type: DataTypes.STRING,
         allowNull: true,
@@ -188,7 +192,7 @@ const create = async (req, transaction) => {
       discount: req.body.discount,
       on_road_price: req.body.on_road_price,
 
-      vehicle_id: req.body.vehicle_id,
+      vehicle_ids: req.body.vehicle_ids,
       vehicle_variant_map_id: req.body.vehicle_variant_map_id,
       vehicle_color_id: req.body.vehicle_color_id,
     },
@@ -225,7 +229,7 @@ const update = async (req, id, transaction) => {
       discount: req.body.discount,
       on_road_price: req.body.on_road_price,
 
-      vehicle_id: req.body.vehicle_id,
+      vehicle_ids: req.body.vehicle_ids,
       vehicle_variant_map_id: req.body.vehicle_variant_map_id,
       vehicle_color_id: req.body.vehicle_color_id,
     },
@@ -279,10 +283,13 @@ const get = async (req) => {
 
   const query = `
   SELECT 
-        inv.*
+      inv.*,
+      COALESCE(JSON_AGG(vh.title) FILTER (WHERE vh.title IS NOT NULL), '[]') AS vehicles
     FROM ${constants.models.INVOICE_TABLE} inv
+    LEFT JOIN ${constants.models.VEHICLE_TABLE} vh ON vh.id = ANY(inv.vehicle_ids::uuid[])
     LEFT JOIN ${constants.models.DEALER_TABLE} dlr ON dlr.id = inv.dealer_id
     ${whereClause}
+    GROUP BY inv.id
     ORDER BY inv.created_at DESC
     LIMIT :limit OFFSET :offset
   `;
@@ -291,6 +298,7 @@ const get = async (req) => {
   SELECT 
       COUNT(inv.id) OVER()::integer as total
     FROM ${constants.models.INVOICE_TABLE} inv
+    LEFT JOIN ${constants.models.VEHICLE_TABLE} vh ON vh.id = ANY(inv.vehicle_ids::uuid[])
     LEFT JOIN ${constants.models.DEALER_TABLE} dlr ON dlr.id = inv.dealer_id
     ${whereClause}
   `;
