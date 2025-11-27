@@ -53,7 +53,7 @@ export default function Listing({ orderId }) {
       )}
 
       <DataTable
-        columns={columns(user)}
+        columns={columns(user, orderData)}
         data={data?.items ?? []}
         totalItems={data?.total ?? 0}
       />

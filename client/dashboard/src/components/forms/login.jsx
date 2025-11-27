@@ -33,10 +33,12 @@ const loginSchema = z.object({
 
 // API login function
 const loginUser = async (data) => {
-  await axios.post("/api/login", {
+  const resp = await axios.post("/api/login", {
     method: "POST",
     body: JSON.stringify(data),
   });
+
+  return resp.data;
 };
 
 export default function LoginForm({}) {
@@ -59,9 +61,11 @@ export default function LoginForm({}) {
 
   const loginMutation = useMutation({
     mutationFn: loginUser,
-    onSuccess: () => {
+    onSuccess: (data) => {
       toast.success("Login successful!");
-      router.replace("/dashboard");
+      data.user_data.role === "customer"
+        ? router.replace("/tickets?page=1&limit=10")
+        : router.replace("/dashboard");
     },
     onError: (error) => {
       toast.error(

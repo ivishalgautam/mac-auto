@@ -9,11 +9,15 @@ import { columns } from "../columns";
 import { AssignDealerDialog } from "./assign-dealer-dialog";
 import {
   useAssignCustomerToDealer,
+  useDeleteCustomer,
   useGetCustomers,
 } from "@/mutations/customer-mutation";
+import { DeleteDialog } from "./delete-dialog";
+import { useDeleteUser } from "@/mutations/user-mutation";
 
 export default function Listing() {
   const [isAssignDealerModal, setIsAssignDealerModal] = useState(false);
+  const [isDeleteModal, setIsDeleteModal] = useState(false);
   const [id, setId] = useState("");
   const [customerId, setCustomerId] = useState(null);
   const searchParams = useSearchParams();
@@ -24,10 +28,16 @@ export default function Listing() {
     if (type === "assign-dealer") {
       setIsAssignDealerModal(true);
     }
+    if (type === "delete") {
+      setIsDeleteModal(true);
+    }
   };
   const closeModal = (type) => {
     if (type === "assign-dealer") {
       setIsAssignDealerModal(false);
+    }
+    if (type === "delete") {
+      setIsDeleteModal(false);
     }
   };
 
@@ -35,6 +45,7 @@ export default function Listing() {
   const assignToDealerMutation = useAssignCustomerToDealer(() =>
     closeModal("assign-dealer"),
   );
+  const deleteMutation = useDeleteUser(id, () => closeModal("delete"));
 
   useEffect(() => {
     if (!searchParamsStr) {
@@ -51,7 +62,7 @@ export default function Listing() {
   return (
     <div className="border-input w-full rounded-lg">
       <DataTable
-        columns={columns(setCustomerId, openModal)}
+        columns={columns(setCustomerId, openModal, setId)}
         data={data?.customers ?? []}
         totalItems={data?.total}
       />
@@ -60,6 +71,11 @@ export default function Listing() {
         isOpen={isAssignDealerModal}
         setIsOpen={setIsAssignDealerModal}
         customerId={customerId}
+      />
+      <DeleteDialog
+        deleteMutation={deleteMutation}
+        isOpen={isDeleteModal}
+        setIsOpen={setIsDeleteModal}
       />
     </div>
   );

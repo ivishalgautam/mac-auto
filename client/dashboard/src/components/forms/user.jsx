@@ -4,7 +4,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { userFormSchema, userUpdateSchema } from "@/utils/schema/register";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AlertCircle, Eye, EyeOff, LoaderCircleIcon } from "lucide-react";
+import {
+  AlertCircle,
+  ExternalLink,
+  Eye,
+  EyeOff,
+  LoaderCircleIcon,
+  XIcon,
+} from "lucide-react";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import PhoneSelect from "../ui/phone-input";
@@ -25,8 +32,24 @@ import { useEffect } from "react";
 import Loader from "../loader";
 import ErrorMessage from "../ui/error";
 import { useRouter } from "next/navigation";
+import config from "@/config";
+import { useAuth } from "@/providers/auth-provider";
+import { ROLES } from "@/data/routes";
 
 export default function UserForm({ id, type, role = "" }) {
+  const { user } = useAuth();
+
+  const [files, setFiles] = useState({
+    aadhaar: [],
+    pan: [],
+    gst: [],
+  });
+  const [fileUrls, setFileUrls] = useState({
+    aadhaar_urls: [],
+    pan_urls: [],
+    gst_urls: [],
+  });
+
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -37,6 +60,7 @@ export default function UserForm({ id, type, role = "" }) {
     control,
     reset,
     watch,
+    setError,
   } = useForm({
     resolver: zodResolver(
       type === "create" ? userFormSchema : userUpdateSchema,
@@ -59,7 +83,9 @@ export default function UserForm({ id, type, role = "" }) {
       selectedRole === "dealer"
         ? "/dealers?page=1&limit=10"
         : selectedRole === "customer"
-          ? "/customers?page=1&limit=10"
+          ? user.role === "dealer"
+            ? "/customers?page=1&limit=10"
+            : "/all-customers?page=1&limit=10"
           : "/users?page=1&limit=10",
     );
   });
@@ -69,9 +95,50 @@ export default function UserForm({ id, type, role = "" }) {
   const { data, isLoading, isError, error } = useGetUser(id);
 
   const onSubmit = (data) => {
+    if (selectedRole === "dealer") {
+      let isFileError = false;
+      if (!fileUrls?.aadhaar_urls?.length && !files.aadhaar.length) {
+        isFileError = true;
+        setError("aadhaar", {
+          type: "manual",
+          message: "Aadhaar is required*",
+        });
+      }
+      if (!fileUrls?.pan_urls?.length && !files.pan.length) {
+        isFileError = true;
+        setError("pan", {
+          type: "manual",
+          message: "PAN is required*",
+        });
+      }
+      if (!fileUrls?.gst_urls?.length && !files.gst.length) {
+        isFileError = true;
+        setError("gst", {
+          type: "manual",
+          message: "GST is required*",
+        });
+      }
+      if (isFileError) return;
+    }
+
+    const formData = new FormData();
+    Object.entries(files).forEach(([key, files]) => {
+      files.forEach((file) => {
+        formData.append(key, file);
+      });
+    });
+    Object.entries(fileUrls).forEach(([key, value]) => {
+      formData.append(key, JSON.stringify(value));
+    });
+    Object.entries(data).forEach(([key, value]) => {
+      typeof value === "object"
+        ? formData.append(key, JSON.stringify(value))
+        : formData.append(key, value);
+    });
+
     type === "create"
-      ? createMutation.mutate(data)
-      : updateMutation.mutate(data);
+      ? createMutation.mutate(formData)
+      : updateMutation.mutate(formData);
   };
 
   const formErrors = getFormErrors(errors);
@@ -82,6 +149,14 @@ export default function UserForm({ id, type, role = "" }) {
 
   useEffect(() => {
     if (type === "edit" && data) {
+      selectedRole === "dealer" &&
+        setFileUrls((prev) => ({
+          ...prev,
+          aadhaar_urls: data?.aadhaar ?? [],
+          pan_urls: data?.pan ?? [],
+          gst_urls: data?.gst ?? [],
+        }));
+
       reset({
         email: data.email || "",
         first_name: data.first_name || "",
@@ -90,6 +165,7 @@ export default function UserForm({ id, type, role = "" }) {
         role: data.role || "",
         username: data.username || "",
         location: data.location || "",
+        dealer_code: data.dealer_code || "",
       });
     }
   }, [data, type, reset]);
@@ -136,28 +212,164 @@ export default function UserForm({ id, type, role = "" }) {
           </div>
         )}
 
-        {/* location */}
         {selectedRole === "dealer" && (
-          <div className="col-span-full space-y-2">
-            <Label htmlFor="location">Location *</Label>
-            <Input
-              id="location"
-              placeholder="Enter Dealer Location"
-              {...register("location")}
-              className={cn({ "border-red-500": errors.location })}
-            />
-          </div>
-        )}
-        {selectedRole === "dealer" && (
-          <div className="col-span-full space-y-2">
-            <Label htmlFor="dealer_code">Dealer code *</Label>
-            <Input
-              id="dealer_code"
-              placeholder="Enter Dealer Code"
-              {...register("dealer_code")}
-              className={cn({ "border-red-500": errors.dealer_code })}
-            />
-          </div>
+          <>
+            {/* location */}
+            <div className="col-span-full space-y-2">
+              <Label htmlFor="location">Location *</Label>
+              <Input
+                id="location"
+                placeholder="Enter Dealer Location"
+                {...register("location")}
+                className={cn({ "border-red-500": errors.location })}
+              />
+            </div>
+
+            {/* dealer code */}
+            <div className="col-span-full space-y-2">
+              <Label htmlFor="dealer_code">Dealer code *</Label>
+              <Input
+                id="dealer_code"
+                placeholder="Enter Dealer Code"
+                {...register("dealer_code")}
+                className={cn({ "border-red-500": errors.dealer_code })}
+              />
+            </div>
+
+            {/* Aadhaar */}
+            <div className="col-span-full space-y-4">
+              <Label>Aadhaar *</Label>
+              <Input
+                type="file"
+                onChange={(e) =>
+                  setFiles((prev) => ({
+                    ...prev,
+                    aadhaar: Array.from(e.target.files),
+                  }))
+                }
+                className={cn({ "border-destructive": errors.aadhaar })}
+              />
+              <div className="flex flex-wrap items-center justify-start gap-2">
+                {fileUrls?.aadhaar_urls?.map((file, index) => (
+                  <div
+                    key={index}
+                    className="hover:bg-muted/50 relative flex items-center justify-between rounded-lg border px-3 py-2 text-sm"
+                  >
+                    <div className="flex min-w-0 flex-1 items-center gap-2">
+                      <a href={`${config.file_base}/${file}`} target="_blank">
+                        <ExternalLink className="h-4 w-4" />
+                      </a>
+                      <span className="truncate">Document {index + 1}</span>
+                    </div>
+                    <Button
+                      onClick={() =>
+                        setFileUrls((prev) => ({
+                          ...prev,
+                          aadhaar_urls: prev.aadhaar_urls.filter(
+                            (i) => i !== file,
+                          ),
+                        }))
+                      }
+                      size="icon"
+                      className="border-background focus-visible:border-background absolute -top-2 -right-2 size-6 rounded-full border-2 shadow-none"
+                      aria-label="Remove image"
+                      type="button"
+                    >
+                      <XIcon className="size-3.5" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* pan */}
+            <div className="col-span-full space-y-4">
+              <Label>PAN *</Label>
+              <Input
+                type="file"
+                onChange={(e) =>
+                  setFiles((prev) => ({
+                    ...prev,
+                    pan: Array.from(e.target.files),
+                  }))
+                }
+                className={cn({ "border-destructive": errors.pan })}
+              />
+              <div className="flex flex-wrap items-center justify-start gap-2">
+                {fileUrls?.pan_urls?.map((file, index) => (
+                  <div
+                    key={index}
+                    className="hover:bg-muted/50 relative flex items-center justify-between rounded-lg border px-3 py-2 text-sm"
+                  >
+                    <div className="flex min-w-0 flex-1 items-center gap-2">
+                      <a href={`${config.file_base}/${file}`} target="_blank">
+                        <ExternalLink className="h-4 w-4" />
+                      </a>
+                      <span className="truncate">Document {index + 1}</span>
+                    </div>
+                    <Button
+                      onClick={() =>
+                        setFileUrls((prev) => ({
+                          ...prev,
+                          pan_urls: prev.pan_urls.filter((i) => i !== file),
+                        }))
+                      }
+                      size="icon"
+                      className="border-background focus-visible:border-background absolute -top-2 -right-2 size-6 rounded-full border-2 shadow-none"
+                      aria-label="Remove image"
+                      type="button"
+                    >
+                      <XIcon className="size-3.5" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* gst */}
+            <div className="col-span-full space-y-4">
+              <Label>GST *</Label>
+              <Input
+                type="file"
+                onChange={(e) =>
+                  setFiles((prev) => ({
+                    ...prev,
+                    gst: Array.from(e.target.files),
+                  }))
+                }
+                className={cn({ "border-destructive": errors.gst })}
+              />
+              <div className="flex flex-wrap items-center justify-start gap-2">
+                {fileUrls?.gst_urls?.map((file, index) => (
+                  <div
+                    key={index}
+                    className="hover:bg-muted/50 relative flex items-center justify-between rounded-lg border px-3 py-2 text-sm"
+                  >
+                    <div className="flex min-w-0 flex-1 items-center gap-2">
+                      <a href={`${config.file_base}/${file}`} target="_blank">
+                        <ExternalLink className="h-4 w-4" />
+                      </a>
+                      <span className="truncate">Document {index + 1}</span>
+                    </div>
+                    <Button
+                      onClick={() =>
+                        setFileUrls((prev) => ({
+                          ...prev,
+                          gst_urls: prev.gst_urls.filter((i) => i !== file),
+                        }))
+                      }
+                      size="icon"
+                      className="border-background focus-visible:border-background absolute -top-2 -right-2 size-6 rounded-full border-2 shadow-none"
+                      aria-label="Remove image"
+                      type="button"
+                    >
+                      <XIcon className="size-3.5" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </>
         )}
 
         {/* First Name */}
@@ -213,65 +425,73 @@ export default function UserForm({ id, type, role = "" }) {
           />
         </div>
 
-        {/* Username */}
-        <div className="space-y-2">
-          <Label htmlFor="username">Username *</Label>
-          <Input
-            id="username"
-            placeholder="Enter your username"
-            {...register("username")}
-            className={cn({ "border-red-500": errors.username })}
-          />
-        </div>
-
-        {/* Password */}
-        {type === "create" && (
-          <div className="relative space-y-2">
-            <Label htmlFor="password">Password *</Label>
-            <div className="relative">
+        {selectedRole !== "customer" && (
+          <>
+            {/* Username */}
+            <div className="space-y-2">
+              <Label htmlFor="username">Username *</Label>
               <Input
-                id="password"
-                type={showPassword ? "text" : "password"}
-                placeholder="Enter your password"
-                {...register("password")}
-                className={cn("pr-10", {
-                  "border-red-500": errors.password,
-                })}
+                id="username"
+                placeholder="Enter your username"
+                {...register("username")}
+                className={cn({ "border-red-500": errors.username })}
               />
-              <button
-                type="button"
-                onClick={() => setShowPassword((prev) => !prev)}
-                className="absolute top-1/2 right-2 -translate-y-1/2 text-gray-600"
-              >
-                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
             </div>
-          </div>
-        )}
 
-        {/* Confirm Password */}
-        {type === "create" && (
-          <div className="relative space-y-2">
-            <Label htmlFor="confirm_password">Confirm Password *</Label>
-            <div className="relative">
-              <Input
-                id="confirm_password"
-                type={showConfirmPassword ? "text" : "password"}
-                placeholder="Re-enter your password"
-                {...register("confirm_password")}
-                className={cn("pr-10", {
-                  "border-red-500 pr-10": errors.confirm_password,
-                })}
-              />
-              <button
-                type="button"
-                onClick={() => setShowConfirmPassword((prev) => !prev)}
-                className="absolute top-1/2 right-2 -translate-y-1/2 text-gray-600"
-              >
-                {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
-            </div>
-          </div>
+            {/* Password */}
+            {type === "create" && (
+              <div className="relative space-y-2">
+                <Label htmlFor="password">Password *</Label>
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Enter your password"
+                    {...register("password")}
+                    className={cn("pr-10", {
+                      "border-red-500": errors.password,
+                    })}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    className="absolute top-1/2 right-2 -translate-y-1/2 text-gray-600"
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Confirm Password */}
+            {type === "create" && (
+              <div className="relative space-y-2">
+                <Label htmlFor="confirm_password">Confirm Password *</Label>
+                <div className="relative">
+                  <Input
+                    id="confirm_password"
+                    type={showConfirmPassword ? "text" : "password"}
+                    placeholder="Re-enter your password"
+                    {...register("confirm_password")}
+                    className={cn("pr-10", {
+                      "border-red-500 pr-10": errors.confirm_password,
+                    })}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword((prev) => !prev)}
+                    className="absolute top-1/2 right-2 -translate-y-1/2 text-gray-600"
+                  >
+                    {showConfirmPassword ? (
+                      <EyeOff size={18} />
+                    ) : (
+                      <Eye size={18} />
+                    )}
+                  </button>
+                </div>
+              </div>
+            )}
+          </>
         )}
       </div>
 
@@ -298,7 +518,7 @@ export default function UserForm({ id, type, role = "" }) {
       <div className="text-end">
         <Button
           type="submit"
-          disabled={isFormPending || !isDirty}
+          disabled={isFormPending}
           className={"w-full sm:w-auto"}
         >
           {isFormPending && (

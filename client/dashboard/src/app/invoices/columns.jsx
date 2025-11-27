@@ -37,45 +37,12 @@ export const columns = (openModal, setId, user, updateMutation) => [
     header: "Phone",
   },
   {
-    accessorKey: "model",
-    header: "Model",
-  },
-  {
-    accessorKey: "variant",
-    header: "Variant",
-  },
-  {
-    accessorKey: "color",
-    header: "Color",
-  },
-  {
-    accessorKey: "base_price_ex_showroom",
-    header: "Ex-Showroom Price",
-  },
-  {
-    accessorKey: "gst",
-    header: "GST %",
-  },
-  {
-    accessorKey: "insurance",
-    header: "Insurance",
-  },
-  {
-    accessorKey: "rto_registration_charges",
-    header: "RTO Charges",
-  },
-  {
-    accessorKey: "total_ex_showroom_price",
-    header: "Total Price",
-  },
-  {
-    accessorKey: "discount",
-    header: "Discount",
-    cell: ({ row }) => row.getValue("discount") || "N/a",
-  },
-  {
-    accessorKey: "on_road_price",
-    header: "On-Road Price",
+    accessorKey: "vehicles",
+    header: "Models",
+    cell: ({ row }) => {
+      const vehicles = row.getValue("vehicles");
+      return vehicles && vehicles.length ? vehicles.join(", ") : "-";
+    },
   },
   {
     id: "actions",
@@ -96,15 +63,6 @@ export const columns = (openModal, setId, user, updateMutation) => [
             <DropdownMenuItem>
               <Link href={`/invoices/${id}/edit`}>Edit</Link>
             </DropdownMenuItem> */}
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={() => {
-                setId(id);
-                openModal("convert-to-invoice");
-              }}
-            >
-              Convert to Invoice
-            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={() => {

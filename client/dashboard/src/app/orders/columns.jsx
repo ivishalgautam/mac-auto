@@ -32,6 +32,7 @@ export const orderStatuses = [
     color: "bg-indigo-500",
   },
   { value: "delivered", label: "Delivered", color: "bg-green-500" },
+  { value: "cancel", label: "Cancel", color: "bg-red-500" },
 ];
 
 export const columns = (setId, updateMutation, user, openModal) =>
@@ -118,7 +119,9 @@ export const columns = (setId, updateMutation, user, openModal) =>
                 const currentIndex = statusOrder.indexOf(status);
                 const optionIndex = statusOrder.indexOf(option.value);
 
-                const disabled = optionIndex < currentIndex;
+                const disabled =
+                  optionIndex < currentIndex ||
+                  ["cancel", "delivered"].includes(status);
 
                 return (
                   <SelectItem
@@ -140,13 +143,20 @@ export const columns = (setId, updateMutation, user, openModal) =>
       },
     },
     {
+      accessorKey: "oc_number",
+      header: "OC Number",
+      cell: ({ row }) => {
+        const oc_number = row.getValue("oc_number");
+        return oc_number ? oc_number : "-";
+      },
+    },
+    {
       accessorKey: "message",
       header: ({ column }) => {
         return <Button variant="ghost">Message</Button>;
       },
       cell: ({ row }) => {
         const message = row.getValue("message");
-
         return (
           <div className="line-clamp-2 max-w-96 text-wrap">
             {message && message !== "" ? message : "-"}

@@ -13,11 +13,14 @@ import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import moment from "moment";
 import Link from "next/link";
 
 export const columns = (updateMutation, setUserId, openModal) => [
+  {
+    accessorKey: "dealer_code",
+    header: "Dealer code",
+  },
   {
     accessorKey: "fullname",
     header: "Fullname",

@@ -54,6 +54,7 @@ const orderItemSchema = z.object({
 
 const createOrderSchema = z.object({
   dealer_id: z.string().uuid({ message: "Invalid dealer_id" }).optional(),
+  oc_number: z.string().min(1, "OC Number is required*"),
   message: z.string().max(500, "Message too long").optional(),
   order_items: z
     .array(orderItemSchema)
@@ -97,6 +98,7 @@ export default function OrderStepperForm({ type, id }) {
     resolver: zodResolver(createOrderSchema),
     defaultValues: {
       order_items: [],
+      oc_number: "",
       message: "",
     },
   });
@@ -115,6 +117,7 @@ export default function OrderStepperForm({ type, id }) {
     name: "order_items",
   });
   const handleNext = () => setStep((s) => s + 1);
+  const handleBack = () => setStep((s) => s - 1);
   const handleNextWithValidation = () => {
     setStepError(""); // reset previous error
     switch (step) {
@@ -124,19 +127,19 @@ export default function OrderStepperForm({ type, id }) {
           return;
         }
         break;
-      case 2: // Vehicle
+      case 2:
         if (selectedVehicles.length === 0) {
           setStepError("Please select at least one vehicle");
           return;
         }
         break;
-      case 3: // Vehicle
+      case 3:
         if (!batteryType) {
           setStepError("Please select battery type");
           return;
         }
         break;
-      case 4: // Battery Type
+      case 4:
         const allColorsValid = fields.every(
           (f, i) => (watch(`order_items.${i}.colors`) || []).length > 0,
         );
@@ -145,7 +148,13 @@ export default function OrderStepperForm({ type, id }) {
           return;
         }
         break;
-      case 6: // Color
+      case 6:
+        if (!watch("oc_number")) {
+          setStepError("OC Number is required*");
+          return;
+        }
+        break;
+      case 7:
         if (user?.role === "admin" && !watch("dealer_id")) {
           setStepError("Please select a dealer");
           return;
@@ -157,7 +166,6 @@ export default function OrderStepperForm({ type, id }) {
 
     handleNext();
   };
-  const handleBack = () => setStep((s) => s - 1);
 
   const filteredVehicles = useMemo(() => {
     if (!vehicles) return [];
@@ -442,6 +450,24 @@ export default function OrderStepperForm({ type, id }) {
         <Button variant="outline" onClick={handleBack}>
           Back
         </Button>
+        <Button onClick={handleNextWithValidation}>Next</Button>
+      </div>
+    </div>
+  );
+
+  const StepOCNumber = () => (
+    <div className="space-y-4">
+      <Label className="font-medium">OC Number*</Label>
+      <Input
+        {...register("oc_number")}
+        placeholder="Enter OC number"
+        className={cn({ "border-destructive": errors.oc_number })}
+      />
+      {stepError && <p className="mt-2 text-sm text-red-600">{stepError}</p>}
+      <div className="flex justify-between">
+        <Button variant="outline" onClick={handleBack}>
+          Back
+        </Button>
         {[ROLES.CRE, ROLES.MANAGER, ROLES.ADMIN].includes(user.role) ? (
           <Button onClick={handleNextWithValidation}>Next</Button>
         ) : (
@@ -490,7 +516,14 @@ export default function OrderStepperForm({ type, id }) {
   };
 
   const steps = useMemo(() => {
-    const baseSteps = ["Category", "Vehicle", "Battery", "Color", "Message"];
+    const baseSteps = [
+      "Category",
+      "Vehicle",
+      "Battery",
+      "Color",
+      "Message",
+      "OC Number",
+    ];
     if (user?.role === "admin") baseSteps.push("Dealer");
     return baseSteps;
   }, [user]);
@@ -550,7 +583,8 @@ export default function OrderStepperForm({ type, id }) {
           {step === 3 && <StepBatteryType />}
           {step === 4 && <StepColor />}
           {step === 5 && <StepMessage />}
-          {step === 6 && user?.role === "admin" && <StepDealer />}
+          {step === 6 && <StepOCNumber />}
+          {step === 7 && user?.role === "admin" && <StepDealer />}
         </CardContent>
       </Card>
     </div>

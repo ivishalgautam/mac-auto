@@ -16,7 +16,7 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { ExternalLink } from "lucide-react";
 
-export const columns = (setCustomerId, openModal) => [
+export const columns = (setCustomerId, openModal, setId) => [
   {
     accessorKey: "fullname",
     header: "Fullname",
@@ -39,6 +39,10 @@ export const columns = (setCustomerId, openModal) => [
   {
     accessorKey: "email",
     header: "Email",
+  },
+  {
+    accessorKey: "dealership",
+    header: "Dealership",
   },
   {
     accessorKey: "total_purchases",
@@ -95,6 +99,15 @@ export const columns = (setCustomerId, openModal) => [
               }}
             >
               Assign to dealer
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onClick={() => {
+                setId(userId);
+                openModal("delete");
+              }}
+            >
+              Delete
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

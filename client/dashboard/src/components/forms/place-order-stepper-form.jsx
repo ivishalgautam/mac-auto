@@ -4,8 +4,6 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { Check } from "lucide-react";
 import BatteryTypeStep from "./steps/battery-type-step";
 import VehicleSelectionStep from "./steps/vehicle-selection-step";

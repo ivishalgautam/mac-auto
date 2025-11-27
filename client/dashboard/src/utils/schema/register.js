@@ -1,130 +1,137 @@
 import { isValidPhoneNumber } from "react-phone-number-input";
 import { z } from "zod";
 
-export const userFormSchema = z
+// ---------- SHARED RULES ----------
+const USERNAME_REGEX = /^[a-zA-Z0-9_]+$/;
+const PASSWORD_REGEX = /^[a-zA-Z0-9!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]+$/;
+
+const usernameField = z
+  .string()
+  .min(3, "Username must be at least 3 characters")
+  .max(50, "Username must be less than 50 characters")
+  .regex(
+    USERNAME_REGEX,
+    "Username can only contain letters, numbers, and underscores",
+  );
+
+const passwordField = z
+  .string()
+  .min(3, "Password must be at least 3 characters")
+  .max(50, "Password must be less than 50 characters")
+  .regex(PASSWORD_REGEX, "Password can only contain letters and numbers");
+
+const dealerFields = z.object({
+  dealer_code: z
+    .string()
+    .min(1, "Dealer code is required for dealers")
+    .regex(
+      USERNAME_REGEX,
+      "Dealer code can only contain letters, numbers, and underscores",
+    ),
+
+  location: z.string().min(1, "Location is required for dealers"),
+});
+
+const staffFields = z
   .object({
-    role: z.enum(["admin", "dealer", "customer", "cre", "manager"], {
-      required_error: "Role is required.",
-    }),
-    username: z
-      .string()
-      .min(3, "Username must be at least 3 characters")
-      .max(50)
-      .regex(/^[a-zA-Z0-9_]+$/, {
-        message: "Username can only contain letters, numbers, and underscores",
-      }),
-    dealer_code: z.string().optional(),
-    email: z.string().email("Please enter a valid email address"),
-    mobile_number: z
-      .string({ required_error: "Mobile number is required." })
-      .min(1, { message: "Mobile number is required." }),
-    first_name: z
-      .string({ required_error: "First Name is required!" })
-      .min(1, { message: "First Name is required!" }),
-    last_name: z.string().optional(),
-    password: z.string().min(8, "Password must be at least 8 characters"),
-    confirm_password: z
-      .string()
-      .min(8, "Confirm Password must be at least 8 characters"),
-    location: z.string().optional(),
-  })
-  .refine((data) => isValidPhoneNumber(data.mobile_number), {
-    path: ["mobile_number"],
-    message: "Invalid phone number",
+    username: usernameField,
+    password: passwordField.optional(),
+    confirm_password: z.string().optional(),
   })
   .refine((data) => data.password === data.confirm_password, {
-    path: ["confirm_password"],
     message: "Passwords do not match",
+    path: ["confirm_password"],
+  });
+
+// ---------- BASE USER FIELDS ----------
+const baseFields = {
+  role: z.enum(["admin", "dealer", "customer", "cre", "manager"], {
+    required_error: "Role is required.",
+  }),
+  email: z.string().email("Please enter a valid email address"),
+  mobile_number: z
+    .string({ required_error: "Mobile number is required." })
+    .min(1, "Mobile number is required"),
+  first_name: z
+    .string({ required_error: "First Name is required!" })
+    .min(4, "First Name must be atleast 4 characters!"),
+  last_name: z.string().optional(),
+};
+
+// ---------- CREATE (userFormSchema) ----------
+
+export const userFormSchema = z
+  .object({
+    ...baseFields,
+    username: z.string().optional(),
+    dealer_code: z.string().optional(),
+    password: z.string().optional(),
+    confirm_password: z.string().optional(),
+    location: z.string().optional(),
   })
   .superRefine((data, ctx) => {
-    if (data.role === "dealer") {
-      if (
-        data.role === "dealer" &&
-        (!data.location || data.location.trim() === "")
-      ) {
-        ctx.addIssue({
-          path: ["location"],
-          code: z.ZodIssueCode.custom,
-          message: "Location is required for dealers",
-        });
-      }
+    // Validate mobile number
+    if (!isValidPhoneNumber(data.mobile_number)) {
+      ctx.addIssue({
+        path: ["mobile_number"],
+        message: "Invalid phone number",
+      });
+    }
 
-      if (!data.dealer_code || data.dealer_code.trim() === "") {
-        ctx.addIssue({
-          path: ["dealer_code"],
-          code: z.ZodIssueCode.custom,
-          message: "Dealer code is required for dealers",
-        });
-      } else {
-        // Dealer code regex validation
-        if (!/^[a-zA-Z0-9_]+$/.test(data.dealer_code)) {
-          ctx.addIssue({
-            path: ["dealer_code"],
-            code: z.ZodIssueCode.custom,
-            message:
-              "Dealer code can only contain letters, numbers, and underscores",
-          });
-        }
-      }
+    // Dealer rules
+    if (data.role === "dealer") {
+      const parsed = dealerFields.safeParse(data);
+      if (!parsed.success) parsed.error.issues.forEach((i) => ctx.addIssue(i));
+    }
+
+    // Apply staff (role !== customer)
+    if (data.role !== "customer") {
+      const parsed = staffFields.safeParse(data);
+      if (!parsed.success) parsed.error.issues.forEach((i) => ctx.addIssue(i));
     }
   });
 
+// ---------- UPDATE (userUpdateSchema) ----------
+// Update doesn't require password unless user wants to change it.
+
 export const userUpdateSchema = z
   .object({
-    role: z.enum(["admin", "dealer", "customer", "cre", "manager"], {
-      required_error: "Role is required.",
-    }),
-    username: z
-      .string()
-      .min(3, { message: "Username must be at least 3 characters long" })
-      .max(50, { message: "Username must be at most 50 characters long" })
-      .regex(/^[a-zA-Z0-9_]+$/, {
-        message: "Username can only contain letters, numbers, and underscores",
-      }),
+    ...baseFields,
+    username: usernameField,
     dealer_code: z.string().optional(),
-    email: z.string().email("Please enter a valid email address"),
-    mobile_number: z
-      .string({ required_error: "Mobile number is required." })
-      .min(1, { message: "Mobile number is required." }),
-    first_name: z
-      .string({ required_error: "First Name is required!" })
-      .min(1, { message: "First Name is required!" }),
-    last_name: z.string().optional(),
     location: z.string().optional(),
-  })
-  .refine((data) => isValidPhoneNumber(data.mobile_number), {
-    path: ["mobile_number"],
-    message: "Invalid phone number",
+    password: z.string().optional(),
+    confirm_password: z.string().optional(),
   })
   .superRefine((data, ctx) => {
-    console.log({ data });
+    // Validate mobile number
+    if (!isValidPhoneNumber(data.mobile_number)) {
+      ctx.addIssue({
+        path: ["mobile_number"],
+        message: "Invalid phone number",
+      });
+    }
+
+    // Dealer rules
     if (data.role === "dealer") {
-      if (
-        data.role === "dealer" &&
-        (!data.location || data.location.trim() === "")
-      ) {
-        ctx.addIssue({
-          path: ["location"],
-          code: z.ZodIssueCode.custom,
-          message: "Location is required for dealers",
-        });
+      const parsed = dealerFields.safeParse(data);
+      if (!parsed.success) parsed.error.issues.forEach((i) => ctx.addIssue(i));
+    }
+
+    // If password provided in update, enforce validation
+    if (data.password) {
+      const parsed = passwordField.safeParse(data.password);
+      if (!parsed.success) {
+        parsed.error.issues.forEach((i) =>
+          ctx.addIssue({ ...i, path: ["password"] }),
+        );
       }
-      if (!data.dealer_code || data.dealer_code.trim() === "") {
+
+      if (data.password !== data.confirm_password) {
         ctx.addIssue({
-          path: ["dealer_code"],
-          code: z.ZodIssueCode.custom,
-          message: "Dealer code is required for dealers",
+          path: ["confirm_password"],
+          message: "Passwords do not match",
         });
-      } else {
-        // Dealer code regex validation
-        if (!/^[a-zA-Z0-9_]+$/.test(data.dealer_code)) {
-          ctx.addIssue({
-            path: ["dealer_code"],
-            code: z.ZodIssueCode.custom,
-            message:
-              "Dealer code can only contain letters, numbers, and underscores",
-          });
-        }
       }
     }
   });

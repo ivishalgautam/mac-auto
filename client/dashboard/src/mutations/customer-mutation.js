@@ -63,3 +63,23 @@ export function useAssignCustomerToDealer(callback) {
     },
   });
 }
+
+export const useDeleteCustomer = (id, handleSuccess) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => customer.deleteById(id),
+    onSuccess: () => {
+      toast("Customer deleted successfully.");
+
+      queryClient.invalidateQueries(["customers"]);
+      typeof handleSuccess === "function" && handleSuccess();
+    },
+    onError: (error) => {
+      console.error("Mutation Error:", error);
+      toast.error(
+        error?.response?.data?.message ?? error?.message ?? "An error occurred",
+      );
+    },
+  });
+};

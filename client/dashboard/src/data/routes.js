@@ -241,6 +241,14 @@ export const sidebarData = [
     ],
   },
   {
+    title: "Scrapper",
+    url: "/scrapper",
+    roles: [ROLES.ADMIN, ROLES.CRE, ROLES.MANAGER],
+    isVisible: true,
+    icon: Users,
+    items: [],
+  },
+  {
     title: "Financers",
     url: "/financers?page=1&limit=10",
     icon: Handshake,

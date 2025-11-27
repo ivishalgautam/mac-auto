@@ -83,9 +83,6 @@ export default function DriverForm({ type = "create", updateMutation, id }) {
   const { data, isLoading, isError, error } = useOrder(id);
 
   const onSubmit = (data) => {
-    //     invoice
-    // pdi
-    // e_way_bill
     if (!fileUrls?.invoice_urls?.length && !files.invoice.length) {
       return setError("invoice", {
         type: "manual",
@@ -239,7 +236,7 @@ export default function DriverForm({ type = "create", updateMutation, id }) {
           </div>
         </div>
 
-        {/* pdi */}
+        {/* e-way-bill */}
         <div className="col-span-full space-y-4">
           <Label>E-Way Bill *</Label>
           <Input

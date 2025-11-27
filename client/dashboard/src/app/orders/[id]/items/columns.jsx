@@ -13,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { DotsHorizontalIcon } from "@radix-ui/react-icons";
+import { Small } from "@/components/ui/typography";
 
 // optional: define your color palette mapping
 const colorMap = {
@@ -28,7 +29,7 @@ const colorMap = {
   grey: "bg-gray-400",
 };
 
-export const columns = (user) =>
+export const columns = (user, orderData) =>
   [
     {
       accessorKey: "title",
@@ -80,7 +81,9 @@ export const columns = (user) =>
         const id = row.original.id;
         const status = row.getValue("status");
 
-        return status === "updated" ? (
+        return orderData?.status === "cancel" ? (
+          <Badge variant={"destructive"}>Order canceled</Badge>
+        ) : status === "updated" ? (
           <Link
             href={`items/view-details?itemId=${id}`}
             className={buttonVariants({ variant: "secondary", size: "sm" })}
@@ -111,34 +114,35 @@ export const columns = (user) =>
         <div>{moment(row.getValue("created_at")).format("DD/MM/YYYY")}</div>
       ),
     },
-    user?.role === "admin" && {
-      id: "actions",
-      enableHiding: false,
-      cell: ({ row }) => {
-        const id = row.original.id;
-        const role = row.original.role;
-        return (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
-                <span className="sr-only">Open menu</span>
-                <DotsHorizontalIcon className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>
-                <Link
-                  href={`items/edit-details?itemId=${id}`}
-                  className="w-full"
-                >
-                  Edit
-                </Link>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        );
+    orderData?.status !== "cancel" &&
+      user?.role === "admin" && {
+        id: "actions",
+        enableHiding: false,
+        cell: ({ row }) => {
+          const id = row.original.id;
+          const role = row.original.role;
+          return (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="h-8 w-8 p-0">
+                  <span className="sr-only">Open menu</span>
+                  <DotsHorizontalIcon className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem>
+                  <Link
+                    href={`items/edit-details?itemId=${id}`}
+                    className="w-full"
+                  >
+                    Edit
+                  </Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          );
+        },
       },
-    },
   ].filter(Boolean);

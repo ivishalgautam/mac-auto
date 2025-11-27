@@ -11,6 +11,7 @@ import {
   Truck,
   ExternalLink,
   Download,
+  X,
 } from "lucide-react";
 import moment from "moment";
 import { orderStatuses } from "../columns";
@@ -62,6 +63,12 @@ const statusConfig = {
     bgColor: "bg-green-50 dark:bg-green-900/20",
     icon: <CheckCircle2 className="h-5 w-5" />,
     label: "Delivered",
+  },
+  cancel: {
+    color: "text-red-600 dark:text-red-400",
+    bgColor: "bg-red-50 dark:bg-red-900/20",
+    icon: <X className="h-5 w-5" />,
+    label: "Canceled",
   },
 };
 
@@ -137,7 +144,9 @@ export default function OrderDetails({ data }) {
                       const currentIndex = statusOrder.indexOf(data.status);
                       const optionIndex = statusOrder.indexOf(option.value);
 
-                      const disabled = optionIndex < currentIndex;
+                      const disabled =
+                        optionIndex < currentIndex ||
+                        ["cancel", "delivered"].includes(status);
 
                       return (
                         <SelectItem
