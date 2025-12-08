@@ -1,45 +1,30 @@
-import cluster from "node:cluster";
-import os from "node:os";
-import fastify from "fastify";
 import config from "./app/config/index.js";
 import logger from "./app/logger/index.js";
 import server from "./server.js";
+import fastify from "fastify";
 
-const numCPUs = os.cpus().length;
+const app = fastify({ logger: true });
+// const app = fastify({ logger: logger });
 
-if (cluster.isMaster) {
-  console.log(`Master process ${process.pid} is running`);
-  // Fork workers
-  for (let i = 0; i < numCPUs; i++) {
-    cluster.fork();
-  }
+try {
+  server(app);
+} catch (e) {
+  // console.error(e);
+  logger.error(e);
+  process.exit(1);
+}
 
-  cluster.on("exit", (worker, code, signal) => {
-    console.error(`Worker ${worker.process.pid} died. Restarting...`);
-    cluster.fork(); // auto-restart crashed worker
-  });
-} else {
-  // Worker process
-  const app = fastify({ logger: true });
-
+/**
+ * Run the server!
+ */
+const start = async () => {
   try {
-    server(app);
+    await app.listen({ port: config.port, host: "0.0.0.0" }); // For fastify server
   } catch (e) {
-    console.error("Failed to register server:", e);
+    // app.log.error(e);
     logger.error(e);
     process.exit(1);
   }
+};
 
-  const start = async () => {
-    try {
-      await app.listen({ port: config.port, host: "0.0.0.0" });
-      console.log(`🚀 Worker ${process.pid} listening on port ${config.port}`);
-    } catch (e) {
-      console.error(`Worker ${process.pid} failed to start:`, e);
-      logger.error(e);
-      process.exit(1);
-    }
-  };
-
-  start();
-}
+start();
