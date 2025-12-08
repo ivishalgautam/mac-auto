@@ -1,9 +1,27 @@
 "use strict";
+import { multipartPreHandler } from "../../middlewares/multipart-prehandler.js";
 import controller from "./controller.js";
 
 export default async function routes(fastify, options) {
-  fastify.post("/", {}, controller.create);
-  fastify.put("/:id", {}, controller.update);
+  fastify.post(
+    "/",
+    {
+      preHandler: async (req, res) =>
+        multipartPreHandler(req, res, ["expected_closure_date"]),
+    },
+    controller.create
+  );
+  fastify.put(
+    "/:id",
+    {
+      preHandler: async (req, res) =>
+        multipartPreHandler(req, res, [
+          "job_card_urls",
+          "expected_closure_date",
+        ]),
+    },
+    controller.update
+  );
   fastify.get("/:id", {}, controller.getById);
   fastify.get("/:id/details", {}, controller.getDetailsById);
   fastify.delete("/:id", {}, controller.deleteById);

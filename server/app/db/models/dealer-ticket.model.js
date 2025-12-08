@@ -68,6 +68,10 @@ const init = async (sequelize) => {
         },
         onDelete: "SET NULL",
       },
+      job_card: {
+        type: DataTypes.ARRAY(DataTypes.TEXT),
+        defaultValue: [],
+      },
     },
     {
       createdAt: "created_at",
@@ -108,6 +112,7 @@ const create = async (req) => {
     dealer_id: req.body.dealer_id,
     assigned_cre: req.body.assigned_cre,
     assigned_manager: req.body.assigned_manager,
+    job_card: req.body.job_card,
   });
 };
 
@@ -123,6 +128,7 @@ const update = async (req, id, transaction) => {
       expected_closure_date: req.body.expected_closure_date,
       assigned_cre: req.body.assigned_cre,
       assigned_manager: req.body.assigned_manager,
+      job_card: req.body.job_card,
     },
     options
   );

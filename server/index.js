@@ -19,7 +19,7 @@ try {
  */
 const start = async () => {
   try {
-    await app.listen({ port: config.port, host: "0.0.0.0" }); // For fastify server
+    await app.listen({ port: config.port }); // For fastify server
   } catch (e) {
     // app.log.error(e);
     logger.error(e);

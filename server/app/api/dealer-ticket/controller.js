@@ -3,6 +3,8 @@ import table from "../../db/models.js";
 import { ticketSchema } from "./schema.js";
 import constants from "../../lib/constants/index.js";
 import { sequelize } from "../../db/postgres.js";
+import { getItemsToDelete } from "../../helpers/filter.js";
+import { cleanupFiles } from "../../helpers/cleanup-files.js";
 
 const status = constants.http.status;
 const responseMessage = constants.error.message;
@@ -53,7 +55,7 @@ const create = async (req, res) => {
     }
 
     await table.DealerTicketModel.create({
-      body: { ...validateData, dealer_id: dealerRecord.id },
+      body: { ...req.body, dealer_id: dealerRecord.id },
     });
 
     res
@@ -95,6 +97,17 @@ const update = async (req, res) => {
     if (!record) return res.code(404).send({ message: "Ticket not found!" });
 
     await table.DealerTicketModel.update(req, 0, transaction);
+
+    const existingDocs = record.job_card;
+    const updatedDocs = req.body.job_card_urls;
+
+    const documentsToDelete = [];
+    if (updatedDocs) {
+      req.body.job_card = [...(req.body?.job_card ?? []), ...updatedDocs];
+      documentsToDelete.push(...getItemsToDelete(existingDocs, updatedDocs));
+    }
+    if (documentsToDelete.length) await cleanupFiles(documentsToDelete);
+
     await transaction.commit();
 
     res.send({ status: true, message: "Updated" });
