@@ -2,12 +2,17 @@
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AlertCircle, LoaderCircleIcon } from "lucide-react";
+import {
+  AlertCircle,
+  ExternalLink,
+  LoaderCircleIcon,
+  XIcon,
+} from "lucide-react";
 import { Controller, FormProvider, useForm } from "react-hook-form";
 import { cn } from "@/lib/utils";
 import { Alert, AlertDescription } from "../ui/alert";
 import { getFormErrors } from "@/lib/get-form-errors";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Loader from "../loader";
 import ErrorMessage from "../ui/error";
 import { Textarea } from "../ui/textarea";
@@ -27,6 +32,8 @@ import {
 } from "@/mutations/dealer-ticket-mutation";
 import UserSelect from "@/features/user-select";
 import DealerSelect from "@/features/dealer-select";
+import config from "@/config";
+import { Input } from "../ui/input";
 
 const defaultValues = {
   assigned_technician: "",
@@ -36,6 +43,12 @@ const defaultValues = {
 
 export default function DealerTicketForm({ id, type }) {
   const { user } = useAuth();
+  const [files, setFiles] = useState({
+    job_card: [],
+  });
+  const [fileUrls, setFileUrls] = useState({
+    job_card_urls: [],
+  });
   const router = useRouter();
   const methods = useForm({
     resolver: zodResolver(
@@ -64,9 +77,24 @@ export default function DealerTicketForm({ id, type }) {
   });
   const { data, isLoading, isError, error } = useGetDealerTicket(id);
   const onSubmit = (data) => {
+    const formData = new FormData();
+    Object.entries(files).forEach(([key, files]) => {
+      files.forEach((file) => {
+        formData.append(key, file);
+      });
+    });
+    Object.entries(fileUrls).forEach(([key, value]) => {
+      formData.append(key, JSON.stringify(value));
+    });
+    Object.entries(data).forEach(([key, value]) => {
+      typeof value === "object"
+        ? formData.append(key, JSON.stringify(value))
+        : formData.append(key, value);
+    });
+
     type === "create"
-      ? createMutation.mutate(data)
-      : updateMutation.mutate(data);
+      ? createMutation.mutate(formData)
+      : updateMutation.mutate(formData);
   };
 
   const formErrors = getFormErrors(errors);
@@ -77,9 +105,13 @@ export default function DealerTicketForm({ id, type }) {
 
   useEffect(() => {
     if (["edit", "view"].includes(type) && data) {
+      setFileUrls((prev) => ({
+        ...prev,
+        job_card_urls: data?.job_card ?? [],
+      }));
       reset({ ...data });
     }
-  }, [data, type, reset]);
+  }, [data, type, reset, setFileUrls]);
 
   if (["edit", "view"].includes(type) && isLoading) return <Loader />;
   if (["edit", "view"].includes(type) && isError)
@@ -176,6 +208,54 @@ export default function DealerTicketForm({ id, type }) {
               />
             </div>
           )}
+
+          {/* Job Card */}
+          <div className="col-span-full space-y-4">
+            <Label>Job Card *</Label>
+            {user?.role === "admin" && !fileUrls.job_card_urls.length && (
+              <Input
+                type="file"
+                onChange={(e) =>
+                  setFiles((prev) => ({
+                    ...prev,
+                    job_card: Array.from(e.target.files),
+                  }))
+                }
+                className={cn({ "border-destructive": errors.job_card })}
+              />
+            )}
+            <div className="flex flex-wrap items-center justify-start gap-2">
+              {fileUrls?.job_card_urls?.map((file, index) => (
+                <div
+                  key={index}
+                  className="hover:bg-muted/50 relative flex items-center justify-between rounded-lg border px-3 py-2 text-sm"
+                >
+                  <div className="flex min-w-0 flex-1 items-center gap-2">
+                    <a href={`${config.file_base}/${file}`} target="_blank">
+                      <ExternalLink className="h-4 w-4" />
+                    </a>
+                    <span className="truncate">Document {index + 1}</span>
+                  </div>
+                  <Button
+                    onClick={() =>
+                      setFileUrls((prev) => ({
+                        ...prev,
+                        job_card_urls: prev.job_card_urls.filter(
+                          (i) => i !== file,
+                        ),
+                      }))
+                    }
+                    size="icon"
+                    className="border-background focus-visible:border-background absolute -top-2 -right-2 size-6 rounded-full border-2 shadow-none"
+                    aria-label="Remove image"
+                    type="button"
+                  >
+                    <XIcon className="size-3.5" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
 
         {/* errors print */}
@@ -201,7 +281,7 @@ export default function DealerTicketForm({ id, type }) {
           <div className="text-end">
             <Button
               type="submit"
-              disabled={isFormPending || !isDirty}
+              disabled={isFormPending}
               className="w-full sm:w-auto"
             >
               {isFormPending && (

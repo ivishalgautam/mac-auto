@@ -177,7 +177,7 @@ export default function OrderStepperForm({ type, id }) {
   }, [vehicles, selectedCategory]);
 
   const groupedVehicles = useMemo(() => {
-    return Object.groupBy(filteredVehicles, ({ category }) => category) ?? {};
+    return !filteredVehicles ? Object.groupBy(filteredVehicles, ({ category }) => category) ?? {} : {};
   }, [filteredVehicles]);
 
   const createMutation = useCreateOrder(() => {
@@ -220,7 +220,7 @@ export default function OrderStepperForm({ type, id }) {
       </div>
       {stepError && <p className="mt-2 text-sm text-red-600">{stepError}</p>}
       <div className="flex justify-between">
-        <Button variant="outline" onClick={handleBack}>
+        <Button variant="outline" onClick={handleBack} disabled>
           Back
         </Button>
         <Button onClick={handleNextWithValidation}>Next</Button>

@@ -70,7 +70,6 @@ export default function TicketForm({ id, type }) {
     watch,
     setValue,
   } = methods;
-  console.log(watch("expected_closure_date"));
   const isPartsRelated = watch("complaint_type") === "Spare Parts Related";
 
   const customerId = watch("customer_id");
