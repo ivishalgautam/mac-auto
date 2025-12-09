@@ -14,7 +14,7 @@ export default function Header() {
         title={user?.role === "customer" ? "My Tickets" : "Customer tickets"}
         description="Manage Tickets (Create, Update, Delete)."
       />
-      {["admin", "cre", "customer"].includes(user?.role) && (
+      {["admin", "cre", "customer", "dealer"].includes(user?.role) && (
         <Link href="/tickets/create" className={buttonVariants({ size: "sm" })}>
           <Plus size="15" />
           Add ticket

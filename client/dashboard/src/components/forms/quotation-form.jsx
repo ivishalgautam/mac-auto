@@ -28,6 +28,7 @@ import { useGetVehicles } from "@/mutations/vehicle-mutation";
 import CustomCommandMenu from "../custom-command-menu";
 import moment from "moment";
 import CustomMultiSelect from "../custom-multi-select";
+import { Textarea } from "../ui/textarea";
 
 const defaultValues = {
   customer_name: "",
@@ -81,6 +82,7 @@ const createSchema = z.object({
       on_road_price: z.string().default(0),
     }),
   ),
+  message: z.string().optional(),
 });
 
 export default function QuotationForm({
@@ -355,6 +357,16 @@ export default function QuotationForm({
                     })}
                   />
                 )}
+              />
+            </div>
+
+            {/* message */}
+            <div className="col-span-full">
+              <Label htmlFor="message">Message</Label>
+              <Textarea
+                id="message"
+                {...register("message")}
+                placeholder="Enter message"
               />
             </div>
 

@@ -26,9 +26,7 @@ import {
   useGetTicket,
   useUpdateTicket,
 } from "@/mutations/ticket-mutation";
-import CustomerSelect from "@/features/customer-select";
 import { useAuth } from "@/providers/auth-provider";
-import CustomerPurchaseSelect from "@/features/customer-purchase-select";
 import CustomSelect from "../ui/custom-select";
 import { customerComplaintTypes } from "@/data";
 import { DatePicker } from "../ui/date-picker";
@@ -63,16 +61,13 @@ export default function TicketForm({ id, type }) {
   const {
     register,
     handleSubmit,
-    formState: { errors, isDirty },
+    formState: { errors },
     reset,
-    setError,
     control,
     watch,
-    setValue,
   } = methods;
   const isPartsRelated = watch("complaint_type") === "Spare Parts Related";
 
-  const customerId = watch("customer_id");
   const createMutation = useCreateTicket(() => {
     reset();
     router.push("/tickets?page=1&limit=10");
@@ -204,43 +199,16 @@ export default function TicketForm({ id, type }) {
                 name="customer_id"
                 control={control}
                 render={({ field }) => (
-                  <CustomerSelect
+                  <UserSelect
                     onChange={(selected) => {
-                      console.log({ selected });
                       field.onChange(selected);
-                      setValue("purchase_id", "");
                     }}
                     value={field.value}
                     className={cn({
                       "border border-red-500 dark:border-red-500":
                         errors.customer_id,
                     })}
-                  />
-                )}
-              />
-            </div>
-          )}
-
-          {/* purchase_id */}
-          {((customerId &&
-            ["admin", "dealer", "cre", "manager"].includes(user?.role) &&
-            type === "create") ||
-            user?.role === "customer") && (
-            <div className="space-y-2">
-              <Label htmlFor="purchase_id">Purchase ID *</Label>
-              <Controller
-                name="purchase_id"
-                control={control}
-                render={({ field }) => (
-                  <CustomerPurchaseSelect
-                    onChange={field.onChange}
-                    value={field.value}
-                    customerId={customerId}
-                    disabled={type === "view"}
-                    className={cn({
-                      "border border-red-500 dark:border-red-500":
-                        errors.purchase_id,
-                    })}
+                    role="customer"
                   />
                 )}
               />
