@@ -134,6 +134,7 @@ const deleteById = async (req, id, transaction) => {
 const getByUserId = async (req, id) => {
   return await CustomerModel.findOne({
     where: { user_id: req.params?.id || id },
+    raw: true,
   });
 };
 

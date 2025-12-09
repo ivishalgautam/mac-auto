@@ -23,7 +23,6 @@ const verifyUserCredentials = async (req, res) => {
   try {
     if (username && password) {
       userData = await table.UserModel.getByUsername(req);
-      console.log({ userData });
       if (!userData) {
         return res
           .code(404)

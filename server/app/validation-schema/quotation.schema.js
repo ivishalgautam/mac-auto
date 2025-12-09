@@ -24,4 +24,5 @@ export const quotationSchema = z.object({
       on_road_price: z.string().optional(),
     })
   ),
+  message: z.string().optional(),
 });

@@ -283,7 +283,6 @@ const get = async (req, dealerId) => {
     ORDER BY vh.created_at DESC
     LIMIT :limit OFFSET :offset
   `;
-  console.log(query);
   const countQuery = `
     SELECT COUNT(DISTINCT vh.id) AS total
     FROM ${constants.models.VEHICLE_TABLE} vh

@@ -12,13 +12,14 @@ const create = async (req, res) => {
   const filePaths = req.filePaths;
   try {
     const validateData = ticketSchema.parse(req.body);
-    const purchaseRecord = await table.CustomerPurchaseModel.getById(
-      validateData.purchase_id
+    const customerRecord = await table.CustomerModel.getByUserId(
+      0,
+      validateData.customer_id
     );
-    if (!purchaseRecord)
+    if (!customerRecord)
       return res
         .code(status.NOT_FOUND)
-        .send({ status: false, message: "Purchase record not found!" });
+        .send({ status: false, message: "Customer not found!" });
 
     const lastCREAssignedTicket =
       await table.TicketModel.getLastCREAssignedTicket();

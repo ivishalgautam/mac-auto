@@ -34,15 +34,39 @@ const init = async (sequelize) => {
         allowNull: false,
         defaultValue: "pending",
       },
-      purchase_id: {
+      // purchase_id: {
+      //   type: DataTypes.UUID,
+      //   allowNull: false,
+      //   references: {
+      //     model: constants.models.CUSTOMER_PURCHASE_TABLE,
+      //     key: "id",
+      //     deferrable: Deferrable.INITIALLY_IMMEDIATE,
+      //   },
+      //   onDelete: "CASCADE",
+      // },
+      customer_id: {
         type: DataTypes.UUID,
         allowNull: false,
         references: {
-          model: constants.models.CUSTOMER_PURCHASE_TABLE,
+          model: constants.models.USER_TABLE,
           key: "id",
           deferrable: Deferrable.INITIALLY_IMMEDIATE,
         },
         onDelete: "CASCADE",
+      },
+      punch_by_id: {
+        type: DataTypes.UUID,
+        allowNull: false,
+        references: {
+          model: constants.models.USER_TABLE,
+          key: "id",
+          deferrable: Deferrable.INITIALLY_IMMEDIATE,
+        },
+        onDelete: "CASCADE",
+      },
+      punch_by: {
+        type: DataTypes.STRING,
+        allowNull: false,
       },
       complaint_type: {
         type: DataTypes.STRING,
@@ -95,7 +119,8 @@ const init = async (sequelize) => {
         { fields: ["ticket_number"] },
         { fields: ["message"] },
         { fields: ["status"] },
-        { fields: ["purchase_id"] },
+        { fields: ["customer_id"] },
+        { fields: ["punch_by_id"] },
         { fields: ["complaint_type"] },
         { fields: ["expected_closure_date"] },
         { fields: ["assigned_technician"] },
@@ -125,7 +150,7 @@ const create = async (req) => {
     images: req.body?.images ?? [],
     ticket_number: newTicketNo,
     message: req.body.message,
-    purchase_id: req.body.purchase_id,
+    // purchase_id: req.body.purchase_id,
     complaint_type: req.body.complaint_type,
     expected_closure_date: req.body.expected_closure_date,
     assigned_technician:
@@ -135,6 +160,10 @@ const create = async (req) => {
     assigned_cre: req.body.assigned_cre,
     assigned_manager: req.body?.assigned_manager ?? null,
     parts: req.body.parts,
+
+    customer_id: req.body.customer_id,
+    punch_by_id: req.user_data.id,
+    punch_by: req.user_data.role,
   });
 };
 
@@ -164,11 +193,11 @@ const get = async (req) => {
 
   const { role, id } = req.user_data;
   if (role === "dealer") {
-    whereConditions.push(`dl.user_id = :userId`);
+    whereConditions.push(`tk.punch_by_id = :userId`);
     queryParams.userId = id;
   }
   if (role === "customer") {
-    whereConditions.push(`cst.user_id = :userId`);
+    whereConditions.push(`tk.customer_id = :userId`);
     queryParams.userId = id;
   }
   if (role === "cre") {
@@ -203,18 +232,14 @@ const get = async (req) => {
 
   let query = `
     SELECT
-        tk.*, cpt.chassis_no,
-        CONCAT(dstu.first_name, ' ', COALESCE(dstu.last_name, ''), ' (', dl.location, ')') as dealership_name,
-        dstu.mobile_number as dealership_phone,
+        tk.*,
+        CONCAT(pnusr.first_name, ' ', COALESCE(pnusr.last_name, '')) as punch_by_username,
         CONCAT(cstu.first_name, ' ', COALESCE(cstu.last_name, '')) as customer_name,
         cstu.mobile_number as customer_phone,
         tcn.technician_name as assigned_technician
     FROM ${constants.models.TICKET_TABLE} tk
-    LEFT JOIN ${constants.models.CUSTOMER_PURCHASE_TABLE} cpt ON cpt.id = tk.purchase_id
-    LEFT JOIN ${constants.models.DEALER_TABLE} dl ON dl.id = cpt.dealer_id
-    LEFT JOIN ${constants.models.CUSTOMER_TABLE} cst ON cst.id = cpt.customer_id
-    LEFT JOIN ${constants.models.USER_TABLE} cstu ON cstu.id = cst.user_id
-    LEFT JOIN ${constants.models.USER_TABLE} dstu ON dstu.id = dl.user_id
+    LEFT JOIN ${constants.models.USER_TABLE} cstu ON cstu.id = tk.customer_id
+    LEFT JOIN ${constants.models.USER_TABLE} pnusr ON pnusr.id = tk.punch_by_id
     LEFT JOIN ${constants.models.TECHNICIAN_TABLE} tcn ON tk.assigned_technician = tcn.id
     LEFT JOIN ${constants.models.USER_TABLE} creusr ON creusr.id = tk.assigned_cre
     LEFT JOIN ${constants.models.USER_TABLE} mgusr ON mgusr.id = tk.assigned_manager
@@ -227,13 +252,11 @@ const get = async (req) => {
     SELECT
         COUNT(tk.id) OVER()::integer as total
       FROM ${constants.models.TICKET_TABLE} tk
-      LEFT JOIN ${constants.models.CUSTOMER_PURCHASE_TABLE} cpt ON cpt.id = tk.purchase_id
-      LEFT JOIN ${constants.models.DEALER_TABLE} dl ON dl.id = cpt.dealer_id
-      LEFT JOIN ${constants.models.CUSTOMER_TABLE} cst ON cst.id = cpt.customer_id
-      LEFT JOIN ${constants.models.USER_TABLE} cstu ON cstu.id = cst.user_id
-      LEFT JOIN ${constants.models.TECHNICIAN_TABLE} tcn ON tk.assigned_technician = tcn.id
-      LEFT JOIN ${constants.models.USER_TABLE} creusr ON creusr.id = tk.assigned_cre
-      LEFT JOIN ${constants.models.USER_TABLE} mgusr ON mgusr.id = tk.assigned_manager
+    LEFT JOIN ${constants.models.USER_TABLE} cstu ON cstu.id = tk.customer_id
+    LEFT JOIN ${constants.models.USER_TABLE} pnusr ON pnusr.id = tk.punch_by_id
+    LEFT JOIN ${constants.models.TECHNICIAN_TABLE} tcn ON tk.assigned_technician = tcn.id
+    LEFT JOIN ${constants.models.USER_TABLE} creusr ON creusr.id = tk.assigned_cre
+    LEFT JOIN ${constants.models.USER_TABLE} mgusr ON mgusr.id = tk.assigned_manager
       ${whereClause}
     `;
 
@@ -256,10 +279,8 @@ const get = async (req) => {
 const getById = async (req, id) => {
   const query = `
   SELECT
-      tk.*,
-      cp.customer_id
+      tk.*
     FROM ${constants.models.TICKET_TABLE} tk
-    LEFT JOIN ${constants.models.CUSTOMER_PURCHASE_TABLE} cp ON cp.id = tk.purchase_id
     WHERE tk.id = :id
   `;
 
@@ -287,17 +308,13 @@ const getLastCREAssignedTicket = async () => {
 const getTicketDetailsById = async (req, id) => {
   const query = `
   SELECT
-      tk.*, cp.chassis_no,
-      dstu.first_name as dealership_first_name, dstu.last_name as dealership_last_name, dstu.mobile_number as dealership_phone,
-      dl.location as dealership_location,
+      tk.*,
+      pnchusr.first_name as punch_user_first_name, pnchusr.last_name as punch_user_last_name, pnchusr.mobile_number as punch_user_phone,
       cstu.first_name as customer_first_name, cstu.last_name as customer_last_name, cstu.mobile_number as customer_phone,
       tcn.technician_name as assigned_technician_name, tcn.technician_phone as assigned_technician_phone
     FROM ${constants.models.TICKET_TABLE} tk
-    LEFT JOIN ${constants.models.CUSTOMER_PURCHASE_TABLE} cp ON cp.id = tk.purchase_id
-    LEFT JOIN ${constants.models.DEALER_TABLE} dl ON dl.id = cp.dealer_id
-    LEFT JOIN ${constants.models.CUSTOMER_TABLE} cst ON cst.id = cp.customer_id
     LEFT JOIN ${constants.models.USER_TABLE} cstu ON cstu.id = cst.user_id
-    LEFT JOIN ${constants.models.USER_TABLE} dstu ON dstu.id = dl.user_id
+    LEFT JOIN ${constants.models.USER_TABLE} pnchusr ON pnchusr.id = dl.user_id
     LEFT JOIN ${constants.models.TECHNICIAN_TABLE} tcn ON tk.assigned_technician = tcn.id
     WHERE tk.id = :id
   `;
@@ -336,7 +353,7 @@ const getTicketStatusBreakdown = async () => {
 
 const count = async (req, last_30_days = false) => {
   const { id } = req.user_data;
-  const whereConditions = ["dlr.user_id = :userId"];
+  const whereConditions = ["tk.punch_by_id = :userId"];
   const queryParams = { userId: id };
 
   if (last_30_days) {
@@ -352,8 +369,6 @@ const count = async (req, last_30_days = false) => {
   SELECT
       COUNT(tk.id)
     FROM ${constants.models.TICKET_TABLE} tk
-    LEFT JOIN ${constants.models.CUSTOMER_PURCHASE_TABLE} cp ON cp.id = tk.purchase_id
-    LEFT JOIN ${constants.models.DEALER_TABLE} dlr ON dlr.id = cp.dealer_id
     ${whereClause} 
   `;
 

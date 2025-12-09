@@ -40,6 +40,10 @@ const init = async (sequelize) => {
         type: DataTypes.STRING,
         allowNull: false,
       },
+      message: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
       dealer_id: {
         type: DataTypes.UUID,
         allowNull: true,
@@ -110,6 +114,7 @@ const create = async (req, transaction) => {
       dealer_id: req.body.dealer_id,
       vehicle_price_breakups: req.body.vehicle_price_breakups,
       vehicle_ids: req.body.vehicle_ids,
+      message: req.body.message,
     },
     options
   );
@@ -132,6 +137,7 @@ const update = async (req, id, transaction) => {
       dealer_id: req.body.dealer_id,
       vehicle_price_breakups: req.body.vehicle_price_breakups,
       vehicle_ids: req.body.vehicle_ids,
+      message: req.body.message,
     },
     options
   );
