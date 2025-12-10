@@ -6,6 +6,7 @@ import {
   LayoutDashboard,
   ScrollText,
   SwatchBook,
+  TextQuote,
   Ticket,
   User,
   Users,
@@ -131,13 +132,13 @@ export const sidebarData = [
       },
       {
         title: "Quotations",
-        url: "/quotations",
+        url: "/quotations?page=1&limit=10",
         roles: [ROLES.DEALER],
         isVisible: true,
       },
       {
         title: "Invoices",
-        url: "/invoices",
+        url: "/invoices?page=1&limit=10",
         roles: [ROLES.DEALER],
         isVisible: true,
       },
@@ -178,7 +179,7 @@ export const sidebarData = [
         isVisible: true,
       },
       {
-        title: "Stock Orders",
+        title: "Stock",
         url: "/dealer-orders?page=1&limit=10",
         icon: Handshake,
         roles: [ROLES.ADMIN, ROLES.CRE, ROLES.MANAGER, ROLES.DEALER],
@@ -198,7 +199,7 @@ export const sidebarData = [
       //   items: [],
       // },
       {
-        title: "Place orders",
+        title: "Orders",
         url: "/orders?page=1&limit=10",
         roles: [ROLES.ADMIN, ROLES.CRE, ROLES.MANAGER, ROLES.DEALER],
         isVisible: true,
@@ -602,13 +603,29 @@ export const sidebarData = [
     items: [],
   },
   {
-    title: "Profile Overview",
-    url: "/profile",
-    icon: User,
-    roles: [ROLES.ADMIN, ROLES.CRE, ROLES.MANAGER],
+    title: "Quotations",
+    icon: TextQuote,
+    url: "/quotations?page=1&limit=10",
+    roles: [ROLES.ADMIN],
     isVisible: true,
     items: [],
   },
+  {
+    title: "Invoices",
+    icon: ScrollText,
+    url: "/invoices?page=1&limit=10",
+    roles: [ROLES.ADMIN],
+    isVisible: true,
+    items: [],
+  },
+  // {
+  //   title: "Profile Overview",
+  //   url: "/profile",
+  //   icon: User,
+  //   roles: [ROLES.ADMIN, ROLES.CRE, ROLES.MANAGER],
+  //   isVisible: true,
+  //   items: [],
+  // },
 ];
 
 export const publicRoutes = [

@@ -8,7 +8,7 @@ export default function Header() {
   return (
     <div className="flex items-start justify-between">
       <Heading
-        title={user?.role === "dealer" ? "My Orders" : "Dealer Orders"}
+        title={user?.role === "dealer" ? "Stock" : "Dealer Orders"}
         description="Manage orders (Create, Update, Delete)."
       />
     </div>

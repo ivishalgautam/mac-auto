@@ -11,8 +11,8 @@ export const metadata = {
 };
 
 export default async function Queries({ searchParams }) {
-  searchParamsCache.parse(searchParams);
-  const key = serialize({ ...searchParams });
+  searchParamsCache.parse(await searchParams);
+  const key = serialize({ ...(await searchParams) });
 
   return (
     <PageContainer>

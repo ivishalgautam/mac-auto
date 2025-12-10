@@ -8,17 +8,8 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  useCreateQuotation,
-  useGetQuotation,
-  useUpdateQuotation,
-} from "@/mutations/quotation-mutation";
 import { DatePicker } from "../ui/date-picker";
 import { H4, H5 } from "../ui/typography";
-import {
-  useGetFormattedWalkInEnquiries,
-  useGetWalkInEnquiry,
-} from "@/mutations/walkin-enquiries-mutation";
 import Loader from "../loader";
 import ErrorMessage from "../ui/error";
 import { useEffect, useMemo } from "react";
@@ -28,6 +19,11 @@ import { useGetVehicles } from "@/mutations/vehicle-mutation";
 import moment from "moment";
 import CustomMultiSelect from "../custom-multi-select";
 import { Textarea } from "../ui/textarea";
+import {
+  useCreateInvoice,
+  useGetInvoice,
+  useUpdateInvoice,
+} from "@/mutations/invoices-mutation";
 
 const defaultValues = {
   customer_name: "",
@@ -84,12 +80,7 @@ const createSchema = z.object({
   message: z.string().optional(),
 });
 
-export default function QuotationForm({
-  type = "create",
-  id,
-  callback = null,
-  enquiryId,
-}) {
+export default function InvoiceForm({ type = "create", id, callback = null }) {
   const router = useRouter();
   const {
     register,
@@ -101,11 +92,8 @@ export default function QuotationForm({
     setValue,
   } = useForm({
     resolver: zodResolver(createSchema),
-    defaultValues: { ...defaultValues, enquiry_id: enquiryId ?? null },
+    defaultValues: { ...defaultValues },
   });
-
-  console.log({ errors });
-
   const selectedVehicles = watch("vehicle_ids");
 
   const watchPriceBreakUps = useWatch({
@@ -133,12 +121,12 @@ export default function QuotationForm({
     );
   }, [vehiclesData]);
 
-  const createMutation = useCreateQuotation(() => {
+  const createMutation = useCreateInvoice(() => {
     reset({});
     router.back();
   });
-  const { data, isLoading, isError, error } = useGetQuotation(id);
-  const updateMutation = useUpdateQuotation(id, () => {
+  const { data, isLoading, isError, error } = useGetInvoice(id);
+  const updateMutation = useUpdateInvoice(id, () => {
     reset({});
     router.back();
   });
@@ -326,16 +314,6 @@ export default function QuotationForm({
                 })}
               />
             )}
-          />
-        </div>
-
-        {/* message */}
-        <div className="col-span-full">
-          <Label htmlFor="message">Message</Label>
-          <Textarea
-            id="message"
-            {...register("message")}
-            placeholder="Enter message"
           />
         </div>
 
