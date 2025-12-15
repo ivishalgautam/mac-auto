@@ -20,8 +20,8 @@ const create = async (req, res) => {
       req.body.dealer_id = dealerRecord.id;
     }
 
-    const dealer = await table.DealerModel.getByUserId(req.user_data.id);
-    req.body.dealer_code = dealer.dealer_code;
+    // const dealer = await table.DealerModel.getByUserId(req.user_data.id);
+    // req.body.dealer_code = dealer.dealer_code;
 
     const quotation = await table.QuotationModel.create(req);
     res
@@ -72,7 +72,7 @@ const convertToInvoice = async (req, res) => {
       return res
         .code(StatusCodes.NOT_FOUND)
         .send({ message: "Quotation not found!" });
-    console.log({ record });
+
     if (req.user_data.role === "dealer") {
       const dealerRecord = await table.DealerModel.getByUserId(
         req.user_data.id
@@ -85,10 +85,13 @@ const convertToInvoice = async (req, res) => {
       req.body.dealer_id = dealerRecord.id;
     }
 
-    const dealer = await table.DealerModel.getByUserId(req.user_data.id);
-
     await table.InvoiceModel.create(
-      { body: { ...record, dealer_code: dealer?.dealer_code } },
+      {
+        body: {
+          ...record,
+          quotation_id: record.id,
+        },
+      },
       transaction
     );
     await table.QuotationModel.update(

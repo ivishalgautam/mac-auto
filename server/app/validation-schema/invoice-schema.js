@@ -1,7 +1,6 @@
 import { z } from "zod";
 
-export const quotationSchema = z.object({
-  // enquiry_id: z.string().uuid(),
+export const invoiceSchema = z.object({
   vehicle_ids: z
     .array(z.string().uuid())
     .min(1, { message: "Select vehicle" })
@@ -24,5 +23,4 @@ export const quotationSchema = z.object({
       on_road_price: z.string().optional(),
     })
   ),
-  message: z.string().optional(),
 });

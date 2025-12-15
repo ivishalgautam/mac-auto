@@ -15,7 +15,7 @@ const init = async (sequelize) => {
       },
       enquiry_id: {
         type: DataTypes.UUID,
-        allowNull: false,
+        allowNull: true,
         unique: { args: true, msg: "Quotation generated already." },
         references: {
           model: constants.models.WALKIN_ENQUIRY_TABLE,
@@ -88,20 +88,21 @@ const create = async (req, transaction) => {
   const options = {};
   if (transaction) options.transaction = transaction;
 
-  const dealerCode = req.body.dealer_code;
   const latest = await QuotationModel.findOne({
     attributes: ["quotation_no"],
-    where: { dealer_id: req.body.dealer_id },
+    // where: { dealer_id: req.body.dealer_id },
     order: [["created_at", "DESC"]],
     raw: true,
   });
 
-  let newQuotationNo = `${dealerCode}-QT-0001`;
+  // let newQuotationNo = `${dealerCode}-QT-0001`;
+  let newQuotationNo = `QT-0001`;
   if (latest?.quotation_no) {
     const parts = latest.quotation_no.split("-");
     const lastNumber = parseInt(parts[parts.length - 1], 10); // take the last block
     const nextNumber = lastNumber + 1;
-    newQuotationNo = `${dealerCode}-QT-${String(nextNumber).padStart(4, "0")}`;
+    // newQuotationNo = `${dealerCode}-QT-${String(nextNumber).padStart(4, "0")}`;
+    newQuotationNo = `QT-${String(nextNumber).padStart(4, "0")}`;
   }
 
   const data = await QuotationModel.create(
@@ -138,6 +139,7 @@ const update = async (req, id, transaction) => {
       vehicle_price_breakups: req.body.vehicle_price_breakups,
       vehicle_ids: req.body.vehicle_ids,
       message: req.body.message,
+      status: req.body.status,
     },
     options
   );

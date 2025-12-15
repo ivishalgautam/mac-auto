@@ -1,51 +1,11 @@
 "use strict";
 import table from "../../db/models.js";
 import { StatusCodes } from "http-status-codes";
-import { quotationSchema } from "../../validation-schema/quotation.schema.js";
+import { invoiceSchema } from "../../validation-schema/invoice-schema.js";
 
 const create = async (req, res) => {
   try {
-    const validatedData = quotationSchema.parse(req.body);
-
-    const vehicle = await table.VehicleModel.getById(
-      0,
-      validatedData.vehicle_id
-    );
-    if (!vehicle) {
-      return res
-        .code(StatusCodes.NOT_FOUND)
-        .send({ status: false, message: "Vehicle not registered." });
-    } else {
-      req.body.model = vehicle.title;
-    }
-
-    const vehicleVariantMap = await table.VehicleVariantMapModel.getById(
-      0,
-      validatedData.vehicle_variant_map_id
-    );
-    if (!vehicleVariantMap) {
-      return res
-        .code(StatusCodes.NOT_FOUND)
-        .send({ status: false, message: "Vehicle variant not found." });
-    } else {
-      const vehicleVariant = await table.VehicleVariantModel.getById(
-        0,
-        vehicleVariantMap.vehicle_variant_id
-      );
-      req.body.variant = vehicleVariant.variant_name;
-    }
-
-    const vehicleColor = await table.VehicleColorModel.getById(
-      0,
-      validatedData.vehicle_color_id
-    );
-    if (!vehicleColor) {
-      return res
-        .code(StatusCodes.NOT_FOUND)
-        .send({ status: false, message: "Vehicle color not found." });
-    } else {
-      req.body.color = vehicleColor.color_name;
-    }
+    const validatedData = invoiceSchema.parse(req.body);
 
     if (req.user_data.role === "dealer") {
       const dealerRecord = await table.DealerModel.getByUserId(
@@ -58,9 +18,6 @@ const create = async (req, res) => {
 
       req.body.dealer_id = dealerRecord.id;
     }
-
-    const dealer = await table.DealerModel.getByUserId(req.user_data.id);
-    req.body.dealer_code = dealer.dealer_code;
 
     const quotation = await table.InvoiceModel.create(req);
     res
@@ -108,12 +65,12 @@ const deleteById = async (req, res) => {
     if (!record)
       return res
         .code(StatusCodes.NOT_FOUND)
-        .send({ message: "invoice not found!" });
+        .send({ message: "Invoice not found!" });
 
     await table.InvoiceModel.deleteById(req.params.id);
     res
       .code(StatusCodes.OK)
-      .send({ status: true, message: "invoice deleted successfully." });
+      .send({ status: true, message: "Invoice deleted successfully." });
   } catch (error) {
     throw error;
   }

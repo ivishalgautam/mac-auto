@@ -13,12 +13,12 @@ const init = async (sequelize) => {
         primaryKey: true,
         defaultValue: DataTypes.UUIDV4,
       },
-      enquiry_id: {
+      quotation_id: {
         type: DataTypes.UUID,
+        allowNull: true,
         unique: { args: true, msg: "Invoice generated already." },
-        allowNull: false,
         references: {
-          model: constants.models.WALKIN_ENQUIRY_TABLE,
+          model: constants.models.QUOTATION_TABLE,
           key: "id",
           deferrable: Deferrable.INITIALLY_IMMEDIATE,
         },
@@ -40,18 +40,6 @@ const init = async (sequelize) => {
         type: DataTypes.STRING,
         allowNull: false,
       },
-      model: {
-        type: DataTypes.STRING,
-        allowNull: true,
-      },
-      variant: {
-        type: DataTypes.STRING,
-        allowNull: true,
-      },
-      color: {
-        type: DataTypes.STRING,
-        allowNull: true,
-      },
       dealer_id: {
         type: DataTypes.UUID,
         allowNull: true,
@@ -62,75 +50,13 @@ const init = async (sequelize) => {
         },
         onDelete: "SET NULL",
       },
-      // vehicle_ids: {
-      //   type: DataTypes.UUID,
-      //   allowNull: false,
-      //   references: {
-      //     model: constants.models.VEHICLE_TABLE,
-      //     key: "id",
-      //     deferrable: Deferrable.INITIALLY_IMMEDIATE,
-      //   },
-      //   onDelete: "SET NULL",
-      // },
       vehicle_ids: {
         type: DataTypes.ARRAY(DataTypes.UUID),
         defaultValue: [],
       },
-      // vehicle_variant_map_id: {
-      //   type: DataTypes.UUID,
-      //   allowNull: true,
-      //   references: {
-      //     model: constants.models.VEHICLE_VARIANT_MAP_TABLE,
-      //     key: "id",
-      //     deferrable: Deferrable.INITIALLY_IMMEDIATE,
-      //   },
-      //   onDelete: "SET NULL",
-      // },
-      // vehicle_color_id: {
-      //   type: DataTypes.UUID,
-      //   allowNull: false,
-      //   references: {
-      //     model: constants.models.VEHICLE_COLOR_TABLE,
-      //     key: "id",
-      //     deferrable: Deferrable.INITIALLY_IMMEDIATE,
-      //   },
-      //   onDelete: "SET NULL",
-      // },
-      base_price_ex_showroom: {
-        type: DataTypes.STRING,
-        allowNull: true,
-      },
-      gst: {
-        type: DataTypes.INTEGER,
-        allowNull: true,
-      },
-      insurance: {
-        type: DataTypes.STRING,
-        allowNull: true,
-      },
-      rto_registration_charges: {
-        type: DataTypes.STRING,
-        allowNull: true,
-      },
-      accessories_fitments: {
-        type: DataTypes.STRING,
-        allowNull: true,
-      },
-      total_ex_showroom_price: {
-        type: DataTypes.STRING,
-        allowNull: true,
-      },
-      discount: {
-        type: DataTypes.STRING,
-        allowNull: true,
-      },
-      //   subsidy: {
-      //     type: DataTypes.STRING,
-      //     allowNull: true,
-      //   },
-      on_road_price: {
-        type: DataTypes.STRING,
-        allowNull: true,
+      vehicle_price_breakups: {
+        type: DataTypes.JSONB,
+        defaultValue: [], //[{model, base_price_ex_showroom, gst, insurance, rto_registration_charges, accessories_fitments, total_ex_showroom_price, discount, on_road_price}]
       },
     },
     {
@@ -138,13 +64,11 @@ const init = async (sequelize) => {
       updatedAt: "updated_at",
       indexes: [
         { fields: ["dealer_id"] },
+        { fields: ["vehicle_ids"] },
         { fields: ["customer_name"] },
         { fields: ["mobile_no"] },
         { fields: ["date"] },
         { fields: ["invoice_no"] },
-        { fields: ["model"] },
-        { fields: ["variant"] },
-        { fields: ["color"] },
       ],
     }
   );
@@ -156,45 +80,30 @@ const create = async (req, transaction) => {
   const options = {};
   if (transaction) options.transaction = transaction;
 
-  const dealerCode = req.body?.dealer_code ?? "";
   const latest = await InvoiceModel.findOne({
     attributes: ["invoice_no"],
-    where: { dealer_id: req.body.dealer_id },
     order: [["created_at", "DESC"]],
     raw: true,
   });
 
-  let newInvoiceNo = `${dealerCode}-INV-0001`;
+  let newQuotationNo = `INV-0001`;
   if (latest?.invoice_no) {
     const parts = latest.invoice_no.split("-");
     const lastNumber = parseInt(parts[parts.length - 1], 10); // take the last block
     const nextNumber = lastNumber + 1;
-    newInvoiceNo = `${dealerCode}-INV-${String(nextNumber).padStart(4, "0")}`;
+    newQuotationNo = `INV-${String(nextNumber).padStart(4, "0")}`;
   }
 
   const data = await InvoiceModel.create(
     {
-      enquiry_id: req.body.enquiry_id,
+      quotation_id: req.body.quotation_id,
       customer_name: req.body.customer_name,
       mobile_no: req.body.mobile_no,
       date: req.body.date,
-      invoice_no: newInvoiceNo,
-      model: req.body.model,
-      variant: req.body.variant,
-      color: req.body.color,
+      invoice_no: newQuotationNo,
       dealer_id: req.body.dealer_id,
-      base_price_ex_showroom: req.body.base_price_ex_showroom,
-      gst: req.body.gst,
-      insurance: req.body.insurance,
-      rto_registration_charges: req.body.rto_registration_charges,
-      accessories_fitments: req.body.accessories_fitments,
-      total_ex_showroom_price: req.body.total_ex_showroom_price,
-      discount: req.body.discount,
-      on_road_price: req.body.on_road_price,
-
+      vehicle_price_breakups: req.body.vehicle_price_breakups,
       vehicle_ids: req.body.vehicle_ids,
-      vehicle_variant_map_id: req.body.vehicle_variant_map_id,
-      vehicle_color_id: req.body.vehicle_color_id,
     },
     options
   );
@@ -214,24 +123,9 @@ const update = async (req, id, transaction) => {
       customer_name: req.body.customer_name,
       mobile_no: req.body.mobile_no,
       date: req.body.date,
-      invoice_no: req.body.invoice_no,
-      model: req.body.model,
-      variant: req.body.variant,
-      color: req.body.color,
-      customer_id: req.body.customer_id,
       dealer_id: req.body.dealer_id,
-      base_price_ex_showroom: req.body.base_price_ex_showroom,
-      gst: req.body.gst,
-      insurance: req.body.insurance,
-      rto_registration_charges: req.body.rto_registration_charges,
-      accessories_fitments: req.body.accessories_fitments,
-      total_ex_showroom_price: req.body.total_ex_showroom_price,
-      discount: req.body.discount,
-      on_road_price: req.body.on_road_price,
-
+      vehicle_price_breakups: req.body.vehicle_price_breakups,
       vehicle_ids: req.body.vehicle_ids,
-      vehicle_variant_map_id: req.body.vehicle_variant_map_id,
-      vehicle_color_id: req.body.vehicle_color_id,
     },
     options
   );
@@ -248,7 +142,6 @@ const getById = async (id) => {
 
 const get = async (req) => {
   const { role, id } = req.user_data;
-
   const whereConditions = [];
   const queryParams = {};
 
@@ -261,12 +154,9 @@ const get = async (req) => {
   if (q) {
     whereConditions.push(
       `(
-        inv.customer_name ILIKE :query OR 
-        inv.mobile_no ILIKE :query OR 
-        inv.invoice_no ILIKE :query OR 
-        inv.model ILIKE :query OR 
-        inv.variant ILIKE :query OR 
-        inv.color ILIKE :query
+        inv.customer_name ILIKE :query OR
+        inv.mobile_no ILIKE :query OR
+        inv.invoice_no ILIKE :query
       )`
     );
     queryParams.query = `%${q}%`;
@@ -298,7 +188,6 @@ const get = async (req) => {
   SELECT 
       COUNT(inv.id) OVER()::integer as total
     FROM ${constants.models.INVOICE_TABLE} inv
-    LEFT JOIN ${constants.models.VEHICLE_TABLE} vh ON vh.id = ANY(inv.vehicle_ids::uuid[])
     LEFT JOIN ${constants.models.DEALER_TABLE} dlr ON dlr.id = inv.dealer_id
     ${whereClause}
   `;
