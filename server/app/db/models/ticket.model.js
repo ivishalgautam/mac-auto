@@ -313,7 +313,7 @@ const getTicketDetailsById = async (req, id) => {
       cstu.first_name as customer_first_name, cstu.last_name as customer_last_name, cstu.mobile_number as customer_phone,
       tcn.technician_name as assigned_technician_name, tcn.technician_phone as assigned_technician_phone
     FROM ${constants.models.TICKET_TABLE} tk
-    LEFT JOIN ${constants.models.USER_TABLE} cstu ON cstu.id = cst.user_id
+    LEFT JOIN ${constants.models.USER_TABLE} cstu ON cstu.id = customer_id.user_id
     LEFT JOIN ${constants.models.USER_TABLE} pnchusr ON pnchusr.id = dl.user_id
     LEFT JOIN ${constants.models.TECHNICIAN_TABLE} tcn ON tk.assigned_technician = tcn.id
     WHERE tk.id = :id
