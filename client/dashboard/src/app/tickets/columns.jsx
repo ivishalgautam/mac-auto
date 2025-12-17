@@ -40,6 +40,22 @@ export const columns = (
       },
     },
     {
+      accessorKey: "customer_name",
+      header: "Customer name",
+      cell: ({ row }) => {
+        const name = row.getValue("customer_name");
+        return <div className="capitalize">{name}</div>;
+      },
+    },
+    {
+      accessorKey: "customer_phone",
+      header: "Customer phone",
+      cell: ({ row }) => {
+        const phone = row.getValue("customer_phone");
+        return <div className="capitalize">{phone}</div>;
+      },
+    },
+    {
       accessorKey: "message",
       header: "Message",
       cell: ({ row }) => {
