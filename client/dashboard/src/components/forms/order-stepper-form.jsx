@@ -83,9 +83,11 @@ export default function OrderStepperForm({ type, id }) {
   const [batteryType, setBatteryType] = useState("");
   const router = useRouter();
 
+  console.log({ selectedCategory, step });
+
   const { data: vehicles, isLoading: isVehiclesLoading } =
     useGetVehicles("page=1");
-
+  console.log({ vehicles });
   const {
     data: orderData,
     isLoading: isOrderLoading,
@@ -176,9 +178,21 @@ export default function OrderStepperForm({ type, id }) {
     );
   }, [vehicles, selectedCategory]);
 
+  console.log({ filteredVehicles });
+
   const groupedVehicles = useMemo(() => {
-    return !filteredVehicles ? Object.groupBy(filteredVehicles, ({ category }) => category) ?? {} : {};
+    return filteredVehicles
+      ? (Object.groupBy(filteredVehicles, ({ category }) => category) ?? {})
+      : {};
   }, [filteredVehicles]);
+
+  // const groupedVehicles = useMemo(() => {
+  //   if (!Array.isArray(filteredVehicles) || filteredVehicles.length === 0) {
+  //     return {};
+  //   }
+
+  //   return Object.groupBy(filteredVehicles, (v) => v.category);
+  // }, [filteredVehicles]);
 
   const createMutation = useCreateOrder(() => {
     router.push("/orders?page=1&limit=10");
