@@ -4,31 +4,6 @@ import table from "../../db/models.js";
 const reports = async (req, res) => {
   try {
     const { role } = req.user_data;
-    if (role === "admin") {
-      const [
-        //   stats,
-        userRoles,
-        enquiryTrends,
-        ticketBreakdown,
-        latestEnquiries,
-      ] = await Promise.all([
-        //   DashboardModel.getDashboardStats(),
-        table.UserModel.getUserRoleBreakdown(),
-        table.WalkinEnquiryModel.getEnquiriesOverTime(req),
-        table.TicketModel.getTicketStatusBreakdown(),
-        table.WalkinEnquiryModel.getLatestEnquiries(req),
-      ]);
-
-      return res.send({
-        status: true,
-        data: {
-          users_by_role: userRoles,
-          enquiries_over_time: enquiryTrends,
-          ticket_status_breakdown: ticketBreakdown,
-          latest_enquiries: latestEnquiries,
-        },
-      });
-    }
 
     if (role === "dealer") {
       const [
@@ -61,6 +36,30 @@ const reports = async (req, res) => {
         },
       });
     }
+
+    const [
+      //   stats,
+      userRoles,
+      enquiryTrends,
+      ticketBreakdown,
+      latestEnquiries,
+    ] = await Promise.all([
+      //   DashboardModel.getDashboardStats(),
+      table.UserModel.getUserRoleBreakdown(),
+      table.WalkinEnquiryModel.getEnquiriesOverTime(req),
+      table.TicketModel.getTicketStatusBreakdown(),
+      table.WalkinEnquiryModel.getLatestEnquiries(req),
+    ]);
+
+    return res.send({
+      status: true,
+      data: {
+        users_by_role: userRoles,
+        enquiries_over_time: enquiryTrends,
+        ticket_status_breakdown: ticketBreakdown,
+        latest_enquiries: latestEnquiries,
+      },
+    });
   } catch (error) {
     throw error;
   }
