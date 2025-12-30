@@ -83,47 +83,50 @@ export default function LoginForm({}) {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       {/* role */}
-      {/* {(process.env.NODE_ENV === "development" || role === "employee") && ( */}
-      <div className="space-y-2">
-        <Controller
-          name="role"
-          control={control}
-          render={({ field }) => (
-            <div>
-              <Label>Role*</Label>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <SelectTrigger
-                  className={cn("w-full border-gray-700", {
-                    "border-red-500": errors.role,
-                  })}
+      {(process.env.NODE_ENV === "development" || role === "employee") && (
+        <div className="space-y-2">
+          <Controller
+            name="role"
+            control={control}
+            render={({ field }) => (
+              <div>
+                <Label>Role*</Label>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
                 >
-                  <SelectValue placeholder="Role" />
-                </SelectTrigger>
-                <SelectContent>
-                  {process.env.NODE_ENV === "development" ? (
-                    <>
-                      <SelectItem value="admin">Admin</SelectItem>
-                      <SelectItem value="cre">CRE</SelectItem>
-                      <SelectItem value="manager">Manager</SelectItem>
-                      <SelectItem value="dealer">Dealer</SelectItem>
-                      <SelectItem value="customer">Customer</SelectItem>
-                    </>
-                  ) : role === "employee" ? (
-                    <>
-                      <SelectItem value="cre">CRE</SelectItem>
-                      <SelectItem value="manager">Manager</SelectItem>
-                    </>
-                  ) : null}
-                </SelectContent>
-              </Select>
-            </div>
+                  <SelectTrigger
+                    className={cn("w-full border-gray-700", {
+                      "border-red-500": errors.role,
+                    })}
+                  >
+                    <SelectValue placeholder="Role" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {process.env.NODE_ENV === "development" ? (
+                      <>
+                        <SelectItem value="admin">Admin</SelectItem>
+                        <SelectItem value="cre">CRE</SelectItem>
+                        <SelectItem value="manager">Manager</SelectItem>
+                        <SelectItem value="dealer">Dealer</SelectItem>
+                        <SelectItem value="customer">Customer</SelectItem>
+                      </>
+                    ) : role === "employee" ? (
+                      <>
+                        <SelectItem value="cre">CRE</SelectItem>
+                        <SelectItem value="manager">Manager</SelectItem>
+                      </>
+                    ) : null}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+          />
+          {errors.role && (
+            <p className="text-destructive text-sm">{errors.role.message}</p>
           )}
-        />
-        {errors.role && (
-          <p className="text-destructive text-sm">{errors.role.message}</p>
-        )}
-      </div>
-      {/* )} */}
+        </div>
+      )}
 
       <div className="space-y-2">
         <Label htmlFor="username">Username</Label>
