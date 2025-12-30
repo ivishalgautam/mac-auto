@@ -83,12 +83,14 @@ export default function LoginForm({}) {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       {/* role */}
-      {(process.env.NODE_ENV === "development" || role === "employee") && (
-        <div className="space-y-2">
-          <Controller
-            name="role"
-            control={control}
-            render={({ field }) => (
+      {/* {(process.env.NODE_ENV === "development" || role === "employee") && ( */}
+      <div className="space-y-2">
+        <Controller
+          name="role"
+          control={control}
+          render={({ field }) => (
+            <div>
+              <Label>Role*</Label>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <SelectTrigger
                   className={cn("w-full border-gray-700", {
@@ -114,13 +116,14 @@ export default function LoginForm({}) {
                   ) : null}
                 </SelectContent>
               </Select>
-            )}
-          />
-          {errors.role && (
-            <p className="text-destructive text-sm">{errors.role.message}</p>
+            </div>
           )}
-        </div>
-      )}
+        />
+        {errors.role && (
+          <p className="text-destructive text-sm">{errors.role.message}</p>
+        )}
+      </div>
+      {/* )} */}
 
       <div className="space-y-2">
         <Label htmlFor="username">Username</Label>

@@ -10,6 +10,7 @@ import {
   fetchOrders,
   fetchOrderShippingLabel,
   updateOrder,
+  updateOrderDetails,
   updateOrderItem,
 } from "@/services/order-service";
 import { toast } from "sonner";
@@ -66,6 +67,27 @@ export const useUpdateOrder = (id, callback) => {
   return useMutation({
     mutationKey: ["orders", id],
     mutationFn: (data) => updateOrder(id, data),
+    onSuccess: (_) => {
+      queryClient.invalidateQueries({ queryKey: ["orders"] });
+      queryClient.invalidateQueries({ queryKey: ["orders", id] });
+      callback?.(_);
+    },
+    onError: (error) => {
+      toast.error("Error", {
+        description:
+          error?.response?.data?.message ??
+          error?.message ??
+          "Something went wrong.",
+      });
+    },
+  });
+};
+
+export const useUpdateOrderDetails = (id, callback) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationKey: ["orders", id],
+    mutationFn: (data) => updateOrderDetails(id, data),
     onSuccess: (_) => {
       queryClient.invalidateQueries({ queryKey: ["orders"] });
       queryClient.invalidateQueries({ queryKey: ["orders", id] });

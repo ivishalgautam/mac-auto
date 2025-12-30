@@ -18,6 +18,7 @@ import {
   useOrder,
   useOrderItems,
   useUpdateOrder,
+  useUpdateOrderDetails,
 } from "@/mutations/use-orders";
 import { useAuth } from "@/providers/auth-provider";
 import DealerSelect from "@/features/dealer-select";
@@ -54,7 +55,7 @@ const orderItemSchema = z.object({
 
 const createOrderSchema = z.object({
   dealer_id: z.string().uuid({ message: "Invalid dealer_id" }).optional(),
-  oc_number: z.string().min(1, "OC Number is required*"),
+  oc_number: z.string().optional(),
   message: z.string().max(500, "Message too long").optional(),
   order_items: z
     .array(orderItemSchema)
@@ -83,11 +84,8 @@ export default function OrderStepperForm({ type, id }) {
   const [batteryType, setBatteryType] = useState("");
   const router = useRouter();
 
-  console.log({ selectedCategory, step });
-
   const { data: vehicles, isLoading: isVehiclesLoading } =
     useGetVehicles("page=1");
-  console.log({ vehicles });
   const {
     data: orderData,
     isLoading: isOrderLoading,
@@ -118,6 +116,9 @@ export default function OrderStepperForm({ type, id }) {
     control,
     name: "order_items",
   });
+
+  const orderItems = watch("order_items");
+
   const handleNext = () => setStep((s) => s + 1);
   const handleBack = () => setStep((s) => s - 1);
   const handleNextWithValidation = () => {
@@ -150,12 +151,12 @@ export default function OrderStepperForm({ type, id }) {
           return;
         }
         break;
-      case 6:
-        if (!watch("oc_number")) {
-          setStepError("OC Number is required*");
-          return;
-        }
-        break;
+      // case 6:
+      //   if (!watch("oc_number")) {
+      //     setStepError("OC Number is required*");
+      //     return;
+      //   }
+      //   break;
       case 7:
         if (user?.role === "admin" && !watch("dealer_id")) {
           setStepError("Please select a dealer");
@@ -178,8 +179,6 @@ export default function OrderStepperForm({ type, id }) {
     );
   }, [vehicles, selectedCategory]);
 
-  console.log({ filteredVehicles });
-
   const groupedVehicles = useMemo(() => {
     return filteredVehicles
       ? (Object.groupBy(filteredVehicles, ({ category }) => category) ?? {})
@@ -198,7 +197,7 @@ export default function OrderStepperForm({ type, id }) {
     router.push("/orders?page=1&limit=10");
   });
 
-  const updateMutation = useUpdateOrder(id, () => {
+  const updateMutation = useUpdateOrderDetails(id, () => {
     router.push("/orders?page=1&limit=10");
   });
 
@@ -220,7 +219,13 @@ export default function OrderStepperForm({ type, id }) {
           <Card
             key={c.value}
             onClick={() => {
-              setSelectedCategory((prev) => [...prev, c.value]);
+              setSelectedCategory((prev) => {
+                if (prev.includes(c.value)) {
+                  return prev.filter((pr) => pr !== c.value);
+                }
+
+                return [...prev, c.value];
+              });
             }}
             className={cn(
               "hover:border-primary cursor-pointer transition-all",
@@ -352,7 +357,7 @@ export default function OrderStepperForm({ type, id }) {
         <Button
           disabled={!batteryType}
           onClick={() => {
-            type === "create" &&
+            if (type === "create") {
               setValue(
                 "order_items",
                 selectedVehicles.map((v) => ({
@@ -362,6 +367,22 @@ export default function OrderStepperForm({ type, id }) {
                   quantity: 1,
                 })),
               );
+            } else {
+              setValue(
+                "order_items",
+                selectedVehicles.map((v) => {
+                  const exist = orderItems.find((i) => i.vehicle_id === v);
+
+                  return exist
+                    ? exist
+                    : {
+                        vehicle_id: v,
+                        battery_type: batteryType,
+                        quantity: 1,
+                      };
+                }),
+              );
+            }
             handleNextWithValidation();
           }}
         >
@@ -370,12 +391,12 @@ export default function OrderStepperForm({ type, id }) {
       </div>
     </div>
   );
+
   const StepColor = () => (
     <div className="space-y-6">
       {fields.map((field, i) => {
         const vehicle = filteredVehicles.find((v) => v.id === field.vehicle_id);
         const colorFields = watch(`order_items.${i}.colors`) || [];
-        console.log({ fields, items: watch("order_items") });
         // console.log({ colorFields });
 
         const toggleColor = (color) => {
@@ -547,6 +568,7 @@ export default function OrderStepperForm({ type, id }) {
       reset((prev) => {
         return {
           ...prev,
+          oc_number: orderData.oc_number,
           dealer_id: orderData.dealer_id,
           message: orderData?.message ?? "",
           order_items: data?.items?.map((item) => {

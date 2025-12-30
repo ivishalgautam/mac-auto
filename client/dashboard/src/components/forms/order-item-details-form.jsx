@@ -122,7 +122,6 @@ export default function OrderItemDetailsForm({ type = "create", id }) {
   const { data, isLoading, isError, error } = useOrderItem(itemId);
 
   const onSubmit = (data) => {
-    console.log(data);
     if (type === "create") {
       createMutation.mutate(data);
     }
@@ -141,6 +140,7 @@ export default function OrderItemDetailsForm({ type = "create", id }) {
 
   useEffect(() => {
     if (data) {
+      console.log({ data });
       reset({
         order_item_id: itemId,
         colors: data.colors.map((c) => {
@@ -159,7 +159,20 @@ export default function OrderItemDetailsForm({ type = "create", id }) {
                     controller_no: "",
                     charger_no: "",
                   })
-                : c.details,
+                : c.details &&
+                    Array.isArray(c.details) &&
+                    c.details.length < c.quantity
+                  ? [
+                      ...c.details,
+                      Array(c.quantity - c.details.length).fill({
+                        chassis_no: "",
+                        motor_no: "",
+                        battery_no: "",
+                        controller_no: "",
+                        charger_no: "",
+                      }),
+                    ]
+                  : c.details,
             quantity: c.quantity,
           };
         }),
