@@ -16,7 +16,9 @@ export default function DashboardPage() {
 
   return (
     <div className="animate-in fade-in slide-in-from-bottom-8 duration-500">
-      {user?.role === "admin" && <AdminDashboard dashboardData={data} />}
+      {["admin", "cre", "manager"].includes(user?.role) && (
+        <AdminDashboard dashboardData={data} />
+      )}
       {user?.role === "dealer" && <DealerDashboard dashboardData={data} />}
     </div>
   );
