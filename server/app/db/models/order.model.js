@@ -267,6 +267,8 @@ const update = async (req, id, transaction) => {
 
   const [, rows] = await OrderModel.update(
     {
+      oc_number: req.body.oc_number,
+      message: req.body.message,
       status: req.body.status,
       driver_details: req.body.driver_details,
       invoice: req.body.invoice,

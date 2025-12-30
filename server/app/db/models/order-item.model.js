@@ -119,6 +119,13 @@ const deleteById = async (req, id) => {
   });
 };
 
+const deleteByOrderId = async (order_id, transaction) => {
+  return await OrderItemModel.destroy({
+    where: { order_id: order_id },
+    transaction,
+  });
+};
+
 const getByOrderId = async (req, orderId) => {
   const whereConditions = [`oi.order_id = :orderId`];
   const queryParams = { orderId: req?.params?.id || orderId };
@@ -196,5 +203,6 @@ export default {
   getById: getById,
   update: update,
   deleteById: deleteById,
+  deleteByOrderId: deleteByOrderId,
   getByOrderId: getByOrderId,
 };

@@ -445,6 +445,17 @@ const deleteById = async (id) => {
   });
 };
 
+const deleteByChassisNumbers = async (numbers, transaction) => {
+  return await InventoryModel.destroy({
+    where: {
+      chassis_no: { [Op.in]: numbers },
+    },
+    transaction,
+    force: true,
+    logging: true,
+  });
+};
+
 export default {
   init: init,
   create: create,
@@ -454,6 +465,7 @@ export default {
   getByVehicleId: getByVehicleId,
   getByVehicleColorId: getByVehicleColorId,
   deleteById: deleteById,
+  deleteByChassisNumbers: deleteByChassisNumbers,
   bulkCreate: bulkCreate,
   get: get,
   getById: getById,

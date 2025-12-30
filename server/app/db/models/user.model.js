@@ -169,7 +169,7 @@ const bulkCreate = async (bulkData, transaction) => {
   return data;
 };
 const get = async (req) => {
-  const whereConditions = ["usr.role != 'admin'", "usr.deleted_at IS NULL"];
+  const whereConditions = ["usr.role != 'admin'"];
   const queryParams = {};
   const q = req.query.q ? req.query.q : null;
   const onlyRoles = req.query.or ? req.query.or.split(".") : null;
@@ -356,6 +356,7 @@ const deleteById = async (req, user_id) => {
     },
     returning: true,
     raw: true,
+    force: true,
   });
 };
 

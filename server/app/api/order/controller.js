@@ -7,6 +7,7 @@ import { orderSchema } from "../../validation-schema/order.schema.js";
 import { cleanupFiles } from "../../helpers/cleanup-files.js";
 import { getItemsToDelete } from "../../helpers/filter.js";
 import { mailer } from "../../services/mailer.js";
+import { Op } from "sequelize";
 
 const create = async (req, res) => {
   const transaction = await sequelize.transaction();
@@ -142,7 +143,6 @@ const update = async (req, res) => {
     }
 
     const updated = await table.OrderModel.update(req, 0, transaction);
-
     if (updated.status === "delivered") {
       const chassisDetails = data.items
         .flatMap((item) =>
@@ -192,6 +192,94 @@ const update = async (req, res) => {
     res
       .code(StatusCodes.OK)
       .send({ status: true, message: "Order updated.", data: updated });
+  } catch (error) {
+    await transaction.rollback();
+    throw error;
+  }
+};
+
+const updateDetails = async (req, res) => {
+  const transaction = await sequelize.transaction();
+
+  try {
+    const validateData = createOrderSchema.parse(req.body);
+
+    const { role, id } = req.user_data;
+    let userRecord = null;
+    if (role === "dealer") {
+      const dealerRecord = await table.DealerModel.getByUserId(id);
+      req.body.dealer_id = dealerRecord.id;
+      userRecord = req.user_data;
+    } else {
+      const dealerRecord = await table.DealerModel.getById(
+        validateData.dealer_id
+      );
+      userRecord = await table.UserModel.getById(0, dealerRecord.user_id);
+    }
+
+    const orderRecord = await table.OrderModel.getById(req);
+    if (!orderRecord)
+      return res
+        .code(StatusCodes.NOT_FOUND)
+        .send({ status: false, message: "Order not found!" });
+    console.log({ orderRecord });
+
+    if (!["pending", "in process"].includes(orderRecord.status)) {
+      return res.code(StatusCodes.CONFLICT).send({
+        status: false,
+        message: `Order is '${orderRecord.status}', No changes allowed.`,
+      });
+    }
+
+    const { items: orderItemsRecords } =
+      await table.OrderItemModel.getByOrderId(req, orderRecord.id);
+    const chassisDetails = orderItemsRecords
+      .flatMap((item) => item.colors.flatMap((item) => item.details))
+      .filter(Boolean);
+    await table.OrderItemModel.deleteByOrderId(orderRecord.id, transaction);
+    const chassisNumbers = chassisDetails.map((i) => i.chassis_no);
+
+    if (chassisNumbers.length) {
+      await table.InventoryModel.deleteByChassisNumbers(
+        chassisNumbers,
+        transaction
+      );
+    }
+
+    const itemRecords = await Promise.all(
+      validateData.order_items.map(async (item) => {
+        const vehicle = await table.VehicleModel.getById(0, item.vehicle_id);
+        if (!vehicle) throw new Error(`Vehicle not found: ${item.vehicle_id}`);
+
+        const colorEntries = item.colors || [];
+
+        return {
+          order_id: orderRecord.id,
+          vehicle_id: item.vehicle_id,
+          battery_type: item.battery_type,
+          colors: colorEntries,
+        };
+      })
+    );
+
+    await table.OrderItemModel.bulkCreate(itemRecords, transaction);
+
+    await table.OrderModel.update(req, 0, transaction);
+
+    await transaction.commit();
+
+    // if (userRecord?.email) {
+    //   await mailer.sendOrderCreatedEmail({
+    //     email: userRecord.email,
+    //     order_code: orderRecord.order_code,
+    //     fullname: userRecord.first_name + " " + userRecord?.last_name ?? "",
+    //     status: orderRecord.status,
+    //   });
+    // }
+
+    res
+      .code(StatusCodes.CREATED)
+      .send({ status: true, message: "Order created successfully" });
   } catch (error) {
     await transaction.rollback();
     throw error;
@@ -285,6 +373,7 @@ export default {
   updateOrderItem: updateOrderItem,
   getOrderItem: getOrderItem,
   update: update,
+  updateDetails: updateDetails,
   deleteById: deleteById,
   getById: getById,
 };

@@ -23,4 +23,5 @@ export default async function routes(fastify, opts) {
     },
     controller.update
   );
+  fastify.put("/update-details/:id", {}, controller.updateDetails);
 }
