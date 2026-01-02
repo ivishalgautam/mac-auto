@@ -69,7 +69,7 @@ export const columns = (openModal, setId, user, updateMutation) => [
             <DropdownMenuItem>
               <Link href={`/quotations/${id}/download`}>Download</Link>
             </DropdownMenuItem>
-            <DropdownMenuSeparator />
+            {/* <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={() => {
                 setId(id);
@@ -80,7 +80,7 @@ export const columns = (openModal, setId, user, updateMutation) => [
               {status === "invoice-generated"
                 ? "Invoice generated"
                 : "Convert to Invoice"}
-            </DropdownMenuItem>
+            </DropdownMenuItem> */}
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={() => {

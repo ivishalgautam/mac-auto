@@ -1,10 +1,11 @@
 "use client";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   AlertCircle,
   ExternalLink,
+  EyeIcon,
   LoaderCircleIcon,
   XIcon,
 } from "lucide-react";
@@ -12,7 +13,7 @@ import { Controller, FormProvider, useForm } from "react-hook-form";
 import { cn } from "@/lib/utils";
 import { Alert, AlertDescription } from "../ui/alert";
 import { getFormErrors } from "@/lib/get-form-errors";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Loader from "../loader";
 import ErrorMessage from "../ui/error";
 import { Textarea } from "../ui/textarea";
@@ -34,6 +35,8 @@ import UserSelect from "@/features/user-select";
 import DealerSelect from "@/features/dealer-select";
 import config from "@/config";
 import { Input } from "../ui/input";
+import FileUpload from "../file-uploader";
+import Image from "next/image";
 
 const defaultValues = {
   assigned_technician: "",
@@ -45,9 +48,11 @@ export default function DealerTicketForm({ id, type }) {
   const { user } = useAuth();
   const [files, setFiles] = useState({
     job_card: [],
+    images: [],
   });
   const [fileUrls, setFileUrls] = useState({
     job_card_urls: [],
+    images_urls: [],
   });
   const router = useRouter();
   const methods = useForm({
@@ -108,10 +113,15 @@ export default function DealerTicketForm({ id, type }) {
       setFileUrls((prev) => ({
         ...prev,
         job_card_urls: data?.job_card ?? [],
+        images_urls: data?.images ?? [],
       }));
       reset({ ...data });
     }
   }, [data, type, reset, setFileUrls]);
+
+  const handleImagesChange = useCallback((data) => {
+    setFiles((prev) => ({ ...prev, images: data }));
+  }, []);
 
   if (["edit", "view"].includes(type) && isLoading) return <Loader />;
   if (["edit", "view"].includes(type) && isError)
@@ -121,6 +131,69 @@ export default function DealerTicketForm({ id, type }) {
     <FormProvider {...methods}>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
         <div className="grid grid-cols-3 gap-4">
+          {/* images */}
+          <div className="col-span-full space-y-4">
+            <Label>Images</Label>
+            {["create", "edit"].includes(type) && (
+              <FileUpload
+                onFileChange={handleImagesChange}
+                inputName={"images"}
+                className={cn({ "border-red-500": errors.images })}
+                initialFiles={[]}
+                multiple={true}
+                maxFiles={50}
+              />
+            )}
+
+            <div className="grid grid-cols-[repeat(auto-fill,minmax(100px,1fr))] gap-4">
+              {fileUrls.images_urls?.map((src, index) => (
+                <div
+                  className="bg-accent group relative aspect-square w-24 rounded-md"
+                  key={index}
+                >
+                  <Image
+                    src={`${config.file_base}/${src}`}
+                    width={200}
+                    height={200}
+                    className="size-full rounded-[inherit] object-cover"
+                    alt={`carousel-${index}`}
+                  />
+                  {type === "edit" && (
+                    <Button
+                      onClick={() =>
+                        setFileUrls((prev) => ({
+                          ...prev,
+                          images_urls: prev.images_urls.filter(
+                            (i) => i !== src,
+                          ),
+                        }))
+                      }
+                      size="icon"
+                      className="border-background focus-visible:border-background absolute -top-2 -right-2 size-6 rounded-full border-2 shadow-none"
+                      aria-label="Remove image"
+                      type="button"
+                    >
+                      <XIcon className="size-3.5" />
+                    </Button>
+                  )}
+
+                  <div className="absolute inset-0 flex items-center justify-center rounded-md bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
+                    <a
+                      target="_blank"
+                      className={buttonVariants({
+                        size: "icon",
+                        variant: "ghost",
+                      })}
+                      href={`${config.file_base}/${src}`}
+                    >
+                      <EyeIcon className="size-5 text-white" />
+                    </a>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
           {/* dealer select */}
           {user?.role === "admin" && (
             <div className="space-y-2">

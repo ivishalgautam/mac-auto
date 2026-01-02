@@ -88,7 +88,7 @@ export const sidebarData = [
     title: "My Customers",
     url: "#",
     icon: Users,
-    roles: [ROLES.DEALER],
+    roles: [ROLES.DEALER, ROLES.CRE],
     isVisible: true,
     items: [
       {
@@ -133,13 +133,13 @@ export const sidebarData = [
       {
         title: "Quotations",
         url: "/quotations?page=1&limit=10",
-        roles: [ROLES.DEALER],
+        roles: [ROLES.DEALER, ROLES.CRE],
         isVisible: true,
       },
       {
         title: "Invoices",
         url: "/invoices?page=1&limit=10",
-        roles: [ROLES.DEALER],
+        roles: [ROLES.DEALER, ROLES.CRE],
         isVisible: true,
       },
     ],

@@ -140,7 +140,6 @@ export default function OrderItemDetailsForm({ type = "create", id }) {
 
   useEffect(() => {
     if (data) {
-      console.log({ data });
       reset({
         order_item_id: itemId,
         colors: data.colors.map((c) => {

@@ -57,6 +57,7 @@ export default function Listing({ orderId }) {
         data={data?.items ?? []}
         totalItems={data?.total ?? 0}
       />
+
       <DeleteDialog
         deleteMutation={deleteMutation}
         isOpen={isModal}

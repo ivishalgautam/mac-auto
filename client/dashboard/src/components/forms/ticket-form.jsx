@@ -18,6 +18,7 @@ import Image from "next/image";
 import config from "@/config";
 import { useCallback } from "react";
 import {
+  creTicketSchema,
   customerTicketSchema,
   ticketSchema,
 } from "@/utils/schema/ticket.schema";
@@ -42,6 +43,12 @@ const defaultValues = {
   parts: [],
 };
 
+const schemaByRole = {
+  customer: customerTicketSchema,
+  cre: creTicketSchema,
+  admin: ticketSchema,
+};
+
 export default function TicketForm({ id, type }) {
   const { user } = useAuth();
   const router = useRouter();
@@ -52,9 +59,7 @@ export default function TicketForm({ id, type }) {
     images_urls: [],
   });
   const methods = useForm({
-    resolver: zodResolver(
-      user?.role === "customer" ? customerTicketSchema : ticketSchema,
-    ),
+    resolver: zodResolver(schemaByRole[user?.role] ?? ticketSchema),
     defaultValues,
   });
 
@@ -192,7 +197,7 @@ export default function TicketForm({ id, type }) {
           </div>
 
           {/* customer_id */}
-          {user?.role !== "customer" && type === "create" && (
+          {user && user.role !== "customer" && type === "create" && (
             <div className="space-y-2">
               <Label htmlFor="customer_id">Customer ID *</Label>
               <Controller
@@ -209,6 +214,30 @@ export default function TicketForm({ id, type }) {
                         errors.customer_id,
                     })}
                     role="customer"
+                  />
+                )}
+              />
+            </div>
+          )}
+
+          {/* assigned_cre */}
+          {user && !["cre", "customer"].includes(user.role) && (
+            <div className="space-y-2">
+              <Label htmlFor="assigned_cre">CRE *</Label>
+              <Controller
+                name="assigned_cre"
+                control={control}
+                render={({ field }) => (
+                  <UserSelect
+                    onChange={(selected) => {
+                      field.onChange(selected);
+                    }}
+                    value={field.value}
+                    className={cn({
+                      "border border-red-500 dark:border-red-500":
+                        errors.assigned_cre,
+                    })}
+                    role="cre"
                   />
                 )}
               />

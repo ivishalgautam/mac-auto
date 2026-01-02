@@ -6,10 +6,8 @@ import {
   Clock,
   CheckCircle2,
   Package,
-  User,
   Calendar,
   Truck,
-  ExternalLink,
   Download,
   X,
 } from "lucide-react";
@@ -32,6 +30,7 @@ import config from "@/config";
 import { buttonVariants } from "@/components/ui/button";
 import { useAuth } from "@/providers/auth-provider";
 import { ROLES } from "@/data/routes";
+import { Muted } from "@/components/ui/typography";
 
 const statusConfig = {
   pending: {
@@ -331,12 +330,16 @@ export default function OrderDetails({ data }) {
 
         {/* Message Section */}
         {data.message && (
-          <Card className="border-0 shadow-sm">
+          <Card className="relative border-0 shadow-sm">
             <CardHeader>
               <CardTitle className="text-lg">Notes</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-foreground">{data.message}</p>
+              <Muted className={"absolute top-4 right-4"}>
+                Updated At:{" "}
+                {moment(data.updated_at).format("MMM DD, YYYY HH:mm A")}
+              </Muted>
+              <p className="whitespace-pre-line">{data.message}</p>
             </CardContent>
           </Card>
         )}

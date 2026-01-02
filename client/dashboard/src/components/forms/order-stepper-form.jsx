@@ -29,14 +29,21 @@ import { H3 } from "@/components/ui/typography";
 import { ROLES } from "@/data/routes";
 import Loader from "../loader";
 import ErrorMessage from "../ui/error";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
 
 // --- Schema ---
 const orderItemSchema = z.object({
   vehicle_id: z.string().uuid({ message: "Invalid vehicle_id" }),
-  battery_type: z
-    .string()
-    .min(1, { message: "Battery type is required" })
-    .max(100, { message: "Battery type too long" }),
+  // battery_type: z
+  //   .string()
+  //   .min(1, { message: "Battery type is required" })
+  //   .max(100, { message: "Battery type too long" }),
   colors: z
     .array(
       z.object({
@@ -48,6 +55,10 @@ const orderItemSchema = z.object({
           })
           .int()
           .positive({ message: "Quantity must be greater than 0" }),
+        battery_type: z
+          .string()
+          .min(1, { message: "Battery type is required" })
+          .max(100, { message: "Battery type too long" }),
       }),
     )
     .min(1, { message: "At least one color is required" }),
@@ -118,7 +129,7 @@ export default function OrderStepperForm({ type, id }) {
   });
 
   const orderItems = watch("order_items");
-
+  console.log({ orderItems });
   const handleNext = () => setStep((s) => s + 1);
   const handleBack = () => setStep((s) => s - 1);
   const handleNextWithValidation = () => {
@@ -136,13 +147,13 @@ export default function OrderStepperForm({ type, id }) {
           return;
         }
         break;
+      // case 3:
+      //   if (!batteryType) {
+      //     setStepError("Please select battery type");
+      //     return;
+      //   }
+      //   break;
       case 3:
-        if (!batteryType) {
-          setStepError("Please select battery type");
-          return;
-        }
-        break;
-      case 4:
         const allColorsValid = fields.every(
           (f, i) => (watch(`order_items.${i}.colors`) || []).length > 0,
         );
@@ -151,13 +162,13 @@ export default function OrderStepperForm({ type, id }) {
           return;
         }
         break;
-      // case 6:
-      //   if (!watch("oc_number")) {
-      //     setStepError("OC Number is required*");
-      //     return;
-      //   }
-      //   break;
-      case 7:
+      case 5:
+        if (!watch("oc_number") && user.role === "admin") {
+          setStepError("OC Number is required*");
+          return;
+        }
+        break;
+      case 6:
         if (user?.role === "admin" && !watch("dealer_id")) {
           setStepError("Please select a dealer");
           return;
@@ -185,14 +196,6 @@ export default function OrderStepperForm({ type, id }) {
       : {};
   }, [filteredVehicles]);
 
-  // const groupedVehicles = useMemo(() => {
-  //   if (!Array.isArray(filteredVehicles) || filteredVehicles.length === 0) {
-  //     return {};
-  //   }
-
-  //   return Object.groupBy(filteredVehicles, (v) => v.category);
-  // }, [filteredVehicles]);
-
   const createMutation = useCreateOrder(() => {
     router.push("/orders?page=1&limit=10");
   });
@@ -200,7 +203,6 @@ export default function OrderStepperForm({ type, id }) {
   const updateMutation = useUpdateOrderDetails(id, () => {
     router.push("/orders?page=1&limit=10");
   });
-
   const onSubmit = (data) => {
     if (user?.role === "admin" && !watch("dealer_id")) {
       setStepError("Please select a dealer");
@@ -211,7 +213,6 @@ export default function OrderStepperForm({ type, id }) {
       ? createMutation.mutate(data)
       : updateMutation.mutate(data);
   };
-
   const StepCategory = () => (
     <div className="space-y-2">
       <div className="grid grid-cols-2 gap-4">
@@ -331,147 +332,184 @@ export default function OrderStepperForm({ type, id }) {
     </div>
   );
 
-  const StepBatteryType = () => (
-    <div className="space-y-4">
-      <div className="flex flex-wrap gap-2">
-        {BATTERY_TYPES.map((b) => (
-          <Badge
-            key={b}
-            onClick={() => setBatteryType(b)}
-            className={cn(
-              "text-foreground cursor-pointer px-4 py-2 text-sm",
-              batteryType === b
-                ? "bg-primary text-primary-foreground"
-                : "bg-muted",
-            )}
-          >
-            {b}
-          </Badge>
-        ))}
-      </div>
-      {stepError && <p className="mt-2 text-sm text-red-600">{stepError}</p>}
-      <div className="flex justify-between">
-        <Button variant="outline" onClick={handleBack}>
-          Back
-        </Button>
-        <Button
-          disabled={!batteryType}
-          onClick={() => {
-            if (type === "create") {
+  // const StepBatteryType = () => (
+  //   <div className="space-y-4">
+  //     <div className="flex flex-wrap gap-2">
+  //       {BATTERY_TYPES.map((b) => (
+  //         <Badge
+  //           key={b}
+  //           onClick={() => setBatteryType(b)}
+  //           className={cn(
+  //             "text-foreground cursor-pointer px-4 py-2 text-sm",
+  //             batteryType === b
+  //               ? "bg-primary text-primary-foreground"
+  //               : "bg-muted",
+  //           )}
+  //         >
+  //           {b}
+  //         </Badge>
+  //       ))}
+  //     </div>
+  //     {stepError && <p className="mt-2 text-sm text-red-600">{stepError}</p>}
+  //     <div className="flex justify-between">
+  //       <Button variant="outline" onClick={handleBack}>
+  //         Back
+  //       </Button>
+  //       <Button
+  //         disabled={!batteryType}
+  //         onClick={() => {
+  //           if (type === "create") {
+  //             setValue(
+  //               "order_items",
+  //               selectedVehicles.map((v) => ({
+  //                 vehicle_id: v,
+  //                 battery_type: batteryType,
+  //                 // color: "",
+  //                 quantity: 1,
+  //               })),
+  //             );
+  //           } else {
+  //             setValue(
+  //               "order_items",
+  //               selectedVehicles.map((v) => {
+  //                 const exist = orderItems.find((i) => i.vehicle_id === v);
+
+  //                 return exist
+  //                   ? { ...exist, battery_type: batteryType }
+  //                   : {
+  //                       vehicle_id: v,
+  //                       battery_type: batteryType,
+  //                       quantity: 1,
+  //                     };
+  //               }),
+  //             );
+  //           }
+  //           handleNextWithValidation();
+  //         }}
+  //       >
+  //         Next
+  //       </Button>
+  //     </div>
+  //   </div>
+  // );
+
+  const StepColor = () => {
+    return (
+      <div className="space-y-6">
+        {fields.map((field, i) => {
+          const vehicle = filteredVehicles.find(
+            (v) => v.id === field.vehicle_id,
+          );
+
+          const colorsPath = `order_items.${i}.colors`;
+          const colorFields = watch(colorsPath) || [];
+
+          const toggleColor = (color) => {
+            const exists = colorFields.find((c) => c.color === color);
+            if (exists) {
               setValue(
-                "order_items",
-                selectedVehicles.map((v) => ({
-                  vehicle_id: v,
-                  battery_type: batteryType,
-                  // color: "",
-                  quantity: 1,
-                })),
+                colorsPath,
+                colorFields.filter((c) => c.color !== color),
+                { shouldDirty: true },
               );
             } else {
-              setValue(
-                "order_items",
-                selectedVehicles.map((v) => {
-                  const exist = orderItems.find((i) => i.vehicle_id === v);
-
-                  return exist
-                    ? exist
-                    : {
-                        vehicle_id: v,
-                        battery_type: batteryType,
-                        quantity: 1,
-                      };
-                }),
-              );
+              setValue(colorsPath, [...colorFields, { color, quantity: 1 }], {
+                shouldDirty: true,
+              });
             }
-            handleNextWithValidation();
-          }}
-        >
-          Next
-        </Button>
-      </div>
-    </div>
-  );
+          };
 
-  const StepColor = () => (
-    <div className="space-y-6">
-      {fields.map((field, i) => {
-        const vehicle = filteredVehicles.find((v) => v.id === field.vehicle_id);
-        const colorFields = watch(`order_items.${i}.colors`) || [];
-        // console.log({ colorFields });
+          const commitQty = (color, qty) => {
+            setValue(
+              colorsPath,
+              colorFields.map((c) =>
+                c.color === color ? { ...c, quantity: Number(qty) || 1 } : c,
+              ),
+              { shouldDirty: true },
+            );
+          };
+          const commitBatteryType = (color, type) => {
+            setValue(
+              colorsPath,
+              colorFields.map((c) =>
+                c.color === color ? { ...c, battery_type: type } : c,
+              ),
+              { shouldDirty: true },
+            );
+          };
 
-        const toggleColor = (color) => {
-          const current = [...colorFields];
-          const index = current.findIndex((c) => c.color === color);
-          if (index > -1) {
-            // remove color
-            current.splice(index, 1);
-          } else {
-            // add new color with default qty 1
-            current.push({ color, quantity: 1 });
-          }
-          setValue(`order_items.${i}.colors`, current);
-        };
-
-        const updateQty = (color, qty) => {
-          const updated = colorFields.map((c) =>
-            c.color === color ? { ...c, quantity: Number(qty) } : c,
-          );
-          setValue(`order_items.${i}.colors`, updated);
-        };
-
-        return (
-          <Card key={field.id} className="p-4">
-            <div className="mb-4 text-lg font-medium">{vehicle?.title}</div>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-              {COLORS.map((c) => {
-                const selected = colorFields.some((x) => x.color === c);
-                const currentQty =
-                  colorFields.find((x) => x.color === c)?.quantity || 1;
-
-                return (
-                  <div
-                    key={c}
-                    className={cn(
-                      "flex cursor-pointer flex-col items-center justify-center gap-2 rounded-md border p-3 transition-all",
-                      selected
-                        ? "border-primary bg-primary/10"
-                        : "border-muted hover:border-primary/40",
-                    )}
-                    onClick={() => toggleColor(c)}
-                  >
+          return (
+            <Card key={field.id} className="p-4">
+              <div className="mb-4 text-lg font-medium">{vehicle?.title}</div>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                {COLORS.map((c) => {
+                  const current = colorFields.find((x) => x.color === c);
+                  const selected = Boolean(current);
+                  return (
                     <div
-                      className="h-8 w-8 rounded-full border"
-                      style={{ backgroundColor: c }}
-                    ></div>
-                    <span className="text-sm">{c}</span>
-
-                    {selected && (
-                      <Input
-                        type="number"
-                        min={1}
-                        value={currentQty}
-                        onClick={(e) => e.stopPropagation()} // prevent toggle when adjusting qty
-                        onChange={(e) => updateQty(c, e.target.value)}
-                        className="w-20 text-center text-sm"
+                      key={c}
+                      onClick={() => toggleColor(c)}
+                      className={cn(
+                        "flex cursor-pointer flex-col items-center justify-center gap-2 rounded-md border p-3 transition-all",
+                        selected
+                          ? "border-primary bg-primary/10"
+                          : "border-muted hover:border-primary/40",
+                      )}
+                    >
+                      <div
+                        className="h-8 w-8 rounded-full border"
+                        style={{ backgroundColor: c }}
                       />
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </Card>
-        );
-      })}
+                      <span className="text-sm">{c}</span>
 
-      {stepError && <p className="mt-2 text-sm text-red-600">{stepError}</p>}
-      <div className="flex justify-between">
-        <Button variant="outline" onClick={handleBack}>
-          Back
-        </Button>
-        <Button onClick={handleNextWithValidation}>Next</Button>
+                      {selected && (
+                        <div className="space-y-1">
+                          <Input
+                            type="number"
+                            min={1}
+                            defaultValue={current.quantity}
+                            onClick={(e) => e.stopPropagation()}
+                            onBlur={(e) => commitQty(c, e.target.value)}
+                            className="w-full text-center text-sm"
+                          />
+                          <Select
+                            value={current.battery_type}
+                            onValueChange={(value) =>
+                              commitBatteryType(c, value)
+                            }
+                          >
+                            <SelectTrigger className={"w-full"}>
+                              <SelectValue placeholder="Battery type" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {BATTERY_TYPES.map((type) => (
+                                <SelectItem value={type} key={type}>
+                                  {type}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </Card>
+          );
+        })}
+
+        {stepError && <p className="mt-2 text-sm text-red-600">{stepError}</p>}
+
+        <div className="flex justify-between">
+          <Button variant="outline" onClick={handleBack}>
+            Back
+          </Button>
+          <Button onClick={handleNextWithValidation}>Next</Button>
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   const StepMessage = () => (
     <div className="space-y-4">
@@ -492,7 +530,7 @@ export default function OrderStepperForm({ type, id }) {
 
   const StepOCNumber = () => (
     <div className="space-y-4">
-      <Label className="font-medium">OC Number*</Label>
+      <Label className="font-medium">OC Number</Label>
       <Input
         {...register("oc_number")}
         placeholder="Enter OC number"
@@ -574,11 +612,12 @@ export default function OrderStepperForm({ type, id }) {
           order_items: data?.items?.map((item) => {
             const colors = item.colors.map((c) => ({
               color: c.color,
+              battery_type: c.battery_type,
               quantity: parseInt(c.quantity),
             }));
             // console.log({ colors });
             return {
-              battery_type: item.battery_type,
+              // battery_type: item.battery_type,
               colors: colors,
               vehicle_id: item.vehicle_id,
             };
@@ -589,7 +628,7 @@ export default function OrderStepperForm({ type, id }) {
       setSelectedVehicles(
         data?.items?.map(({ vehicle_id }) => vehicle_id) ?? [],
       );
-      setBatteryType(data?.items?.[0]?.battery_type);
+      // setBatteryType(data?.items?.[0]?.battery_type);
     }
   }, [type, data, orderData, reset, setSelectedCategory, setSelectedVehicles]);
 
@@ -616,11 +655,11 @@ export default function OrderStepperForm({ type, id }) {
         <CardContent>
           {step === 1 && <StepCategory />}
           {step === 2 && <StepVehicle />}
-          {step === 3 && <StepBatteryType />}
-          {step === 4 && <StepColor />}
-          {step === 5 && <StepMessage />}
-          {step === 6 && <StepOCNumber />}
-          {step === 7 && user?.role === "admin" && <StepDealer />}
+          {/* {step === 3 && <StepBatteryType />} */}
+          {step === 3 && <StepColor />}
+          {step === 4 && <StepMessage />}
+          {step === 5 && <StepOCNumber />}
+          {step === 6 && user?.role === "admin" && <StepDealer />}
         </CardContent>
       </Card>
     </div>

@@ -140,7 +140,9 @@ export const columns = (
             {isSparePartsComplaint && (
               <div className="flew-wrap flex gap-1">
                 {row.original.parts.map((p) => (
-                  <Badge variant={"outline"}>{p.text}</Badge>
+                  <Badge key={p.text} variant={"outline"}>
+                    {p.text}
+                  </Badge>
                 ))}
               </div>
             )}

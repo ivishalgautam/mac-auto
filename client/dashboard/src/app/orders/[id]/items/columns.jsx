@@ -35,10 +35,10 @@ export const columns = (user, orderData) =>
       accessorKey: "title",
       header: "Vehicle",
     },
-    {
-      accessorKey: "battery_type",
-      header: "Battery type",
-    },
+    // {
+    //   accessorKey: "battery_type",
+    //   header: "Battery type",
+    // },
     {
       accessorKey: "colors",
       header: "Colors",
@@ -64,6 +64,9 @@ export const columns = (user, orderData) =>
                   />
                   <span className="capitalize">{c.color}</span>
                   <Badge variant="secondary" className="ml-auto">
+                    {c.battery_type}
+                  </Badge>
+                  <Badge className="ml-auto">
                     <X className="size-2" />
                     {c.quantity}
                   </Badge>
@@ -121,6 +124,7 @@ export const columns = (user, orderData) =>
         cell: ({ row }) => {
           const id = row.original.id;
           const role = row.original.role;
+          const status = row.original.status;
           return (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -131,15 +135,19 @@ export const columns = (user, orderData) =>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>
-                  <Link
-                    href={`items/edit-details?itemId=${id}`}
-                    className="w-full"
-                  >
-                    Edit
-                  </Link>
-                </DropdownMenuItem>
+                {status === "updated" && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem>
+                      <Link
+                        href={`items/edit-details?itemId=${id}`}
+                        className="w-full"
+                      >
+                        Edit details
+                      </Link>
+                    </DropdownMenuItem>
+                  </>
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
           );
