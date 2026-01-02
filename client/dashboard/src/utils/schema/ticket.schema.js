@@ -14,10 +14,10 @@ const baseTicketSchema = z.object({
 });
 
 export const customerTicketSchema = baseTicketSchema.extend({
-  purchase_id: z
-    .string({ required_error: "Purchase ID is required*" })
-    .uuid()
-    .min(1, { message: "Purchase ID is required*" }),
+  // purchase_id: z
+  //   .string({ required_error: "Purchase ID is required*" })
+  //   .uuid()
+  //   .min(1, { message: "Purchase ID is required*" }),
 });
 
 export const creTicketSchema = baseTicketSchema.extend({

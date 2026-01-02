@@ -55,12 +55,13 @@ export default function DealerTicketForm({ id, type }) {
     images_urls: [],
   });
   const router = useRouter();
+  const schema =
+    user && ["admin", "cre"].includes(user?.role)
+      ? dealerTicketForAdminSchema
+      : dealerTicketForDealerSchema;
+
   const methods = useForm({
-    resolver: zodResolver(
-      user?.role === "admin"
-        ? dealerTicketForAdminSchema
-        : dealerTicketForDealerSchema,
-    ),
+    resolver: zodResolver(schema),
     defaultValues,
   });
 
@@ -195,7 +196,7 @@ export default function DealerTicketForm({ id, type }) {
           </div>
 
           {/* dealer select */}
-          {user?.role === "admin" && (
+          {user && ["admin", "cre"].includes(user?.role) && (
             <div className="space-y-2">
               <Label htmlFor="dealer_id">Dealer *</Label>
               <Controller
@@ -206,6 +207,7 @@ export default function DealerTicketForm({ id, type }) {
                     onChange={field.onChange}
                     value={field.value}
                     key={"dealer_id"}
+                    className={cn({ "!border-destructive": errors.dealer_id })}
                   />
                 )}
               />
@@ -223,10 +225,12 @@ export default function DealerTicketForm({ id, type }) {
                   onChange={field.onChange}
                   value={field.value}
                   placeholder="Select complaint"
-                  className=""
                   disabled={type === "view"}
                   key={"complaint_type"}
                   options={dealerComplaintTypes}
+                  className={cn({
+                    "!border-destructive": errors.complaint_type,
+                  })}
                 />
               )}
             />
@@ -285,18 +289,19 @@ export default function DealerTicketForm({ id, type }) {
           {/* Job Card */}
           <div className="col-span-full space-y-4">
             <Label>Job Card *</Label>
-            {user?.role === "admin" && !fileUrls.job_card_urls.length && (
-              <Input
-                type="file"
-                onChange={(e) =>
-                  setFiles((prev) => ({
-                    ...prev,
-                    job_card: Array.from(e.target.files),
-                  }))
-                }
-                className={cn({ "border-destructive": errors.job_card })}
-              />
-            )}
+            {["admin", "cre"].includes(user?.role) &&
+              !fileUrls.job_card_urls.length && (
+                <Input
+                  type="file"
+                  onChange={(e) =>
+                    setFiles((prev) => ({
+                      ...prev,
+                      job_card: Array.from(e.target.files),
+                    }))
+                  }
+                  className={cn({ "border-destructive": errors.job_card })}
+                />
+              )}
             <div className="flex flex-wrap items-center justify-start gap-2">
               {fileUrls?.job_card_urls?.map((file, index) => (
                 <div
