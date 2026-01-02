@@ -14,7 +14,8 @@ const create = async (req, res) => {
 
   try {
     const validateData = createOrderSchema.parse(req.body);
-
+    // console.log(validateData.order_items[0].colors);
+    // throw new Error("Error");
     const { role, id } = req.user_data;
     let userRecord = null;
     if (role === "dealer") {
@@ -222,7 +223,6 @@ const updateDetails = async (req, res) => {
       return res
         .code(StatusCodes.NOT_FOUND)
         .send({ status: false, message: "Order not found!" });
-    console.log({ orderRecord });
 
     if (!["pending", "in process"].includes(orderRecord.status)) {
       return res.code(StatusCodes.CONFLICT).send({
@@ -256,7 +256,7 @@ const updateDetails = async (req, res) => {
         return {
           order_id: orderRecord.id,
           vehicle_id: item.vehicle_id,
-          battery_type: item.battery_type,
+          // battery_type: item.battery_type,
           colors: colorEntries,
         };
       })

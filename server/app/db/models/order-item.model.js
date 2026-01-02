@@ -34,10 +34,10 @@ const init = async (sequelize) => {
         },
         onDelete: "CASCADE",
       },
-      battery_type: {
-        type: DataTypes.STRING,
-        allowNull: false,
-      },
+      // battery_type: {
+      //   type: DataTypes.STRING,
+      //   allowNull: false,
+      // },
       // store multiple colors and their quantities as JSON
       colors: {
         type: DataTypes.JSONB,
@@ -82,7 +82,7 @@ const create = async (req) => {
   return await OrderItemModel.create({
     order_id: req.body.order_id,
     vehicle_id: req.body.vehicle_id,
-    battery_type: req.body.battery_type,
+    // battery_type: req.body.battery_type,
     color: req.body.color,
     variant: req.body.variant,
     quantity: req.body.quantity,
@@ -153,10 +153,11 @@ const getByOrderId = async (req, orderId) => {
 
   const query = `
   SELECT 
-      oi.id, oi.battery_type, oi.created_at, oi.status,
+      oi.id, oi.created_at, oi.status,
       jsonb_agg(
         jsonb_build_object(
           'color', elem->>'color',
+          'battery_type', elem->>'battery_type',
           'quantity', elem->>'quantity',
           'details', elem->'details',
           'vehicle_color_id', vhclr.id
@@ -168,7 +169,7 @@ const getByOrderId = async (req, orderId) => {
     LEFT JOIN LATERAL jsonb_array_elements(oi.colors) elem ON TRUE
     LEFT JOIN ${constants.models.VEHICLE_COLOR_TABLE} vhclr ON vhclr.vehicle_id = vh.id AND LOWER(vhclr.color_name) = LOWER(elem->>'color')
     ${whereClause}
-    GROUP BY oi.id, oi.battery_type, oi.created_at, vh.id, vh.title, oi.status
+    GROUP BY oi.id,  oi.created_at, vh.id, vh.title, oi.status
     ORDER BY oi.created_at DESC
     LIMIT :limit OFFSET :offset
   `;

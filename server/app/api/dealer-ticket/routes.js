@@ -16,6 +16,7 @@ export default async function routes(fastify, options) {
     {
       preHandler: async (req, res) =>
         multipartPreHandler(req, res, [
+          "images_urls",
           "job_card_urls",
           "expected_closure_date",
         ]),

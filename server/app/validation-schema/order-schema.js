@@ -13,10 +13,10 @@ export const addressSchema = z.object({
 
 const orderItemSchema = z.object({
   vehicle_id: z.string().uuid({ message: "Invalid vehicle_id" }),
-  battery_type: z
-    .string()
-    .min(1, { message: "Battery type is required" })
-    .max(100, { message: "Battery type too long" }),
+  // battery_type: z
+  //   .string()
+  //   .min(1, { message: "Battery type is required" })
+  //   .max(100, { message: "Battery type too long" }),
   colors: z
     .array(
       z.object({
@@ -28,6 +28,10 @@ const orderItemSchema = z.object({
           })
           .int()
           .positive({ message: "Quantity must be greater than 0" }),
+        battery_type: z
+          .string()
+          .min(1, { message: "Battery type is required" })
+          .max(100, { message: "Battery type too long" }),
       })
     )
     .min(1, { message: "At least one color is required" }),
@@ -35,7 +39,7 @@ const orderItemSchema = z.object({
 
 export const createOrderSchema = z.object({
   dealer_id: z.string().uuid({ message: "Invalid dealer_id" }).optional(),
-  oc_number: z.string().min(1, "OC Number is required*"),
+  oc_number: z.string().optional().nullable(),
   order_items: z
     .array(orderItemSchema)
     .min(1, { message: "At least one order item is required" }),

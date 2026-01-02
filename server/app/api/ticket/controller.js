@@ -23,23 +23,29 @@ const create = async (req, res) => {
 
     const lastCREAssignedTicket =
       await table.TicketModel.getLastCREAssignedTicket();
-    const creUsers = await table.UserModel.getCREs();
 
     let creToBeAssign = null;
-    if (creUsers.length > 0) {
-      const assignedCREIndex = creUsers.findIndex(
-        (c) => c.id === lastCREAssignedTicket?.assigned_cre
-      );
 
-      creToBeAssign =
-        assignedCREIndex + 1 > creUsers.length - 1
-          ? creUsers[0]
-          : creUsers[assignedCREIndex + 1];
+    if (req.user_data.role === "customer") {
+      const creUsers = await table.UserModel.getCREs();
+      if (creUsers.length > 0) {
+        const assignedCREIndex = creUsers.findIndex(
+          (c) => c.id === lastCREAssignedTicket?.assigned_cre
+        );
+
+        creToBeAssign =
+          assignedCREIndex + 1 > creUsers.length - 1
+            ? creUsers[0]
+            : creUsers[assignedCREIndex + 1];
+      }
     }
+
     if (req.user_data.role === "cre") {
       req.body.assigned_cre = req.user_data.id;
+    } else if (req.user_data.role === "customer") {
+      req.body.assigned_cre = creToBeAssign?.id ?? null;
     } else {
-      req.body.assigned_cre = creToBeAssign.id;
+      req.body.assigned_cre = validateData.assigned_cre;
     }
 
     await table.TicketModel.create(req);
@@ -48,7 +54,7 @@ const create = async (req, res) => {
       .code(status.CREATED)
       .send({ status: true, message: responseMessage[status.CREATED] });
   } catch (error) {
-    if (filePaths.length) {
+    if (filePaths?.length) {
       await cleanupFiles(filePaths);
     }
     throw error;
@@ -92,7 +98,7 @@ const update = async (req, res) => {
     const documentsToDelete = [];
 
     const existingImages = record.images;
-    const updatedImages = req.body.image_urls;
+    const updatedImages = req.body.images_urls;
     if (updatedImages) {
       req.body.images = [...(req.body?.images ?? []), ...updatedImages];
       documentsToDelete.push(

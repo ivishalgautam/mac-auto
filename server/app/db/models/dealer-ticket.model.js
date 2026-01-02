@@ -72,6 +72,10 @@ const init = async (sequelize) => {
         type: DataTypes.ARRAY(DataTypes.TEXT),
         defaultValue: [],
       },
+      images: {
+        type: DataTypes.JSONB,
+        defaultValue: false,
+      },
     },
     {
       createdAt: "created_at",
@@ -113,6 +117,7 @@ const create = async (req) => {
     assigned_cre: req.body.assigned_cre,
     assigned_manager: req.body.assigned_manager,
     job_card: req.body.job_card,
+    images: req.body.images,
   });
 };
 
@@ -129,6 +134,7 @@ const update = async (req, id, transaction) => {
       assigned_cre: req.body.assigned_cre,
       assigned_manager: req.body.assigned_manager,
       job_card: req.body.job_card,
+      images: req.body.images,
     },
     options
   );

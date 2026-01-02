@@ -13,7 +13,7 @@ const create = async (req, res) => {
   try {
     const validateData = ticketSchema.parse(req.body);
     const { role, id } = req.user_data;
-    const dealerId = role === "admin" ? req.body.dealer_id : id;
+    const dealerId = ["admin", "cre"].includes(role) ? req.body.dealer_id : id;
 
     let dealerRecord = null;
 
@@ -29,6 +29,7 @@ const create = async (req, res) => {
         .send({ status: false, message: "Dealer not found!" });
 
     const creUsers = await table.UserModel.getCREs();
+    console.log({ creUsers });
     if (!creUsers.length)
       return res
         .code(status.NOT_FOUND)
@@ -96,16 +97,26 @@ const update = async (req, res) => {
     const record = await table.DealerTicketModel.getById(req);
     if (!record) return res.code(404).send({ message: "Ticket not found!" });
 
-    await table.DealerTicketModel.update(req, 0, transaction);
+    const documentsToDelete = [];
 
     const existingDocs = record.job_card;
     const updatedDocs = req.body.job_card_urls;
-
-    const documentsToDelete = [];
     if (updatedDocs) {
       req.body.job_card = [...(req.body?.job_card ?? []), ...updatedDocs];
       documentsToDelete.push(...getItemsToDelete(existingDocs, updatedDocs));
     }
+
+    const existingImageDocs = record.images;
+    const updatedImageDocs = req.body.images_urls;
+    if (updatedImageDocs) {
+      req.body.images = [...(req.body?.images ?? []), ...updatedImageDocs];
+      documentsToDelete.push(
+        ...getItemsToDelete(existingImageDocs, updatedImageDocs)
+      );
+    }
+
+    await table.DealerTicketModel.update(req, 0, transaction);
+
     if (documentsToDelete.length) await cleanupFiles(documentsToDelete);
 
     await transaction.commit();
