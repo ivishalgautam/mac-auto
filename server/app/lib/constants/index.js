@@ -75,6 +75,7 @@ const constants = {
     ORDER_TABLE: "orders",
     ORDER_ITEM_TABLE: "order_items",
     DRIVER_DETAIL_TABLE: "driver_details",
+    ORDER_STATUS_TABLE: "order_statuses",
   },
   bcrypt: {
     SALT_ROUNDS: 10,

@@ -1,6 +1,6 @@
 "use strict";
 import constants from "../../lib/constants/index.js";
-import { DataTypes, Deferrable, QueryTypes } from "sequelize";
+import { DataTypes, Deferrable, Op, QueryTypes } from "sequelize";
 
 let DealerInventoryModel = null;
 
@@ -132,7 +132,7 @@ const bulkCreate = async (data, transaction) => {
 
 const update = async (req, id, transaction) => {
   const options = {
-    where: { id: id },
+    where: { id: req.params?.id || id },
     returning: true,
     raw: true,
   };
@@ -144,6 +144,16 @@ const update = async (req, id, transaction) => {
     },
     options
   );
+};
+
+const bulkUpdateStatus = async (ids, status, transaction) => {
+  const options = {
+    where: { id: { [Op.in]: ids } },
+    returning: true,
+    raw: true,
+  };
+  if (transaction) options.transaction = transaction;
+  return await DealerInventoryModel.update({ status }, options);
 };
 
 const updateStatusByChassisNo = async (no, status, transaction) => {
@@ -193,6 +203,31 @@ const getById = async (id) => {
     limit: 1,
     raw: true,
     plain: true,
+  });
+};
+
+const getFormattedAvailableVehicles = async (req, dealerId) => {
+  const whereConditions = ["dlrinvn.dealer_id = :dealer_id"];
+  const queryParams = { dealer_id: dealerId };
+
+  let whereClause = `WHERE ${whereConditions.join(" AND ")}`;
+
+  const query = `
+    SELECT 
+        vh.id, vh.title, vh.base_price,
+        dlrinvn.id as inventory_vehicle_id, dlrinvn.chassis_no,
+        clr.color_name, clr.color_hex
+    FROM ${constants.models.VEHICLE_TABLE} vh
+    LEFT JOIN ${constants.models.DEALER_INVENTORY_TABLE} dlrinvn ON vh.id = dlrinvn.vehicle_id AND dlrinvn.status = 'active'
+    LEFT JOIN ${constants.models.VEHICLE_COLOR_TABLE} clr ON clr.id = dlrinvn.vehicle_color_id
+    ${whereClause}
+    ORDER BY vh.created_at DESC
+  `;
+
+  return await DealerInventoryModel.sequelize.query(query, {
+    replacements: { ...queryParams },
+    type: QueryTypes.SELECT,
+    raw: true,
   });
 };
 
@@ -274,8 +309,8 @@ const get = async (req, dealerId) => {
         COUNT(DISTINCT CASE WHEN dlrinvn.status = 'sold' THEN dlrinvn.id END) AS sold_quantity,
         COUNT(DISTINCT CASE WHEN dlrinvn.status = 'scrapped' THEN dlrinvn.id END) AS scrapped_quantity
     FROM ${constants.models.VEHICLE_TABLE} vh
-    LEFT JOIN ${constants.models.VEHICLE_COLOR_TABLE} vhclr ON vhclr.vehicle_id = vh.id
     LEFT JOIN ${constants.models.DEALER_INVENTORY_TABLE} dlrinvn ON vh.id = dlrinvn.vehicle_id ${dealerJoin}
+    LEFT JOIN ${constants.models.VEHICLE_COLOR_TABLE} vhclr ON vhclr.vehicle_id = dlrinvn.vehicle_id AND dlrinvn.status = 'active'
     LEFT JOIN ${constants.models.VEHICLE_VARIANT_MAP_TABLE} vvm ON vvm.id = dlrinvn.vehicle_variant_map_id
     LEFT JOIN ${constants.models.VEHICLE_VARIANT_TABLE} vv ON vv.id = vvm.vehicle_variant_id
     ${whereClause}
@@ -683,4 +718,6 @@ export default {
   getVariants: getVariants,
   getByChassisAndDealer: getByChassisAndDealer,
   getByVehicleColorId: getByVehicleColorId,
+  getFormattedAvailableVehicles: getFormattedAvailableVehicles,
+  bulkUpdateStatus: bulkUpdateStatus,
 };

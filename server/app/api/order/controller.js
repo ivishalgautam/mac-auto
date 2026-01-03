@@ -47,6 +47,10 @@ const create = async (req, res) => {
     );
 
     await table.OrderItemModel.bulkCreate(itemRecords, transaction);
+    await table.OrderStatusModel.create(
+      { body: { status: "pending", order_id: orderRecord.id } },
+      transaction
+    );
 
     await transaction.commit();
 
@@ -176,6 +180,11 @@ const update = async (req, res) => {
         transaction
       );
     }
+
+    await table.OrderStatusModel.create(
+      { body: { status: validatedData.status, order_id: record.id } },
+      transaction
+    );
 
     await cleanupFiles(documentsToDelete);
 

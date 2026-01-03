@@ -24,14 +24,24 @@ const init = async (sequelize) => {
         },
         onDelete: "SET NULL",
       },
-      customer_name: {
-        type: DataTypes.STRING,
+      customer_id: {
+        type: DataTypes.UUID,
         allowNull: true,
+        references: {
+          model: constants.models.CUSTOMER_TABLE,
+          key: "id",
+          deferrable: Deferrable.INITIALLY_IMMEDIATE,
+        },
+        onDelete: "SET NULL",
       },
-      mobile_no: {
-        type: DataTypes.STRING,
-        allowNull: true,
-      },
+      // customer_name: {
+      //   type: DataTypes.STRING,
+      //   allowNull: true,
+      // },
+      // mobile_no: {
+      //   type: DataTypes.STRING,
+      //   allowNull: true,
+      // },
       date: {
         type: DataTypes.STRING,
         allowNull: true,
@@ -71,10 +81,9 @@ const init = async (sequelize) => {
       createdAt: "created_at",
       updatedAt: "updated_at",
       indexes: [
+        { fields: ["customer_id"] },
         { fields: ["dealer_id"] },
         { fields: ["vehicle_ids"] },
-        { fields: ["customer_name"] },
-        { fields: ["mobile_no"] },
         { fields: ["date"] },
         { fields: ["quotation_no"] },
       ],
@@ -107,9 +116,10 @@ const create = async (req, transaction) => {
 
   const data = await QuotationModel.create(
     {
+      customer_id: req.body.customer_id,
       enquiry_id: req.body.enquiry_id,
-      customer_name: req.body.customer_name,
-      mobile_no: req.body.mobile_no,
+      // customer_name: req.body.customer_name,
+      // mobile_no: req.body.mobile_no,
       date: req.body.date,
       quotation_no: newQuotationNo,
       dealer_id: req.body.dealer_id,
@@ -132,9 +142,10 @@ const update = async (req, id, transaction) => {
   if (transaction) options.transaction = transaction;
   return await QuotationModel.update(
     {
-      customer_name: req.body.customer_name,
-      mobile_no: req.body.mobile_no,
+      // customer_name: req.body.customer_name,
+      // mobile_no: req.body.mobile_no,
       date: req.body.date,
+      customer_id: req.body.customer_id,
       dealer_id: req.body.dealer_id,
       vehicle_price_breakups: req.body.vehicle_price_breakups,
       vehicle_ids: req.body.vehicle_ids,
@@ -169,8 +180,8 @@ const get = async (req) => {
   if (q) {
     whereConditions.push(
       `(
-        qt.customer_name ILIKE :query OR
-        qt.mobile_no ILIKE :query OR
+        cstusr.first_name ILIKE :query OR
+        cstusr.mobile_number ILIKE :query OR
         qt.quotation_no ILIKE :query
       )`
     );
@@ -188,13 +199,17 @@ const get = async (req) => {
 
   const query = `
   SELECT 
-      qt.*,
+      qt.id, qt.quotation_no, qt.date, qt.created_at,
+      CONCAT(cstusr.first_name, ' ', COALESCE(cstusr.last_name, '')) as customer_name,
+      cstusr.mobile_number as mobile_no,
       COALESCE(JSON_AGG(vh.title) FILTER (WHERE vh.title IS NOT NULL), '[]') AS vehicles
     FROM ${constants.models.QUOTATION_TABLE} qt
     LEFT JOIN ${constants.models.VEHICLE_TABLE} vh ON vh.id = ANY(qt.vehicle_ids::uuid[])
     LEFT JOIN ${constants.models.DEALER_TABLE} dlr ON dlr.id = qt.dealer_id
+    LEFT JOIN ${constants.models.CUSTOMER_TABLE} cst ON cst.id = qt.customer_id
+    LEFT JOIN ${constants.models.USER_TABLE} cstusr ON cstusr.id = cst.user_id
     ${whereClause}
-    GROUP BY qt.id
+    GROUP BY qt.id, cstusr.first_name, cstusr.last_name, cstusr.mobile_number
     ORDER BY qt.created_at DESC
     LIMIT :limit OFFSET :offset
   `;
@@ -203,7 +218,9 @@ const get = async (req) => {
   SELECT 
       COUNT(qt.id) OVER()::integer as total
     FROM ${constants.models.QUOTATION_TABLE} qt
+    LEFT JOIN ${constants.models.VEHICLE_TABLE} vh ON vh.id = ANY(qt.vehicle_ids::uuid[])
     LEFT JOIN ${constants.models.DEALER_TABLE} dlr ON dlr.id = qt.dealer_id
+    LEFT JOIN ${constants.models.USER_TABLE} cstusr ON cstusr.id = qt.dealer_id
     ${whereClause}
   `;
 

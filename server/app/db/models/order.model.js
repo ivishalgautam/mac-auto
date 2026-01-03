@@ -241,11 +241,14 @@ const getById = async (req, id) => {
   let query = `
   SELECT
       ord.*,
-      CONCAT(usr.first_name, ' ', usr.last_name) as dealer_name
+      CONCAT(usr.first_name, ' ', usr.last_name) as dealer_name,
+      COALESCE(JSON_AGG(ordst.*) FILTER (WHERE ordst.id IS NOT NULL), '[]') as status_updates
     FROM ${constants.models.ORDER_TABLE} ord
+    LEFT JOIN ${constants.models.ORDER_STATUS_TABLE} ordst ON ordst.order_id = ord.id
     LEFT JOIN ${constants.models.DEALER_TABLE} dlr ON dlr.id = ord.dealer_id
     LEFT JOIN ${constants.models.USER_TABLE} usr ON usr.id = dlr.user_id
     WHERE ord.id = :orderId
+    GROUP BY ord.id, usr.first_name, usr.last_name
   `;
 
   return await OrderModel.sequelize.query(query, {

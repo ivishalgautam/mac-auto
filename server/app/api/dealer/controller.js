@@ -74,6 +74,20 @@ const getDealerInventory = async (req, res) => {
     throw error;
   }
 };
+
+const getFormattedAvailableVehicles = async (req, res) => {
+  try {
+    const dealer = await table.DealerModel.getByUserId(req.user_data.id);
+
+    const data = await table.DealerInventoryModel.getFormattedAvailableVehicles(
+      req,
+      dealer?.id ?? null
+    );
+    res.send({ status: true, data });
+  } catch (error) {
+    throw error;
+  }
+};
 const getChassis = async (req, res) => {
   try {
     const data = await table.DealerInventoryModel.getChassis(req);
@@ -244,4 +258,5 @@ export default {
   getColors: getColors,
   getVariants: getVariants,
   getChassis: getChassis,
+  getFormattedAvailableVehicles: getFormattedAvailableVehicles,
 };

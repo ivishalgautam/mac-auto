@@ -1,13 +1,17 @@
 import { z } from "zod";
 
 export const quotationSchema = z.object({
-  // enquiry_id: z.string().uuid(),
+  customer_id: z
+    .string()
+    .uuid({ message: "Invalid customer ID" })
+    .min(1, { message: "Select customer" }),
+
   vehicle_ids: z
     .array(z.string().uuid())
     .min(1, { message: "Select vehicle" })
     .default([]),
-  customer_name: z.string().min(1, "Customer name is required"),
-  mobile_no: z.string().min(10, "Enter valid mobile no."),
+  // customer_name: z.string().min(1, "Customer name is required"),
+  // mobile_no: z.string().min(10, "Enter valid mobile no."),
   date: z.union([z.coerce.date(), z.null()]).default(null),
   vehicle_price_breakups: z.array(
     z.object({

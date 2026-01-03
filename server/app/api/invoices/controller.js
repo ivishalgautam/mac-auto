@@ -2,8 +2,11 @@
 import table from "../../db/models.js";
 import { StatusCodes } from "http-status-codes";
 import { invoiceSchema } from "../../validation-schema/invoice-schema.js";
+import { sequelize } from "../../db/postgres.js";
 
 const create = async (req, res) => {
+  const transaction = await sequelize.transaction();
+
   try {
     const validatedData = invoiceSchema.parse(req.body);
 
@@ -19,11 +22,49 @@ const create = async (req, res) => {
       req.body.dealer_id = dealerRecord.id;
     }
 
-    const quotation = await table.InvoiceModel.create(req);
+    const customerPurchaseList = [];
+    const inventoryIdsToBeSold = [];
+
+    for await (const dealerVehicleInventoryId of validatedData.vehicle_ids) {
+      const inventoryRecord = await table.DealerInventoryModel.getById(
+        dealerVehicleInventoryId
+      );
+      if (!inventoryRecord) continue;
+
+      await table.DealerInventoryModel.update(
+        { body: { status: "sold" } },
+        inventoryRecord.id,
+        transaction
+      );
+
+      inventoryIdsToBeSold.push(inventoryRecord.vehicle_id);
+      customerPurchaseList.push({
+        vehicle_id: inventoryRecord.vehicle_id,
+        vehicle_color_id: inventoryRecord.vehicle_color_id,
+        customer_id: validatedData.customer_id,
+        dealer_id: inventoryRecord.dealer_id,
+        chassis_no: inventoryRecord.chassis_no,
+      });
+    }
+
+    const invoice = await table.InvoiceModel.create(req, transaction);
+    await table.CustomerPurchaseModel.bulkCreate(
+      customerPurchaseList,
+      transaction
+    );
+    await table.DealerInventoryModel.bulkUpdateStatus(
+      inventoryIdsToBeSold,
+      "sold",
+      transaction
+    );
+
+    // throw new Error("Error");
+    await transaction.commit();
     res
       .code(StatusCodes.CREATED)
-      .send({ status: true, data: quotation, message: "invoice created." });
+      .send({ status: true, data: invoice, message: "invoice created." });
   } catch (error) {
+    await transaction.rollback();
     throw error;
   }
 };

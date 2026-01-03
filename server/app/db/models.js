@@ -27,6 +27,7 @@ import quotationModel from "./models/quotation.model.js";
 import invoiceModel from "./models/invoice.model.js";
 import orderModel from "./models/order.model.js";
 import orderItemModel from "./models/order-item.model.js";
+import orderStatusModel from "./models/order-status.model.js";
 
 export default {
   UserModel: userModel,
@@ -58,4 +59,5 @@ export default {
 
   OrderModel: orderModel,
   OrderItemModel: orderItemModel,
+  OrderStatusModel: orderStatusModel,
 };

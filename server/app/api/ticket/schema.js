@@ -1,10 +1,7 @@
 import { z } from "zod";
 
 export const ticketSchema = z.object({
-  customer_id: z
-    .string({ required_error: "Customer ID is required*" })
-    .uuid()
-    .min(1, { message: "Customer ID is required*" }),
+  customer_id: z.string().uuid().optional().nullable(),
   assigned_cre: z.string().uuid().optional().nullable(),
   message: z
     .string({ required_error: "Message is required*" })

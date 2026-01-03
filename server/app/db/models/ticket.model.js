@@ -201,11 +201,11 @@ const get = async (req) => {
     queryParams.userId = id;
   }
   if (role === "cre") {
-    whereConditions.push(`creusr.id = :userId`);
+    whereConditions.push(`tk.assigned_cre = :userId`);
     queryParams.userId = id;
   }
   if (role === "manager") {
-    whereConditions.push(`mgusr.id = :userId`);
+    whereConditions.push(`tk.assigned_manager = :userId`);
     queryParams.userId = id;
   }
 

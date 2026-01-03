@@ -11,15 +11,9 @@ const responseMessage = constants.error.message;
 const create = async (req, res) => {
   const filePaths = req.filePaths;
   try {
+    const { role, id } = req.user_data;
     const validateData = ticketSchema.parse(req.body);
-    const customerRecord = await table.CustomerModel.getByUserId(
-      0,
-      validateData.customer_id
-    );
-    if (!customerRecord)
-      return res
-        .code(status.NOT_FOUND)
-        .send({ status: false, message: "Customer not found!" });
+    req.body.customer_id = role === "customer" ? id : validateData.customer_id;
 
     const lastCREAssignedTicket =
       await table.TicketModel.getLastCREAssignedTicket();

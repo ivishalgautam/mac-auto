@@ -24,13 +24,23 @@ const init = async (sequelize) => {
         },
         onDelete: "SET NULL",
       },
-      customer_name: {
-        type: DataTypes.STRING,
+      // customer_name: {
+      //   type: DataTypes.STRING,
+      //   allowNull: true,
+      // },
+      // mobile_no: {
+      //   type: DataTypes.STRING,
+      //   allowNull: true,
+      // },
+      customer_id: {
+        type: DataTypes.UUID,
         allowNull: true,
-      },
-      mobile_no: {
-        type: DataTypes.STRING,
-        allowNull: true,
+        references: {
+          model: constants.models.CUSTOMER_TABLE,
+          key: "id",
+          deferrable: Deferrable.INITIALLY_IMMEDIATE,
+        },
+        onDelete: "SET NULL",
       },
       date: {
         type: DataTypes.STRING,
@@ -63,10 +73,9 @@ const init = async (sequelize) => {
       createdAt: "created_at",
       updatedAt: "updated_at",
       indexes: [
+        { fields: ["customer_id"] },
         { fields: ["dealer_id"] },
         { fields: ["vehicle_ids"] },
-        { fields: ["customer_name"] },
-        { fields: ["mobile_no"] },
         { fields: ["date"] },
         { fields: ["invoice_no"] },
       ],
@@ -97,8 +106,9 @@ const create = async (req, transaction) => {
   const data = await InvoiceModel.create(
     {
       quotation_id: req.body.quotation_id,
-      customer_name: req.body.customer_name,
-      mobile_no: req.body.mobile_no,
+      customer_id: req.body.customer_id,
+      // customer_name: req.body.customer_name,
+      // mobile_no: req.body.mobile_no,
       date: req.body.date,
       invoice_no: newQuotationNo,
       dealer_id: req.body.dealer_id,
@@ -120,8 +130,9 @@ const update = async (req, id, transaction) => {
   if (transaction) options.transaction = transaction;
   return await InvoiceModel.update(
     {
-      customer_name: req.body.customer_name,
-      mobile_no: req.body.mobile_no,
+      customer_id: req.body.customer_id,
+      // customer_name: req.body.customer_name,
+      // mobile_no: req.body.mobile_no,
       date: req.body.date,
       dealer_id: req.body.dealer_id,
       vehicle_price_breakups: req.body.vehicle_price_breakups,
@@ -154,9 +165,9 @@ const get = async (req) => {
   if (q) {
     whereConditions.push(
       `(
-        inv.customer_name ILIKE :query OR
-        inv.mobile_no ILIKE :query OR
-        inv.invoice_no ILIKE :query
+        cstusr.first_name ILIKE :query OR
+        cstusr.mobile_number ILIKE :query OR
+        qt.quotation_no ILIKE :query
       )`
     );
     queryParams.query = `%${q}%`;
@@ -173,22 +184,38 @@ const get = async (req) => {
 
   const query = `
   SELECT 
-      inv.*,
+      inv.id, inv.invoice_no, inv.date, inv.created_at,
+      CONCAT(cstusr.first_name, ' ', COALESCE(cstusr.last_name, '')) as customer_name,
+      cstusr.mobile_number as mobile_no,
       COALESCE(JSON_AGG(vh.title) FILTER (WHERE vh.title IS NOT NULL), '[]') AS vehicles
     FROM ${constants.models.INVOICE_TABLE} inv
-    LEFT JOIN ${constants.models.VEHICLE_TABLE} vh ON vh.id = ANY(inv.vehicle_ids::uuid[])
+    LEFT JOIN LATERAL (
+      SELECT dlr_inv.vehicle_id
+      FROM ${constants.models.DEALER_INVENTORY_TABLE} dlr_inv
+      WHERE dlr_inv.id = ANY(inv.vehicle_ids::uuid[])
+    ) dlrinv ON true
+    LEFT JOIN ${constants.models.VEHICLE_TABLE} vh ON vh.id = dlrinv.vehicle_id
     LEFT JOIN ${constants.models.DEALER_TABLE} dlr ON dlr.id = inv.dealer_id
+    LEFT JOIN ${constants.models.CUSTOMER_TABLE} cst ON cst.id = inv.customer_id
+    LEFT JOIN ${constants.models.USER_TABLE} cstusr ON cstusr.id = cst.user_id
     ${whereClause}
-    GROUP BY inv.id
+    GROUP BY inv.id, cstusr.first_name, cstusr.last_name, cstusr.mobile_number
     ORDER BY inv.created_at DESC
     LIMIT :limit OFFSET :offset
   `;
 
   const countQuery = `
-  SELECT 
-      COUNT(inv.id) OVER()::integer as total
+  SELECT COUNT(DISTINCT inv.id)::integer AS total
     FROM ${constants.models.INVOICE_TABLE} inv
+    LEFT JOIN LATERAL (
+      SELECT dlr_inv.vehicle_id
+      FROM ${constants.models.DEALER_INVENTORY_TABLE} dlr_inv
+      WHERE dlr_inv.id = ANY(inv.vehicle_ids::uuid[])
+    ) dlrinv ON true
+    LEFT JOIN ${constants.models.VEHICLE_TABLE} vh ON vh.id = dlrinv.vehicle_id
     LEFT JOIN ${constants.models.DEALER_TABLE} dlr ON dlr.id = inv.dealer_id
+    LEFT JOIN ${constants.models.CUSTOMER_TABLE} cst ON cst.id = inv.customer_id
+    LEFT JOIN ${constants.models.USER_TABLE} cstusr ON cstusr.id = cst.user_id
     ${whereClause}
   `;
 

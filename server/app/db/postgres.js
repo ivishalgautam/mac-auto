@@ -14,21 +14,14 @@ export const sequelize = new Sequelize(
 );
 
 async function postgresConnection(fastify, options) {
-  let dbSuccess = null;
-
   try {
     await sequelize.authenticate();
-    dbSuccess = true;
     fastify.log.info(`Postgres Database connection OK!`);
     fastify.log.info(`Initializing sequelize connection and models...`);
-    await new Promise(async (resolve) => {
-      await migration.init(sequelize);
-      resolve(`Migration sucessfully completed...`);
-    }).then((data) => fastify.log.info(data));
+    await migration.init(sequelize);
+    fastify.log.info(`Migration sucessfully completed...`);
   } catch (error) {
-    console.log(error);
-    dbSuccess == false;
-    process.exit(1);
+    throw error;
   }
 }
 
