@@ -67,7 +67,7 @@ const orderItemSchema = z.object({
 const createOrderSchema = z.object({
   dealer_id: z.string().uuid({ message: "Invalid dealer_id" }).optional(),
   oc_number: z.string().optional(),
-  message: z.string().max(500, "Message too long").optional(),
+  message: z.string().optional(),
   order_items: z
     .array(orderItemSchema)
     .min(1, { message: "At least one order item is required" }),
@@ -246,7 +246,7 @@ export default function OrderStepperForm({ type, id }) {
       </div>
     </div>
   );
-
+  console.log({ errors });
   const StepVehicle = () => (
     <div className="space-y-4">
       {isVehiclesLoading ? (

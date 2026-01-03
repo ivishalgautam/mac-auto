@@ -31,6 +31,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { useAuth } from "@/providers/auth-provider";
 import { ROLES } from "@/data/routes";
 import { Muted } from "@/components/ui/typography";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const statusConfig = {
   pending: {
@@ -339,7 +340,11 @@ export default function OrderDetails({ data }) {
                 Updated At:{" "}
                 {moment(data.updated_at).format("MMM DD, YYYY HH:mm A")}
               </Muted>
-              <p className="whitespace-pre-line">{data.message}</p>
+              <div>
+                <ScrollArea className="h-54 whitespace-pre-line">
+                  {data.message}
+                </ScrollArea>
+              </div>
             </CardContent>
           </Card>
         )}
