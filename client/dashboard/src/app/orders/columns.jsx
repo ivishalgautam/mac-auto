@@ -87,7 +87,7 @@ export const columns = (setId, updateMutation, user, openModal) =>
         return <div className="capitalize">{row.getValue("status")}</div>;
       },
     },
-    user?.role === "admin" && {
+    ["admin", "cre"].includes(user?.role) && {
       accessorKey: "status",
       header: "Status",
       cell: ({ row }) => {
