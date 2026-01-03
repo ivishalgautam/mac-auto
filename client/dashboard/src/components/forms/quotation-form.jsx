@@ -104,8 +104,6 @@ export default function QuotationForm({
     defaultValues: { ...defaultValues, enquiry_id: enquiryId ?? null },
   });
 
-  console.log({ errors });
-
   const selectedVehicles = watch("vehicle_ids");
 
   const watchPriceBreakUps = useWatch({

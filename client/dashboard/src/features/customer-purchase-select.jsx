@@ -29,7 +29,6 @@ export default function CustomerPurchaseSelect({
   const [open, setOpen] = useState(false);
   const { data, isLoading, isError, error } =
     useGetFormattedPurchasesByCustomer(customerId);
-  console.log({ data });
   if (isError) return <ErrorMessage error={error} />;
 
   return isLoading ? (

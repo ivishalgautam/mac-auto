@@ -86,7 +86,6 @@ export default function RaiseVehicleEnquiryForm({
   const updateMutation = useUpdateVehicleEnquiry(id, callback);
 
   const onSubmit = (data) => {
-    console.log({ data });
     type === "create"
       ? createMutation.mutate({ vehicle_id: vehicleId, ...data })
       : updateMutation.mutate(data);

@@ -33,7 +33,6 @@ const getDealerInventoryVariantsByVehicleId = async (
   vehicleId,
   searchParams = "",
 ) => {
-  console.log({ vehicleId });
   const { data } = await http().get(
     `${endpoints.dealers.inventory}/by-vehicle/${vehicleId}/variants?${searchParams}`,
   );

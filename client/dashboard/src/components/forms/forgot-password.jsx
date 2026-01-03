@@ -63,7 +63,6 @@ export default function ForgotPasswordForm({ type }) {
       router.replace("/");
     },
     onError: (error) => {
-      console.log({ error });
       toast.error("Request failed", {
         description:
           error?.response?.data?.message ??

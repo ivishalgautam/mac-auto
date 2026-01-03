@@ -34,7 +34,6 @@ export function DatePicker({ onChange, value, disabled }) {
           selected={value}
           captionLayout="dropdown"
           onSelect={(date) => {
-            console.log({ date });
             setOpen(false);
             onChange(date);
           }}

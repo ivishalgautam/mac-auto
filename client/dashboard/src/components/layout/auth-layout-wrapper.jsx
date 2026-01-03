@@ -7,8 +7,6 @@ export default async function AuthLayoutWrapper({ children }) {
   const host = headersList.get("host") || "";
   let role = "admin";
 
-  console.log({ host });
-
   if (host.includes("dms")) role = "dealer";
   else if (host.includes("customer")) role = "customer";
   else if (host.includes("dashboard")) role = "admin";

@@ -29,8 +29,6 @@ export default function Listing() {
   const deleteMutation = useDeleteVehicleVariant(id, closeModal);
   const updateMutation = useUpdateVehicleVariant(id);
 
-  console.log({ data });
-
   useEffect(() => {
     if (!searchParamsStr) {
       const params = new URLSearchParams();

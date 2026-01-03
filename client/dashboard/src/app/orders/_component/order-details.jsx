@@ -75,7 +75,6 @@ const statusConfig = {
 };
 
 export default function OrderDetails({ data }) {
-  console.log({ data });
   const { user } = useAuth();
   const statusDateMap = data.status_updates.reduce((acc, curr) => {
     acc[curr.status] = curr.created_at;

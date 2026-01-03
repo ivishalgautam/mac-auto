@@ -52,7 +52,6 @@ export const useGetDealerVehicleColors = (vehicleId) => {
   });
 };
 export const useGetDealerVehicleVariants = (vehicleId) => {
-  console.log({ vehicleId });
   return useQuery({
     queryFn: () =>
       dealerInventory.getDealerInventoryVariantsByVehicleId(vehicleId),
