@@ -648,8 +648,9 @@ const getByVehicleId = async (req, vehicle_id) => {
 
   let query = `
   SELECT
-      *
+      invnt.*, vhclr.color_name, vhclr.color_hex
     FROM ${constants.models.DEALER_INVENTORY_TABLE} invnt
+    LEFT JOIN ${constants.models.VEHICLE_COLOR_TABLE} vhclr ON vhclr.id = invnt.vehicle_color_id
     ${whereClause}
     ORDER BY invnt.created_at DESC
     LIMIT :limit OFFSET :offset
@@ -659,6 +660,7 @@ const getByVehicleId = async (req, vehicle_id) => {
   SELECT
       COUNT(invnt.id) OVER()::INTEGER as total
     FROM ${constants.models.DEALER_INVENTORY_TABLE} invnt
+    LEFT JOIN ${constants.models.VEHICLE_COLOR_TABLE} vhclr ON vhclr.id = invnt.vehicle_color_id
     ${whereClause}
     ORDER BY invnt.created_at DESC
   `;

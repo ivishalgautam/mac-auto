@@ -29,7 +29,6 @@ const create = async (req, res) => {
         .send({ status: false, message: "Dealer not found!" });
 
     const creUsers = await table.UserModel.getCREs();
-    console.log({ creUsers });
     if (!creUsers.length)
       return res
         .code(status.NOT_FOUND)

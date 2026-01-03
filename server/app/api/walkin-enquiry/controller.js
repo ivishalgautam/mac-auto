@@ -231,6 +231,7 @@ const createNewCustomerOrder = async (req, res) => {
 
     const customerRecord = await table.CustomerModel.create(
       user.id,
+      null,
       transaction
     );
 

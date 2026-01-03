@@ -7,7 +7,6 @@ import { schemeSchema } from "../../validation-schema/scheme.schema.js";
 
 const create = async (req, res) => {
   const filePaths = req.file_paths;
-  console.log({ filePaths });
   try {
     const validateData = schemeSchema.parse(req.body);
     res.send({ status: true, data: await table.SchemeModel.create(req) });

@@ -40,7 +40,11 @@ const create = async (req, res) => {
     }
 
     if (validateData.role === "customer") {
-      const customer = await table.CustomerModel.create(user.id, transaction);
+      const customer = await table.CustomerModel.create(
+        user.id,
+        validateData.address,
+        transaction
+      );
       if (role === "dealer") {
         const dealer = await table.DealerModel.getByUserId(id);
         await table.CustomerDealersModel.create(
@@ -117,6 +121,14 @@ const update = async (req, res) => {
       const data = await table.DealerModel.updateByUser(
         { body: { location, ...req.body } },
         user.id
+      );
+    }
+
+    if (user.role === "customer") {
+      await table.CustomerModel.updateAddress(
+        req.body.address,
+        user.id,
+        transaction
       );
     }
 

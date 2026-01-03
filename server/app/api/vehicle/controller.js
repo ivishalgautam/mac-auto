@@ -277,7 +277,6 @@ const getVariants = async (req, res) => {
 };
 
 const getBySlug = async (req, res) => {
-  console.log(req.ip);
   try {
     const record = await table.VehicleModel.getBySlug(req);
     if (!record)

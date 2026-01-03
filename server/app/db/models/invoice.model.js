@@ -143,11 +143,23 @@ const update = async (req, id, transaction) => {
 };
 
 const getById = async (id) => {
-  return await InvoiceModel.findOne({
-    where: {
-      id: id,
-    },
+  let query = `
+  SELECT 
+      inv.*,
+      CONCAT(cstusr.first_name, ' ', COALESCE(cstusr.last_name, '')) as customer_name,
+      cstusr.mobile_number as mobile_no,
+      cst.address
+    FROM ${constants.models.INVOICE_TABLE} inv
+    LEFT JOIN ${constants.models.CUSTOMER_TABLE} cst ON cst.id = inv.customer_id
+    LEFT JOIN ${constants.models.USER_TABLE} cstusr ON cstusr.id = cst.user_id
+    WHERE inv.id = :id
+  `;
+
+  return await InvoiceModel.sequelize.query(query, {
+    replacements: { id: id },
+    type: QueryTypes.SELECT,
     raw: true,
+    plain: true,
   });
 };
 

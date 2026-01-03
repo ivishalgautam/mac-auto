@@ -238,9 +238,11 @@ const getById = async (req, user_id) => {
   let query = `
   SELECT
       usr.id, usr.username, usr.first_name, usr.last_name, usr.email, usr.blocked, usr.role, usr.mobile_number, usr.is_verified, usr.image_url,
-      dlr.location, dlr.aadhaar, dlr.gst, dlr.pan, dlr.dealer_code
+      dlr.location, dlr.aadhaar, dlr.gst, dlr.pan, dlr.dealer_code,
+      cst.address
     FROM ${constants.models.USER_TABLE} usr
     LEFT JOIN ${constants.models.DEALER_TABLE} dlr ON usr.role = 'dealer' AND dlr.user_id = usr.id
+    LEFT JOIN ${constants.models.CUSTOMER_TABLE} cst ON usr.role = 'customer' AND cst.user_id = usr.id
     WHERE usr.id = :user_id
   `;
   const data = await UserModel.sequelize.query(query, {

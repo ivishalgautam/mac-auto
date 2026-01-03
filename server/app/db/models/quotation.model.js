@@ -157,11 +157,23 @@ const update = async (req, id, transaction) => {
 };
 
 const getById = async (id) => {
-  return await QuotationModel.findOne({
-    where: {
-      id: id,
-    },
+  let query = `
+  SELECT 
+      qt.*,
+      CONCAT(cstusr.first_name, ' ', COALESCE(cstusr.last_name, '')) as customer_name,
+      cstusr.mobile_number as mobile_no,
+      cst.address
+    FROM ${constants.models.QUOTATION_TABLE} qt
+    LEFT JOIN ${constants.models.CUSTOMER_TABLE} cst ON cst.id = qt.customer_id
+    LEFT JOIN ${constants.models.USER_TABLE} cstusr ON cstusr.id = cst.user_id
+    WHERE qt.id = :id
+  `;
+
+  return await QuotationModel.sequelize.query(query, {
+    replacements: { id: id },
+    type: QueryTypes.SELECT,
     raw: true,
+    plain: true,
   });
 };
 

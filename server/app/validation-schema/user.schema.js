@@ -67,12 +67,20 @@ export const userSchema = z
     password: z.string().optional(),
     confirm_password: z.string().optional(),
     location: z.string().optional(),
+    address: z.string().optional(),
   })
   .superRefine((data, ctx) => {
     // Dealer rules
     if (data.role === "dealer") {
       const parsed = dealerFields.safeParse(data);
       if (!parsed.success) parsed.error.issues.forEach((i) => ctx.addIssue(i));
+    }
+    if (data.role === "customer" && !data.address?.trim()) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Customer address is required",
+        path: ["address"],
+      });
     }
 
     // Apply staff (role !== customer)

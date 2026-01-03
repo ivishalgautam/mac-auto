@@ -134,7 +134,11 @@ const createNewCustomerOrder = async (req, res) => {
       transaction
     );
 
-    const customer = await table.CustomerModel.create(user.id, transaction);
+    const customer = await table.CustomerModel.create(
+      user.id,
+      null,
+      transaction
+    );
 
     if (role === "dealer") {
       const dealerRecord = await table.DealerModel.getByUserId(id);
@@ -182,7 +186,11 @@ const createExistingCustomerOrder = async (req, res) => {
         .code(StatusCodes.NOT_FOUND)
         .send({ status: false, message: "User not found" });
 
-    const customer = await table.CustomerModel.create(user.id, transaction);
+    const customer = await table.CustomerModel.create(
+      user.id,
+      null,
+      transaction
+    );
 
     if (role === "dealer") {
       const dealerRecord = await table.DealerModel.getByUserId(id);

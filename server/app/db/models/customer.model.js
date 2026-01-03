@@ -23,6 +23,10 @@ const init = async (sequelize) => {
         },
         onDelete: "CASCADE",
       },
+      address: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
     },
     {
       createdAt: "created_at",
@@ -34,11 +38,14 @@ const init = async (sequelize) => {
   await CustomerModel.sync({ alter: true });
 };
 
-const create = async (user_id, transaction) => {
+const create = async (user_id, address, transaction) => {
   const options = {};
   if (transaction) options.transaction = transaction;
 
-  const data = await CustomerModel.create({ user_id: user_id }, options);
+  const data = await CustomerModel.create(
+    { user_id: user_id, address: address },
+    options
+  );
 
   return data.dataValues;
 };
@@ -138,6 +145,16 @@ const getByUserId = async (req, id) => {
   });
 };
 
+const updateAddress = async (address, user_id, transaction) => {
+  return await CustomerModel.update(
+    { address },
+    {
+      where: { user_id: user_id },
+      transaction,
+    }
+  );
+};
+
 export default {
   init: init,
   create: create,
@@ -145,4 +162,5 @@ export default {
   getById: getById,
   deleteById: deleteById,
   getByUserId: getByUserId,
+  updateAddress: updateAddress,
 };
