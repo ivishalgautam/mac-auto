@@ -68,8 +68,10 @@ export const userFormSchema = z
     password: z.string().optional(),
     confirm_password: z.string().optional(),
     location: z.string().optional(),
+    address: z.string().optional(),
   })
   .superRefine((data, ctx) => {
+    console.log({ data });
     // Validate mobile number
     if (!isValidPhoneNumber(data.mobile_number)) {
       ctx.addIssue({
@@ -89,6 +91,14 @@ export const userFormSchema = z
       const parsed = staffFields.safeParse(data);
       if (!parsed.success) parsed.error.issues.forEach((i) => ctx.addIssue(i));
     }
+
+    if (data.role === "customer" && !data.address?.trim()) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Customer address is required",
+        path: ["address"],
+      });
+    }
   });
 
 // ---------- UPDATE (userUpdateSchema) ----------
@@ -102,6 +112,7 @@ export const userUpdateSchema = z
     location: z.string().optional(),
     password: z.string().optional(),
     confirm_password: z.string().optional(),
+    address: z.string().optional(),
   })
   .superRefine((data, ctx) => {
     // Validate mobile number
@@ -116,6 +127,14 @@ export const userUpdateSchema = z
     if (data.role === "dealer") {
       const parsed = dealerFields.safeParse(data);
       if (!parsed.success) parsed.error.issues.forEach((i) => ctx.addIssue(i));
+    }
+
+    if (data.role === "customer" && !data.address?.trim()) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Customer address is required",
+        path: ["address"],
+      });
     }
 
     // If password provided in update, enforce validation

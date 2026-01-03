@@ -2,57 +2,13 @@
 import Loader from "@/components/loader";
 import { Button } from "@/components/ui/button";
 import ErrorMessage from "@/components/ui/error";
-import { useGetQuotation } from "@/mutations/quotation-mutation";
+import { useGetInvoice } from "@/mutations/invoices-mutation";
 import { Download } from "lucide-react";
-import Image from "next/image";
 import { useRef, useState } from "react";
 
-// Sample data structure
-const sampleData = {
-  id: "37cf497f-49c6-440a-a2f3-456c3a76fdca",
-  enquiry_id: "5e7b0480-8191-4805-a3b9-b2f90a4ef1fc",
-  customer_name: "Vishal Gautam",
-  mobile_no: "+917011691802",
-  date: null,
-  quotation_no: "798qwf-QT-0002",
-  dealer_id: "ce536fa1-6563-405c-8c99-d2ac4c20844c",
-  vehicle_ids: [
-    "52c89462-1f20-4bf5-aeb9-d1966ef37007",
-    "cdf5fd01-0cdd-475a-83f8-74598422a875",
-    "73ba5d63-08a9-4f90-828e-a02ed3fa923c",
-  ],
-  vehicle_price_breakups: [
-    {
-      gst: 5,
-      model: " 900",
-      discount: "5000",
-      insurance: "10000",
-      on_road_price: "113000.00",
-      accessories_fitments: "1000",
-      base_price_ex_showroom: "100000",
-      total_ex_showroom_price: "118000.00",
-      rto_registration_charges: "2000",
-    },
-    {
-      gst: 5,
-      model: " Auto Golf Cart 4 Seater",
-      discount: "",
-      insurance: "20000",
-      on_road_price: "232200.00",
-      accessories_fitments: "200",
-      base_price_ex_showroom: "200000.00",
-      total_ex_showroom_price: "232200.00",
-      rto_registration_charges: "2000",
-    },
-  ],
-  status: "pending",
-  created_at: "2025-11-15T05:07:34.529Z",
-  updated_at: "2025-11-16T17:37:10.003Z",
-};
-
-export default function DownloadQuotation({ id }) {
-  const { data, isLoading, isError, error } = useGetQuotation(id);
-  const quotationRef = useRef(null);
+export default function DownloadInvoice({ id }) {
+  const { data, isLoading, isError, error } = useGetInvoice(id);
+  const invoiceRef = useRef(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const formatCurrency = (amount) => {
     if (!amount) return "₹0.00";
@@ -82,7 +38,7 @@ export default function DownloadQuotation({ id }) {
       const html2canvas = (await import("html2canvas")).default;
       const jsPDF = (await import("jspdf")).default;
 
-      const element = quotationRef.current;
+      const element = invoiceRef.current;
 
       const canvas = await html2canvas(element, {
         scale: 2,
@@ -132,7 +88,7 @@ export default function DownloadQuotation({ id }) {
         heightLeft -= pdfHeight - 2 * margin;
       }
 
-      pdf.save(`Quotation-${data.quotation_no}.pdf`);
+      pdf.save(`Invoice-${data.invoice_no}.pdf`);
     } catch (error) {
       console.error("Error generating PDF:", error);
       alert("Error generating PDF. Please try again.");
@@ -165,9 +121,9 @@ export default function DownloadQuotation({ id }) {
           </Button>
         </div>
 
-        {/* Quotation Document */}
+        {/* Invoice Document */}
         <div
-          ref={quotationRef}
+          ref={invoiceRef}
           style={{
             backgroundColor: "#ffffff",
             border: "1px solid #d1d5db",
@@ -198,10 +154,10 @@ export default function DownloadQuotation({ id }) {
                     margin: 0,
                   }}
                 >
-                  QUOTATION
+                  INVOICE
                 </h1>
                 <p style={{ color: "#c7d9f2", margin: "4px 0 0 0" }}>
-                  Quote No: {data.quotation_no}
+                  Quote No: {data.invoice_no}
                 </p>
               </div>
               <div style={{ textAlign: "right" }}>
@@ -292,7 +248,7 @@ export default function DownloadQuotation({ id }) {
                     Address:
                   </p>
                   <p style={{ fontWeight: "500", color: "#111827", margin: 0 }}>
-                    {data.address}
+                    {data.address ?? "N/a"}
                   </p>
                 </div>
               </div>
@@ -582,8 +538,8 @@ export default function DownloadQuotation({ id }) {
           >
             <div style={{ fontSize: "14px", color: "#6b7280" }}>
               <p style={{ margin: "0 0 8px 0" }}>
-                <strong style={{ color: "#374151" }}>Note:</strong> This
-                quotation is valid for 30 days from the date of issue.
+                <strong style={{ color: "#374151" }}>Note:</strong> This invoice
+                is valid for 30 days from the date of issue.
               </p>
               <p style={{ margin: "0 0 8px 0" }}>
                 Prices are subject to change without prior notice. Final prices

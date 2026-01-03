@@ -35,6 +35,7 @@ import { useRouter } from "next/navigation";
 import config from "@/config";
 import { useAuth } from "@/providers/auth-provider";
 import { ROLES } from "@/data/routes";
+import { Textarea } from "../ui/textarea";
 
 export default function UserForm({ id, type, role = "" }) {
   const { user } = useAuth();
@@ -166,6 +167,7 @@ export default function UserForm({ id, type, role = "" }) {
         username: data.username || "",
         location: data.location || "",
         dealer_code: data.dealer_code || "",
+        address: data.address || "",
       });
     }
   }, [data, type, reset]);
@@ -492,6 +494,18 @@ export default function UserForm({ id, type, role = "" }) {
               </div>
             )}
           </>
+        )}
+
+        {selectedRole === "customer" && (
+          <div className="col-span-full space-y-2">
+            <Label htmlFor="address">Address *</Label>
+            <Textarea
+              id="address"
+              placeholder="Enter your address"
+              {...register("address")}
+              className={cn({ "border-red-500": errors.address })}
+            />
+          </div>
         )}
       </div>
 

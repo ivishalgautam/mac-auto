@@ -22,6 +22,21 @@ import { statusOptions } from "./_component/table-actions";
 
 export const columns = (openModal, updateMutation, setId) => [
   {
+    accessorKey: "color_name",
+    header: "Color",
+    cell: ({ row }) => {
+      return (
+        <div className="flex items-center justify-start gap-2">
+          <span
+            className="inline-block size-5 rounded-full"
+            style={{ background: row.original.color_hex }}
+          ></span>
+          <span>{row.getValue("color_name")}</span>
+        </div>
+      );
+    },
+  },
+  {
     accessorKey: "chassis_no",
     header: "Chassis No.",
   },

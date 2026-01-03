@@ -74,7 +74,10 @@ export const columns = (openModal, setId, user, updateMutation) => [
             <DropdownMenuItem>
               <Link href={`/invoices/${id}/edit`}>Edit</Link>
             </DropdownMenuItem>
-
+            <DropdownMenuSeparator />
+            <DropdownMenuItem>
+              <Link href={`/invoices/${id}/download`}>Download</Link>
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={() => {
