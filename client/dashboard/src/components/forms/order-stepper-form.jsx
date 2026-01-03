@@ -246,7 +246,6 @@ export default function OrderStepperForm({ type, id }) {
       </div>
     </div>
   );
-  console.log({ errors });
   const StepVehicle = () => (
     <div className="space-y-4">
       {isVehiclesLoading ? (
@@ -417,7 +416,6 @@ export default function OrderStepperForm({ type, id }) {
   //     </div>
   //   </div>
   // );
-  console.log({ step });
   const StepColor = () => {
     return (
       <div className="space-y-6">

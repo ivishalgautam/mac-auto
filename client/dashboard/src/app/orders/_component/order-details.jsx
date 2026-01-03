@@ -10,6 +10,8 @@ import {
   Truck,
   Download,
   X,
+  CalendarX2,
+  CircleX,
 } from "lucide-react";
 import moment from "moment";
 import { orderStatuses } from "../columns";
@@ -73,7 +75,12 @@ const statusConfig = {
 };
 
 export default function OrderDetails({ data }) {
+  console.log({ data });
   const { user } = useAuth();
+  const statusDateMap = data.status_updates.reduce((acc, curr) => {
+    acc[curr.status] = curr.created_at;
+    return acc;
+  }, {});
 
   const [id, setId] = useState(null);
   const [isDeliveryModal, setIsDeliveryModal] = useState(false);
@@ -224,31 +231,59 @@ export default function OrderDetails({ data }) {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="flex h-full items-center justify-center gap-4 overflow-x-auto py-2">
-                {orderStatuses.map((order) => {
-                  const statusOrder = orderStatuses.map((o) => o.value);
-                  const currentIndex = statusOrder.indexOf(data.status);
-                  const optionIndex = statusOrder.indexOf(order.value);
+              {data.status === "cancel" ? (
+                <div className="bg-destructive/5 border-destructive/20 flex flex-col items-center justify-center gap-4 rounded-xl border p-8 text-center">
+                  <div className="bg-destructive/10 rounded-full p-3">
+                    <CircleX className="text-destructive h-8 w-8" />
+                  </div>
+                  <div className="space-y-1">
+                    <h3 className="text-destructive text-lg font-semibold">
+                      Order Canceled
+                    </h3>
+                    <p className="text-muted-foreground sr-only max-w-sm text-sm">
+                      This order has been canceled. If this was a mistake or you
+                      have questions, please contact our support team.
+                    </p>
+                  </div>
+                  {statusDateMap["cancel"] && (
+                    <div className="text-muted-foreground bg-background border-border flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium">
+                      <CalendarX2 className="h-3.5 w-3.5" />
+                      Canceled on{" "}
+                      {moment(statusDateMap["cancel"]).format(
+                        "DD MMM, YYYY, hh:mm A",
+                      )}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="grid grid-cols-[repeat(auto-fit,minmax(100px,1fr))] py-2">
+                  {orderStatuses.map((order) => {
+                    const statusOrder = orderStatuses.map((o) => o.value);
+                    const currentIndex = statusOrder.indexOf(data.status);
+                    const optionIndex = statusOrder.indexOf(order.value);
 
-                  const isActive = optionIndex <= currentIndex;
+                    const isActive = optionIndex <= currentIndex;
 
-                  return (
-                    <TimelineItem
-                      key={order.value}
-                      label={order.label}
-                      date={moment(data.created_at).format("MMM DD, YYYY")}
-                      isActive={isActive}
-                      isHorizontal={true}
-                    />
-                  );
-                })}
-              </div>
+                    return (
+                      order.value !== "cancel" && (
+                        <TimelineItem
+                          key={order.value}
+                          label={order.label}
+                          isActive={isActive}
+                          isHorizontal={true}
+                          date={statusDateMap[order.value]}
+                        />
+                      )
+                    );
+                  })}
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
 
         {data.status === "delivered" && (
-          <div className="flex gap-2">
+          <div className="grid md:grid-cols-3">
             {/* invoice */}
             <div>
               <Label>Invoice</Label>
@@ -256,10 +291,10 @@ export default function OrderDetails({ data }) {
                 {data?.invoice?.map((file, index) => (
                   <div
                     key={index}
-                    className="hover:bg-muted/50 relative flex items-center justify-between rounded-lg border px-3 py-2 text-sm"
+                    className="hover:bg-muted/50 relative flex flex-wrap items-center justify-between rounded-lg border px-3 py-2 text-sm"
                   >
                     <div className="flex min-w-0 flex-1 items-center gap-2">
-                      <span className="truncate">{file.split("\\").pop()}</span>
+                      <span className="truncate">{`Invoice ${index + 1}`}</span>
                       <a
                         href={`${config.file_base}/${file}`}
                         target="_blank"
@@ -267,7 +302,7 @@ export default function OrderDetails({ data }) {
                           buttonVariants({ size: "icon", variant: "outline" }),
                         )}
                       >
-                        <Download className="h-4 w-4" />
+                        <Download className="h-3 w-3" />
                       </a>
                     </div>
                   </div>
@@ -282,10 +317,10 @@ export default function OrderDetails({ data }) {
                 {data?.pdi?.map((file, index) => (
                   <div
                     key={index}
-                    className="hover:bg-muted/50 relative flex items-center justify-between rounded-lg border px-3 py-2 text-sm"
+                    className="hover:bg-muted/50 relative flex flex-wrap items-center justify-between rounded-lg border px-3 py-2 text-sm"
                   >
                     <div className="flex min-w-0 flex-1 items-center gap-2">
-                      <span className="truncate">{file.split("\\").pop()}</span>
+                      <span className="truncate">{`PDI ${index + 1}`}</span>
                       <a
                         href={`${config.file_base}/${file}`}
                         target="_blank"
@@ -308,10 +343,10 @@ export default function OrderDetails({ data }) {
                 {data?.e_way_bill?.map((file, index) => (
                   <div
                     key={index}
-                    className="hover:bg-muted/50 relative flex items-center justify-between rounded-lg border px-3 py-2 text-sm"
+                    className="hover:bg-muted/50 relative flex flex-wrap items-center justify-between rounded-lg border px-3 py-2 text-sm"
                   >
                     <div className="flex min-w-0 flex-1 items-center gap-2">
-                      <span className="truncate">{file.split("\\").pop()}</span>
+                      <span className="truncate">{`E-Way bill ${index + 1}`}</span>
                       <a
                         href={`${config.file_base}/${file}`}
                         target="_blank"
@@ -369,17 +404,23 @@ function DetailRow({ label, value }) {
   );
 }
 
-function TimelineItem({ label, date, isActive, isHorizontal = false }) {
+function TimelineItem({ label, isActive, isHorizontal = false, date }) {
   if (isHorizontal) {
     return (
-      <div className="flex min-w-max flex-col items-center gap-2">
+      <div
+        className={
+          "flex h-full min-w-max flex-col items-center justify-center gap-1 rounded border p-3"
+        }
+      >
         <div
           className={`h-3 w-3 rounded-full ${isActive ? "bg-emerald-500" : "bg-muted"} ring-2 ${isActive ? "ring-emerald-200 dark:ring-emerald-900" : "ring-border"}`}
         />
         <p className="text-foreground text-sm font-medium">{label}</p>
-        <p className="text-muted-foreground text-xs whitespace-nowrap">
-          {date}
-        </p>
+        {date && (
+          <Muted className="text-muted-foreground text-xs">
+            {moment(date).format("DD MMM, YYYY, hh:mm A")}
+          </Muted>
+        )}
       </div>
     );
   }
@@ -394,7 +435,11 @@ function TimelineItem({ label, date, isActive, isHorizontal = false }) {
       </div>
       <div className="pb-8">
         <p className="text-foreground font-medium">{label}</p>
-        <p className="text-muted-foreground text-sm">{date}</p>
+        {date && (
+          <Muted className="text-muted-foreground text-xs">
+            {moment(date).format("DD MMM, YYYY, hh:mm A")}
+          </Muted>
+        )}
       </div>
     </div>
   );
