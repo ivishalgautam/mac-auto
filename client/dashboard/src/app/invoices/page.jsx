@@ -8,6 +8,7 @@ import TableActions from "./_components/table-actions";
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
+import Header from "./_components/header";
 
 export const metadata = {
   title: "Invoices",
@@ -19,18 +20,7 @@ export default async function Invoices({ searchParams }) {
 
   return (
     <PageContainer>
-      <div className="flex items-center justify-between">
-        <Heading
-          title={"Invoices"}
-          description={"Manage Invoices (View, Delete)."}
-        />
-        <Link
-          href={"/invoices/create?t=walk-in"}
-          className={buttonVariants({ size: "sm" })}
-        >
-          <Plus /> Create
-        </Link>
-      </div>
+      <Header />
       <TableActions />
       <Suspense
         key={key}
