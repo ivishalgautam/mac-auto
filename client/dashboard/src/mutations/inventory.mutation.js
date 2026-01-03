@@ -27,7 +27,7 @@ export const useGetInventoryByVehicleId = (
   return useQuery({
     queryKey: ["vehicle-inventory", vehicleId, searchParams],
     queryFn: () =>
-      user?.role === "admin"
+      ["admin", "cre"].includes(user?.role)
         ? inventory.getInventoryByVehicleId(vehicleId, searchParams)
         : dealer.getDealerInventoryByVehicleId(vehicleId, searchParams),
     enabled: !!vehicleId && !!user,
@@ -43,7 +43,7 @@ export const useGetInventoryByVehicleColorId = (
   return useQuery({
     queryKey: ["vehicle-color-inventory", vehicleColorId, searchParams],
     queryFn: () =>
-      user?.role === "admin"
+      ["admin", "cre"].includes(user?.role)
         ? inventory.getInventoryByVehicleColorId(vehicleColorId, searchParams)
         : dealer.getDealerInventoryByVehicleColorId(
             vehicleColorId,
@@ -62,7 +62,7 @@ export const useGetInventoryByVehicleColorAndVariant = (
   return useQuery({
     queryKey: ["vehicle-color-inventory", vehicleColorId, searchParams],
     queryFn: () =>
-      user?.role === "admin"
+      ["admin", "cre"].includes(user?.role)
         ? inventory.getInventoryByVehicleColorId(vehicleColorId, searchParams)
         : dealer.getDealerInventoryByVehicleColorId(
             vehicleColorId,
@@ -78,7 +78,7 @@ export const useGetInventoryItem = (id) => {
   return useQuery({
     queryKey: ["vehicle-inventory", id],
     queryFn: () =>
-      user?.role === "admin"
+      ["admin", "cre"].includes(user?.role)
         ? inventory.getInventoryItemById(id)
         : dealerInventory.getDealerInventoryItemById(id),
     enabled: !!id && !!user,
@@ -110,7 +110,7 @@ export const useUpdateInventory = (id, handleSuccess) => {
 
   return useMutation({
     mutationFn: (data) =>
-      user?.role === "admin"
+      ["admin", "cre"].includes(user?.role)
         ? inventory.updateInventoryItem(data, id)
         : dealerInventory.updateDealerInventoryItem(data, id),
     onSuccess: () => {

@@ -408,7 +408,7 @@ export default function WalkInEnquiryForm({ onSuccess, type = "create", id }) {
         </div>
 
         {/* dealer */}
-        {user?.role === "admin" && (
+        {["admin", "cre"].includes(user?.role) && (
           <div className="space-y-2">
             <Label>Dealer</Label>
             <Controller

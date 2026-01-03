@@ -32,7 +32,7 @@ export const columns = (updateMutation, setId, openModal, user) =>
         return <Badge className="capitalize">{ticketNumber}</Badge>;
       },
     },
-    user.role === "admin" && {
+    ["admin", "cre"].includes(user?.role) && {
       accessorKey: "dealership_name",
       header: "Dealership",
       cell: ({ row }) => {

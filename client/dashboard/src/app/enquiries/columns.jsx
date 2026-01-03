@@ -162,7 +162,7 @@ export const columns = (
         return email ? email : "N/a";
       },
     },
-    user?.role === "admin" && {
+    ["admin", "cre"].includes(user?.role) && {
       accessorKey: "dealership",
       header: "Dealership",
       cell: ({ row }) => row.getValue("dealership") ?? "N/a",
@@ -219,7 +219,7 @@ export const columns = (
                   </DropdownMenuItem>
                 </>
               )}
-              {user?.role === "admin" && (
+              {["admin", "cre"].includes(user?.role) && (
                 <>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem

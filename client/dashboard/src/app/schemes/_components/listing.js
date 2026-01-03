@@ -77,7 +77,7 @@ export default function Listing({}) {
 
   return (
     <div className="border-input rounded-lg">
-      {user?.role === "admin" && (
+      {["admin", "cre"].includes(user?.role) && (
         <div className="mb-2 text-end">
           <Button
             type="button"
@@ -137,7 +137,7 @@ function SchemeCard({ scheme, openModal, setId, user }) {
             <Badge variant={scheme.is_active ? "default" : "secondary"}>
               {scheme.is_active ? "Active" : "Inactive"}
             </Badge>
-            {user?.role === "admin" && (
+            {["admin", "cre"].includes(user?.role) && (
               <>
                 <Button
                   type="button"

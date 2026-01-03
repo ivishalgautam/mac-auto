@@ -63,7 +63,7 @@ export const columns = (setId, updateMutation, user, openModal) =>
         );
       },
     },
-    user.role === "admin" && {
+    ["admin", "cre"].includes(user?.role) && {
       accessorKey: "dealership_name",
       header: "Dealership",
       cell: ({ row }) => {
@@ -182,7 +182,7 @@ export const columns = (setId, updateMutation, user, openModal) =>
         );
       },
     },
-    user?.role === "admin" && {
+    ["admin", "cre"].includes(user?.role) && {
       id: "actions",
       enableHiding: false,
       cell: ({ row }) => {

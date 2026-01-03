@@ -205,7 +205,7 @@ export const columns = (
                   </DropdownMenuItem>
                 </>
               )}
-              {user?.role === "admin" && (
+              {["admin", "cre"].includes(user?.role) && (
                 <>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem

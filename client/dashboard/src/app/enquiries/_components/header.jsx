@@ -15,7 +15,7 @@ export default function Header() {
         title={"Enquiries"}
         description={"Manage Enquiries (View, Delete)."}
       />
-      {user?.role === "admin" && (
+      {["admin", "cre"].includes(user?.role) && (
         <Link
           href={"/walkin-enquiries/create?t=mac-auto"}
           className={buttonVariants({ size: "sm" })}

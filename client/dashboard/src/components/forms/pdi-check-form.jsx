@@ -234,7 +234,7 @@ export default function PDICheckForm({ orderId, type = "create", id }) {
           </div>
 
           {/* invoices */}
-          {user?.role === "admin" && (
+          {["admin", "cre"].includes(user?.role) && (
             <div>
               <Label>Invoices</Label>
               {["edit", "create"].includes(type) && (

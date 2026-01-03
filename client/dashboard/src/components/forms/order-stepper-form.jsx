@@ -162,13 +162,13 @@ export default function OrderStepperForm({ type, id }) {
         }
         break;
       case 5:
-        if (!watch("oc_number") && user.role === "admin") {
+        if (!watch("oc_number") && ["admin", "cre"].includes(user?.role)) {
           setStepError("OC Number is required*");
           return;
         }
         break;
       case 6:
-        if (user?.role === "admin" && !watch("dealer_id")) {
+        if (["admin", "cre"].includes(user?.role) && !watch("dealer_id")) {
           setStepError("Please select a dealer");
           return;
         }
@@ -203,7 +203,7 @@ export default function OrderStepperForm({ type, id }) {
     router.push("/orders?page=1&limit=10");
   });
   const onSubmit = (data) => {
-    if (user?.role === "admin" && !watch("dealer_id")) {
+    if (["admin", "cre"].includes(user?.role) && !watch("dealer_id")) {
       setStepError("Please select a dealer");
       return;
     }
@@ -620,7 +620,7 @@ export default function OrderStepperForm({ type, id }) {
       "Message",
       "OC Number",
     ];
-    if (user?.role === "admin") baseSteps.push("Dealer");
+    if (["admin", "cre"].includes(user?.role)) baseSteps.push("Dealer");
     return baseSteps;
   }, [user]);
 
@@ -682,7 +682,9 @@ export default function OrderStepperForm({ type, id }) {
           {step === 3 && <StepColor />}
           {step === 4 && <StepMessage />}
           {step === 5 && <StepOCNumber />}
-          {step === 6 && user?.role === "admin" && <StepDealer />}
+          {step === 6 && ["admin", "cre"].includes(user?.role) && (
+            <StepDealer />
+          )}
         </CardContent>
       </Card>
     </div>

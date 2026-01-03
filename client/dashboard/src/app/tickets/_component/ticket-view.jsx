@@ -256,7 +256,7 @@ export default function TicketView({ id }) {
       )}
 
       {/* Action Buttons */}
-      {user?.role === "admin" && (
+      {["admin", "cre"].includes(user?.role) && (
         <div className="flex gap-4 pt-4">
           <Select
             value={data.status}

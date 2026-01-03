@@ -86,7 +86,7 @@ export const columns = (setUserId, openModal, user) => [
             <DropdownMenuItem>
               <Link href={`/customers/${customerId}/purchases`}>Purchases</Link>
             </DropdownMenuItem>
-            {user?.role === "admin" && (
+            {["admin", "cre"].includes(user?.role) && (
               <>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem>

@@ -40,7 +40,7 @@ export const columns = (
         return <div className="capitalize">{title}</div>;
       },
     },
-    user.role === "admin" && {
+    ["admin", "cre"].includes(user?.role) && {
       accessorKey: "dealer_name",
       header: "Dealer",
       cell: ({ row }) => {
@@ -114,7 +114,7 @@ export const columns = (
                   className={"capitalize"}
                   disabled={
                     ["delivered", "canceled"].includes(status) ||
-                    (user.role === "admin" &&
+                    (["admin", "cre"].includes(user?.role) &&
                       status === "in process" &&
                       ["dispatch", "delivered"].includes(option.value)) ||
                     (user.role === "dealer" &&

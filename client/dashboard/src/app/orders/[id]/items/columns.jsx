@@ -118,7 +118,7 @@ export const columns = (user, orderData) =>
       ),
     },
     orderData?.status !== "cancel" &&
-      user?.role === "admin" && {
+      ["admin", "cre"].includes(user?.role) && {
         id: "actions",
         enableHiding: false,
         cell: ({ row }) => {

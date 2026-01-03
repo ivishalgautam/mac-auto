@@ -17,7 +17,7 @@ export const columns = (openModal, setId, user) =>
       accessorKey: "message",
       header: "MESSAGE",
     },
-    user.role === "admin" && {
+    ["admin", "cre"].includes(user?.role) && {
       accessorKey: "dealership",
       header: "DEALERSHIP",
     },

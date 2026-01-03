@@ -180,7 +180,7 @@ export default function InquiryToCustomerForm({
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
         {/* dealer id (only admin can choose) */}
-        {user?.role === "admin" && (
+        {["admin", "cre"].includes(user?.role) && (
           <div className="col-span-full space-y-2">
             <Label>Dealer</Label>
             <Controller
