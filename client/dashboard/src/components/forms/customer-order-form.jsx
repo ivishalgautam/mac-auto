@@ -10,7 +10,6 @@ import { getFormErrors } from "@/lib/get-form-errors";
 import { toast } from "sonner";
 import CustomerSelect from "@/features/customer-select";
 import { customerOrderSchema } from "@/utils/schema/customer-order.schema";
-import ChassisSelectByColor from "@/features/chassis-select-by-color";
 import DealerVehicleColorSelect from "@/features/dealer-vehicle-color-select";
 import { useState } from "react";
 import Image from "next/image";

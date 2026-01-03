@@ -129,7 +129,6 @@ export default function OrderStepperForm({ type, id }) {
   });
 
   const orderItems = watch("order_items");
-  console.log({ orderItems });
   const handleNext = () => setStep((s) => s + 1);
   const handleBack = () => setStep((s) => s - 1);
   const handleNextWithValidation = () => {
@@ -322,7 +321,33 @@ export default function OrderStepperForm({ type, id }) {
             </Button>
             <Button
               disabled={selectedVehicles.length === 0}
-              onClick={() => handleNextWithValidation()}
+              onClick={() => {
+                if (type === "create") {
+                  setValue(
+                    "order_items",
+                    selectedVehicles.map((v) => ({
+                      vehicle_id: v,
+                      quantity: 1,
+                    })),
+                  );
+                } else {
+                  setValue(
+                    "order_items",
+                    selectedVehicles.map((v) => {
+                      const exist = orderItems.find((i) => i.vehicle_id === v);
+
+                      return exist
+                        ? { ...exist }
+                        : {
+                            vehicle_id: v,
+                            quantity: 1,
+                          };
+                    }),
+                  );
+                }
+
+                handleNextWithValidation();
+              }}
             >
               Next
             </Button>
@@ -392,7 +417,7 @@ export default function OrderStepperForm({ type, id }) {
   //     </div>
   //   </div>
   // );
-
+  console.log({ step });
   const StepColor = () => {
     return (
       <div className="space-y-6">

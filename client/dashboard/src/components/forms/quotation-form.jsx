@@ -15,19 +15,15 @@ import {
 } from "@/mutations/quotation-mutation";
 import { DatePicker } from "../ui/date-picker";
 import { H4, H5 } from "../ui/typography";
-import {
-  useGetFormattedWalkInEnquiries,
-  useGetWalkInEnquiry,
-} from "@/mutations/walkin-enquiries-mutation";
 import Loader from "../loader";
 import ErrorMessage from "../ui/error";
 import { useEffect, useMemo } from "react";
-import PhoneSelect from "../ui/phone-input";
 import { cn } from "@/lib/utils";
 import { useGetVehicles } from "@/mutations/vehicle-mutation";
 import moment from "moment";
 import CustomMultiSelect from "../custom-multi-select";
 import { Textarea } from "../ui/textarea";
+import CustomerSelect from "@/features/customer-select";
 
 const defaultValues = {
   customer_name: "",
@@ -53,6 +49,10 @@ const defaultValues = {
 
 const createSchema = z.object({
   // enquiry_id: z.string().uuid().optional(),
+  customer_id: z
+    .string()
+    .uuid({ message: "Invalid customer ID" })
+    .min(1, { message: "Select customer" }),
   vehicle_ids: z
     .array(
       z.object({
@@ -63,8 +63,8 @@ const createSchema = z.object({
     .min(1, { message: "Select vehicle" })
     .transform((data) => data.map(({ value }) => value))
     .default([]),
-  customer_name: z.string().min(1, "Customer name is required"),
-  mobile_no: z.string().min(10, "Enter valid mobile no."),
+  // customer_name: z.string().min(1, "Customer name is required"),
+  // mobile_no: z.string().min(10, "Enter valid mobile no."),
   date: z.union([z.date(), z.null()]).default(null),
   vehicle_price_breakups: z.array(
     z.object({
@@ -252,7 +252,7 @@ export default function QuotationForm({
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {/* Customer Name */}
-        <div className="space-y-2">
+        {/* <div className="space-y-2">
           <Label htmlFor="customer_name">Customer Name</Label>
           <Input id="customer_name" {...register("customer_name")} />
           {errors.customer_name && (
@@ -260,10 +260,10 @@ export default function QuotationForm({
               {errors.customer_name.message}
             </p>
           )}
-        </div>
+        </div> */}
 
         {/* Mobile No */}
-        <div className="space-y-2">
+        {/* <div className="space-y-2">
           <Label htmlFor="mobile_no">Mobile No</Label>
           <Controller
             control={control}
@@ -284,6 +284,25 @@ export default function QuotationForm({
               {errors.mobile_no.message}
             </p>
           )}
+        </div> */}
+
+        {/* customer */}
+        <div className="space-y-2">
+          <Label>Customer *</Label>
+          <Controller
+            name="customer_id"
+            control={control}
+            render={({ field }) => (
+              <CustomerSelect
+                value={field.value}
+                onChange={field.onChange}
+                // disabled={type === "edit"}
+                className={cn({
+                  "border-destructive": errors.customer_id,
+                })}
+              />
+            )}
+          />
         </div>
 
         {/* Date */}
@@ -305,7 +324,7 @@ export default function QuotationForm({
         </div>
 
         {/* vehicle */}
-        <div className="space-y-2">
+        <div className="col-span-full space-y-2">
           <Label>Models *</Label>
           <Controller
             name="vehicle_ids"

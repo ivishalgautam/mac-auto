@@ -22,11 +22,12 @@ export const columns = (openModal, setId, user, updateMutation) => [
     },
   },
   {
-    accessorKey: "created_at",
+    accessorKey: "date",
     header: () => <Button variant="ghost">Date</Button>,
-    cell: ({ row }) => (
-      <div>{moment(row.getValue("created_at")).format("DD/MM/YYYY")}</div>
-    ),
+    cell: ({ row }) => {
+      const date = row.getValue("date");
+      return <div>{date ? moment(date).format("DD/MM/YYYY") : "-"}</div>;
+    },
   },
   {
     accessorKey: "customer_name",
@@ -42,6 +43,16 @@ export const columns = (openModal, setId, user, updateMutation) => [
     cell: ({ row }) => {
       const vehicles = row.getValue("vehicles");
       return vehicles && vehicles.length ? vehicles.join(", ") : "-";
+    },
+  },
+  {
+    accessorKey: "created_at",
+    header: () => <Button variant="ghost">Created at</Button>,
+    cell: ({ row }) => {
+      const created_at = row.getValue("created_at");
+      return (
+        <div>{created_at ? moment(created_at).format("DD/MM/YYYY") : "-"}</div>
+      );
     },
   },
   {

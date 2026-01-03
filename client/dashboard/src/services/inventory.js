@@ -7,6 +7,13 @@ const getDealerInventory = async (searchParams = "") => {
   );
   return data;
 };
+
+const getFormattedAvailableVehicles = async () => {
+  const { data } = await http().get(
+    `${endpoints.dealers.inventory}/get-formatted-available-vehicles`,
+  );
+  return data;
+};
 const getInventories = async (searchParams = "") => {
   const { data } = await http().get(
     `${endpoints.inventories.getAll}?${searchParams}`,
@@ -58,6 +65,7 @@ const inventory = {
   updateInventoryItem: updateInventoryItem,
   deleteById: deleteById,
   getInventoryItemById: getInventoryItemById,
+  getFormattedAvailableVehicles: getFormattedAvailableVehicles,
 };
 
 export default inventory;

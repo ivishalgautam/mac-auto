@@ -29,6 +29,13 @@ export const useGetDealerInventory = (searchParams = "page=1") => {
   });
 };
 
+export const useGetFormattedAvailableVehicles = () => {
+  return useQuery({
+    queryKey: ["dealer-inventory-formatted"],
+    queryFn: () => inventory.getFormattedAvailableVehicles(),
+  });
+};
+
 export const useGetDealerVehicleColors = (vehicleId) => {
   return useQuery({
     queryFn: () =>

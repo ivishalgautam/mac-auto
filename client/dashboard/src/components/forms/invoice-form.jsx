@@ -24,6 +24,12 @@ import {
   useGetInvoice,
   useUpdateInvoice,
 } from "@/mutations/invoices-mutation";
+import CustomerSelect from "@/features/customer-select";
+import DealerVehicleColorSelect from "@/features/dealer-vehicle-color-select";
+import {
+  useGetDealerInventory,
+  useGetFormattedAvailableVehicles,
+} from "@/mutations/dealer-inventory.mutation";
 
 const defaultValues = {
   customer_name: "",
@@ -49,6 +55,10 @@ const defaultValues = {
 
 const createSchema = z.object({
   // enquiry_id: z.string().uuid().optional(),
+  customer_id: z
+    .string()
+    .uuid({ message: "Invalid customer ID" })
+    .min(1, { message: "Select customer" }),
   vehicle_ids: z
     .array(
       z.object({
@@ -59,8 +69,8 @@ const createSchema = z.object({
     .min(1, { message: "Select vehicle" })
     .transform((data) => data.map(({ value }) => value))
     .default([]),
-  customer_name: z.string().min(1, "Customer name is required"),
-  mobile_no: z.string().min(10, "Enter valid mobile no."),
+  // customer_name: z.string().min(1, "Customer name is required"),
+  // mobile_no: z.string().min(10, "Enter valid mobile no."),
   date: z.union([z.date(), z.null()]).default(null),
   vehicle_price_breakups: z.array(
     z.object({
@@ -105,18 +115,25 @@ export default function InvoiceForm({ type = "create", id, callback = null }) {
     name: "vehicle_price_breakups",
     control,
   });
-
   const {
     data: vehiclesData,
     isLoading: isVehiclesLoading,
     isError: isVehiclesError,
     error: vehiclesError,
-  } = useGetVehicles();
+  } = useGetFormattedAvailableVehicles("");
+
+  // const {
+  //   data: vehiclesData,
+  //   isLoading: isVehiclesLoading,
+  //   isError: isVehiclesError,
+  //   error: vehiclesError,
+  // } = useGetVehicles();
+
   const formattedVehiclesData = useMemo(() => {
     return (
-      vehiclesData?.vehicles?.map(({ id: value, title: label }) => ({
-        value,
-        label,
+      vehiclesData?.map((vh) => ({
+        value: vh.inventory_vehicle_id,
+        label: `${vh.title} (${vh.color_name}) (${vh.chassis_no})`,
       })) ?? []
     );
   }, [vehiclesData]);
@@ -182,12 +199,14 @@ export default function InvoiceForm({ type = "create", id, callback = null }) {
 
   useEffect(() => {
     if (type === "create" && vehiclesData && selectedVehicles) {
-      const filteredVehicles = vehiclesData?.vehicles?.filter((v) =>
-        selectedVehicles.map(({ value }) => value).includes(v.id),
+      const filteredVehicles = vehiclesData?.filter((v) =>
+        selectedVehicles
+          .map(({ value }) => value)
+          .includes(v.inventory_vehicle_id),
       );
 
       const mapped = filteredVehicles.map((v) => ({
-        model: v.title,
+        model: `${v.title} (${v.color_name}) (${v.chassis_no})`,
         base_price_ex_showroom: v.base_price,
       }));
 
@@ -205,72 +224,34 @@ export default function InvoiceForm({ type = "create", id, callback = null }) {
         date: data.date ? new Date(data.date) : null,
       });
     }
-  }, [data, reset, type]);
+  }, [data, reset, type, formattedVehiclesData]);
 
   if (type === "edit" && isLoading) return <Loader />;
   if (type === "edit" && isError) return <ErrorMessage error={error} />;
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      {/* <div className="max-w-lg space-y-2">
-        <Label htmlFor="enquiry_id">Enquiry</Label>
-        <Controller
-          name="enquiry_id"
-          control={control}
-          render={({ field }) => {
-            return (
-              <CustomCommandMenu
-                key={"enquiry_id"}
-                onChange={field.onChange}
-                value={field.value}
-                data={enquiriesData}
-                isLoading={isEnquiriesLoading}
-                isError={isEnquiriesError}
-                error={enquiriesError}
-                searchPlaceholder="Select enquiry"
-              />
-            );
-          }}
-        />
-        {errors.enquiry_id && (
-          <p className="text-destructive text-sm">
-            {errors.enquiry_id.message}
-          </p>
-        )}
-      </div> */}
-
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {/* Customer Name */}
-        <div className="space-y-2">
-          <Label htmlFor="customer_name">Customer Name</Label>
-          <Input id="customer_name" {...register("customer_name")} />
-          {errors.customer_name && (
-            <p className="text-destructive text-sm">
-              {errors.customer_name.message}
-            </p>
-          )}
-        </div>
-
-        {/* Mobile No */}
-        <div className="space-y-2">
-          <Label htmlFor="mobile_no">Mobile No</Label>
+        {/* customer */}
+        <div>
+          <Label>Customer *</Label>
           <Controller
+            name="customer_id"
             control={control}
-            name="mobile_no"
             render={({ field }) => (
-              <PhoneSelect
+              <CustomerSelect
                 value={field.value}
                 onChange={field.onChange}
-                placeholder="Enter mobile number"
+                // disabled={type === "edit"}
                 className={cn({
-                  "border border-red-500": errors.mobile_no,
+                  "!border-destructive": errors.customer_id,
                 })}
               />
             )}
           />
-          {errors.mobile_no && (
-            <p className="text-destructive text-sm">
-              {errors.mobile_no.message}
-            </p>
+          {errors.customer_id && (
+            <span className="text-destructive text-sm">
+              {errors.customer_id.message}
+            </span>
           )}
         </div>
 
@@ -290,10 +271,15 @@ export default function InvoiceForm({ type = "create", id, callback = null }) {
               );
             }}
           />
+          {errors.date && (
+            <span className="text-destructive text-sm">
+              {errors.date.message}
+            </span>
+          )}
         </div>
 
         {/* vehicle */}
-        <div className="space-y-2">
+        <div className="col-span-full space-y-2">
           <Label>Models *</Label>
           <Controller
             name="vehicle_ids"
@@ -315,53 +301,12 @@ export default function InvoiceForm({ type = "create", id, callback = null }) {
               />
             )}
           />
+          {errors.vehicle_ids && (
+            <span className="text-destructive text-sm">
+              {errors.vehicle_ids.message}
+            </span>
+          )}
         </div>
-
-        {/* Variant */}
-        {/* <div className="space-y-2">
-              <Label htmlFor="vehicle_variant_map_id">Variant</Label>
-              <Controller
-                name="vehicle_variant_map_id"
-                control={control}
-                render={({ field }) => {
-                  return (
-                    <VehicleVariantMapSelect
-                      onChange={field.onChange}
-                      value={field.value}
-                      vehicleId={watch("vehicle_id")}
-                    />
-                  );
-                }}
-              />
-              {errors.vehicle_variant_map_id && (
-                <p className="text-destructive text-sm">
-                  {errors.vehicle_variant_map_id.message}
-                </p>
-              )}
-            </div> */}
-
-        {/* Colour */}
-        {/* <div className="space-y-2">
-              <Label htmlFor="vehicle_color_id">Colour</Label>
-              <Controller
-                name="vehicle_color_id"
-                control={control}
-                render={({ field }) => {
-                  return (
-                    <VehicleColorSelect
-                      onChange={field.onChange}
-                      value={field.value}
-                      vehicleId={watch("vehicle_id")}
-                    />
-                  );
-                }}
-              />
-              {errors.vehicle_color_id && (
-                <p className="text-destructive text-sm">
-                  {errors.vehicle_color_id.message}
-                </p>
-              )}
-            </div> */}
 
         {/* Pricing Fields */}
         <div className="col-span-full mt-10 space-y-6">
@@ -405,7 +350,7 @@ export default function InvoiceForm({ type = "create", id, callback = null }) {
                       )}
                     </div>
                     <div>
-                      <Label>Insurance</Label>
+                      <Label>Insurance*</Label>
                       <Input
                         type="number"
                         {...register(`vehicle_price_breakups.${ind}.insurance`)}
@@ -420,7 +365,7 @@ export default function InvoiceForm({ type = "create", id, callback = null }) {
                       )}
                     </div>
                     <div>
-                      <Label>RTO Charges</Label>
+                      <Label>RTO Charges*</Label>
                       <Input
                         type="number"
                         {...register(
@@ -485,7 +430,7 @@ export default function InvoiceForm({ type = "create", id, callback = null }) {
       <div className="text-end">
         <Button type="submit" disabled={isFormPending}>
           {isFormPending && <Loader2 className="h-4 w-4 animate-spin" />}
-          {type === "create" ? "Create Quotation" : "Update Quotation"}
+          {type === "create" ? "Create invoice" : "Update invoice"}
         </Button>
       </div>
     </form>
