@@ -74,7 +74,7 @@ const init = async (sequelize) => {
       },
       images: {
         type: DataTypes.JSONB,
-        defaultValue: false,
+        defaultValue: [],
       },
     },
     {
