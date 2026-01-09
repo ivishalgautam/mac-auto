@@ -34,11 +34,11 @@ const enquirySchema = z
       .regex(/^[a-zA-Z\s]+$/, "Name can only contain letters and spaces")
       .trim(),
 
-    email: z.preprocess((val) => {
-      if (val === null || val === undefined || val === "") return null;
-      if (typeof val === "string") return val.trim().toLowerCase();
-      return val;
-    }, z.string().email("Please enter a valid email address").nullable().optional()),
+    email: z
+      .string()
+      .email("Please enter a valid email address")
+      .nullable()
+      .optional(),
 
     phone: z
       .string({ required_error: "Mobile number is required." })
