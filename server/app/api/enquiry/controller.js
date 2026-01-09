@@ -70,7 +70,13 @@ const create = async (req, res) => {
     //   req.body.dealer_id = dealerRecord.id;
     // }
 
-    res.send({ status: true, data: await table.EnquiryModel.create(req) });
+    res.send({
+      status: true,
+      data: await table.WalkinEnquiryModel.create({
+        ...req,
+        body: { ...req.body, vehicle_ids: [req.body.vehicle_id] },
+      }),
+    });
   } catch (error) {
     throw error;
   }
