@@ -57,7 +57,7 @@ const enquirySchema = z
 
 const create = async (req, res) => {
   try {
-    const validateData = enquirySchema.parse(req.body);
+    // const validateData = enquirySchema.parse(req.body);
 
     // const { role, id } = req.user_data;
     // if (role === "dealer") {
