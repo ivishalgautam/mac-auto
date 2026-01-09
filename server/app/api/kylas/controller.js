@@ -153,7 +153,79 @@ const dowbloadBrochure = async (req, res) => {
   }
 };
 
+const LeadSchema = z.object({
+  phoneNumber: z.string().min(10), // from phoneNumbers[0].value
+  vehicle_name: z.string(1), // from products[0]
+  quantity: z.number().optional().default(1), // from products[0]
+  firstName: z.string(),
+  lastName: z.string(),
+  city: z.string(),
+  email: z.string().email().optional().nullable(),
+});
+
+const createEnquiryLead = async (req, res) => {
+  try {
+    // 1️⃣ Validate incoming request
+    const validatedData = LeadSchema.parse(req.body);
+
+    // 2️⃣ Build Kylas payload
+    const kylasPayload = {
+      firstName: validatedData.firstName,
+      lastName: validatedData.lastName,
+      city: validatedData.city,
+
+      phoneNumbers: [
+        {
+          type: "MOBILE",
+          code: "IN",
+          primary: true,
+          value: validatedData.phoneNumber,
+        },
+      ],
+      // products: [{ id: validatedData.product }],
+      customFieldValues: {
+        cfLeadType: 2561917,
+        // cfState: 2579146,
+      },
+      source: 2561913,
+      requirementName: validatedData.quantity,
+      vehicle_name: validatedData.vehicle_name,
+    };
+
+    // 4️⃣ API request
+    const response = await axios.post(
+      "https://api.kylas.io/v1/leads/",
+      JSON.stringify(kylasPayload),
+      {
+        headers: {
+          "Content-Type": "application/json",
+          "api-key": process.env.KYLAS_API_KEY,
+        },
+        maxBodyLength: Infinity,
+      }
+    );
+
+    return res.send({
+      status: true,
+      message: "Lead created",
+      data: response.data,
+    });
+  } catch (error) {
+    console.error(error);
+
+    if (error instanceof AxiosError) {
+      throw new HttpError(
+        error?.response?.data?.message ?? "Something went wrong!",
+        error?.response?.status ?? 500
+      );
+    }
+
+    throw error;
+  }
+};
+
 export default {
   create: create,
   dowbloadBrochure: dowbloadBrochure,
+  createEnquiryLead: createEnquiryLead,
 };
