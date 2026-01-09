@@ -11,9 +11,7 @@ export const querySchema = z.object({
   subject: z
     .string({ required_error: "required*" })
     .min(1, "Subject is required"),
-  source: z
-    .string({ required_error: "required*" })
-    .min(1, "Source is required"),
+  source: z.string().optional(),
   message: z
     .string({ required_error: "required*" })
     .min(1, "Message is required"),
