@@ -224,8 +224,71 @@ const createEnquiryLead = async (req, res) => {
   }
 };
 
+const contactLeadSchema = z.object({
+  firstName: z.string().min(1, "First name is required"),
+  lastName: z.string().optional(),
+  lead_type: z.coerce.number().min(1, { message: "Lead type is required." }),
+  phoneNumber: z.string().regex(/^[6-9]\d{9}$/, {
+    message:
+      "Phone number must be a valid 10-digit Indian number starting with 6-9",
+  }),
+});
+
+const contactLead = async (req, res) => {
+  try {
+    const validateData = contactLeadSchema.parse(req.body);
+
+    let data = JSON.stringify({
+      firstName: validateData.firstName,
+      lastName: validateData.lastName,
+      phoneNumbers: [
+        {
+          type: "MOBILE",
+          code: "IN",
+          primary: true,
+          value: validateData.phoneNumber,
+        },
+      ],
+      customFieldValues: {
+        cfLeadType: validateData.lead_type,
+      },
+      source: 2561913,
+    });
+
+    let config = {
+      method: "post",
+      maxBodyLength: Infinity,
+      url: "https://api.kylas.io/v1/leads/",
+      headers: {
+        "Content-Type": "application/json",
+        "api-key": process.env.KYLAS_API_KEY,
+      },
+      data: data,
+    };
+
+    const response = await axios.request(config);
+    return res.send({
+      status: true,
+      message: "Contact Lead created",
+      data: response.data,
+    });
+  } catch (error) {
+    // throw error;
+    console.log(error);
+    if (error instanceof AxiosError) {
+      throw new HttpError(
+        error?.response?.data?.message ?? "Something went wrong!",
+        error?.response?.status ?? 500
+      );
+    } else {
+      throw error;
+    }
+  }
+};
+
 export default {
   create: create,
   dowbloadBrochure: dowbloadBrochure,
   createEnquiryLead: createEnquiryLead,
+  contactLead: contactLead,
 };

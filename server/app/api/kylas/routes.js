@@ -8,4 +8,5 @@ export async function kylasPublicRoutes(fastify, opt) {
   fastify.post("/leads", {}, controller.create);
   fastify.post("/download-brochure", {}, controller.dowbloadBrochure);
   fastify.post("/enquiry-lead", {}, controller.createEnquiryLead);
+  fastify.post("/contact-lead", {}, controller.contactLead);
 }
