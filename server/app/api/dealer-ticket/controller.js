@@ -114,6 +114,15 @@ const update = async (req, res) => {
       );
     }
 
+    const existingVideos = record.videos;
+    const updatedVideos = req.body.videos_urls;
+    if (updatedVideos) {
+      req.body.videos = [...(req.body?.videos ?? []), ...updatedVideos];
+      documentsToDelete.push(
+        ...getItemsToDelete(existingVideos, updatedVideos)
+      );
+    }
+
     await table.DealerTicketModel.update(req, 0, transaction);
 
     if (documentsToDelete.length) await cleanupFiles(documentsToDelete);

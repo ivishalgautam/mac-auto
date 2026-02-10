@@ -4,6 +4,7 @@ import { ticketSchema } from "./schema.js";
 import { cleanupFiles } from "../../helpers/cleanup-files.js";
 import constants from "../../lib/constants/index.js";
 import { sequelize } from "../../db/postgres.js";
+import { getItemsToDelete } from "../../helpers/filter.js";
 
 const status = constants.http.status;
 const responseMessage = constants.error.message;
@@ -97,6 +98,15 @@ const update = async (req, res) => {
       req.body.images = [...(req.body?.images ?? []), ...updatedImages];
       documentsToDelete.push(
         ...getItemsToDelete(existingImages, updatedImages)
+      );
+    }
+
+    const existingVideos = record.videos;
+    const updatedVideos = req.body.videos_urls;
+    if (updatedVideos) {
+      req.body.videos = [...(req.body?.videos ?? []), ...updatedVideos];
+      documentsToDelete.push(
+        ...getItemsToDelete(existingVideos, updatedVideos)
       );
     }
 

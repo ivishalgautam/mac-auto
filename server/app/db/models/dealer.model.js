@@ -43,6 +43,14 @@ const init = async (sequelize) => {
         type: DataTypes.ARRAY(DataTypes.TEXT),
         defaultValue: [],
       },
+      state: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      city: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
     },
     {
       createdAt: "created_at",
@@ -64,7 +72,7 @@ const init = async (sequelize) => {
 };
 
 const create = async (
-  { user_id, location, dealer_code, aadhaar, gst, pan },
+  { user_id, state, city, location, dealer_code, aadhaar, gst, pan },
   transaction
 ) => {
   const options = {};
@@ -90,6 +98,8 @@ const create = async (
       aadhaar: aadhaar,
       pan: pan,
       gst: gst,
+      state: state,
+      city: city,
     },
     options
   );
@@ -99,7 +109,7 @@ const create = async (
 
 const update = async (req, id) => {
   return await DealerModel.update(
-    { location: location },
+    { location: req.body.location, state: req.body.state, city: req.body.city },
     {
       where: { id: id },
       returning: true,
@@ -108,9 +118,11 @@ const update = async (req, id) => {
   );
 };
 
-const updateByUser = async (req, id) => {
+const updateByUser = async (req, id, transaction) => {
   return await DealerModel.update(
     {
+      state: req.body.state,
+      city: req.body.city,
       location: req.body.location,
       aadhaar: req.body.aadhaar,
       pan: req.body.pan,
@@ -120,6 +132,7 @@ const updateByUser = async (req, id) => {
       where: { user_id: id },
       returning: true,
       raw: true,
+      transaction,
     }
   );
 };
@@ -159,7 +172,7 @@ const get = async (req) => {
 
   const query = `
   SELECT 
-    dlr.id, dlr.location, dlr.dealer_code, dlr.created_at,
+    dlr.id, dlr.location, dlr.dealer_code, dlr.created_at, dlr.state, dlr.city,
     usr.id as user_id, CONCAT(usr.first_name, ' ', usr.last_name) as fullname,
     usr.username, usr.mobile_number, usr.email, usr.is_active
   FROM ${constants.models.DEALER_TABLE} dlr

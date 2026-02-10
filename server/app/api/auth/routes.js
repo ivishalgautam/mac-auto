@@ -13,6 +13,7 @@ export default async function routes(fastify, options) {
   fastify.post("/register-verify", {}, controller.registerVerify);
   fastify.post("/refresh", {}, controller.verifyRefreshToken);
   fastify.post("/username", {}, userController.checkUsername);
+  
   fastify.post("/forgot-password", {}, controller.sendResetToken);
   fastify.post("/reset-password", {}, userController.resetPassword);
 }

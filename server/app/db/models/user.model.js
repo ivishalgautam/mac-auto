@@ -101,6 +101,12 @@ const init = async (sequelize) => {
       updatedAt: "updated_at",
       deletedAt: "deleted_at",
       paranoid: true,
+      indexes: [
+        {
+          name: "idx_user_fullname",
+          fields: [sequelize.literal(`(first_name || ' ' || last_name)`)],
+        },
+      ],
     }
   );
 
@@ -239,7 +245,8 @@ const getById = async (req, user_id) => {
   SELECT
       usr.id, usr.username, usr.first_name, usr.last_name, usr.email, usr.blocked, usr.role, usr.mobile_number, usr.is_verified, usr.image_url,
       dlr.location, dlr.aadhaar, dlr.gst, dlr.pan, dlr.dealer_code,
-      cst.address
+      cst.address, cst.state, cst.city,
+      dlr.state, dlr.city
     FROM ${constants.models.USER_TABLE} usr
     LEFT JOIN ${constants.models.DEALER_TABLE} dlr ON usr.role = 'dealer' AND dlr.user_id = usr.id
     LEFT JOIN ${constants.models.CUSTOMER_TABLE} cst ON usr.role = 'customer' AND cst.user_id = usr.id
@@ -299,21 +306,9 @@ const isEmailExist = async (email) => {
 };
 
 const update = async (req, id, transaction = null) => {
-  const options = {
-    where: {
-      id: req.params?.id || id,
-    },
-    returning: true,
-    raw: true,
-    plain: true,
-    transaction,
-  };
+  const actualId = req.params?.id || id;
 
-  if (transaction) {
-    options.transaction = transaction;
-  }
-
-  const [, rows] = await UserModel.update(
+  const [affectedCount, updatedRows] = await UserModel.update(
     {
       email: req.body?.email,
       first_name: req.body?.first_name,
@@ -326,9 +321,14 @@ const update = async (req, id, transaction = null) => {
       reset_password_token: req.body?.reset_password_token,
       confirmation_token: req.body?.confirmation_token,
     },
-    options
+    {
+      where: { id: actualId },
+      returning: true,
+      transaction,
+    }
   );
-  return rows;
+
+  return updatedRows[0];
 };
 
 const updatePassword = async (req, user_id) => {

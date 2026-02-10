@@ -25,14 +25,26 @@ const init = async (sequelize) => {
         type: DataTypes.JSONB,
         defaultValue: false,
       },
+      videos: {
+        type: DataTypes.JSONB,
+        defaultValue: false,
+      },
       message: {
         type: DataTypes.TEXT,
         allowNull: false,
+      },
+      mac_message: {
+        type: DataTypes.TEXT,
+        allowNull: true,
       },
       status: {
         type: DataTypes.ENUM(["pending", "in process", "resolved"]),
         allowNull: false,
         defaultValue: "pending",
+      },
+      warranty_detail: {
+        type: DataTypes.STRING,
+        allowNull: true,
       },
       // purchase_id: {
       //   type: DataTypes.UUID,
@@ -110,21 +122,19 @@ const init = async (sequelize) => {
         type: DataTypes.JSONB,
         defaultValue: [],
       },
+      part_ids: {
+        type: DataTypes.JSONB,
+        defaultValue: [],
+      },
     },
     {
       createdAt: "created_at",
       updatedAt: "updated_at",
       indexes: [
-        { fields: ["images"] },
         { fields: ["ticket_number"] },
-        { fields: ["message"] },
-        { fields: ["status"] },
         { fields: ["customer_id"] },
         { fields: ["punch_by_id"] },
-        { fields: ["complaint_type"] },
-        { fields: ["expected_closure_date"] },
         { fields: ["assigned_technician"] },
-        { fields: ["parts"] },
       ],
     }
   );
@@ -148,8 +158,10 @@ const create = async (req) => {
 
   return await TicketModel.create({
     images: req.body?.images ?? [],
+    videos: req.body?.videos ?? [],
     ticket_number: newTicketNo,
     message: req.body.message,
+    mac_message: req.body.mac_message,
     // purchase_id: req.body.purchase_id,
     complaint_type: req.body.complaint_type,
     expected_closure_date: req.body.expected_closure_date,
@@ -159,11 +171,14 @@ const create = async (req) => {
         : null,
     assigned_cre: req.body.assigned_cre,
     assigned_manager: req.body?.assigned_manager ?? null,
-    parts: req.body.parts,
 
     customer_id: req.body.customer_id,
     punch_by_id: req.user_data.id,
     punch_by: req.user_data.role,
+
+    warranty_detail: req.body.warranty_detail,
+
+    part_ids: req.body.part_ids,
   });
 };
 
@@ -174,7 +189,9 @@ const update = async (req, id, transaction) => {
   return await TicketModel.update(
     {
       images: req.body?.images ?? [],
+      videos: req.body?.videos ?? [],
       message: req.body.message,
+      mac_message: req.body.mac_message,
       status: req.body.status,
       complaint_type: req.body.complaint_type,
       expected_closure_date: req.body.expected_closure_date,
@@ -182,6 +199,8 @@ const update = async (req, id, transaction) => {
       assigned_cre: req.body.assigned_cre,
       assigned_manager: req.body.assigned_manager,
       parts: req.body.parts,
+      warranty_detail: req.body.warranty_detail,
+      part_ids: req.body.part_ids,
     },
     options
   );
@@ -193,7 +212,7 @@ const get = async (req) => {
 
   const { role, id } = req.user_data;
   if (role === "dealer") {
-    whereConditions.push(`tk.punch_by_id = :userId`);
+    whereConditions.push(`(tk.punch_by_id = :userId OR dlr.user_id = :userId)`);
     queryParams.userId = id;
   }
   if (role === "customer") {
@@ -215,9 +234,21 @@ const get = async (req) => {
     queryParams.status = `{${status.join(",")}}`;
   }
 
-  let q = req.query.q;
+  let q = req.query.q?.trim();
+
   if (q) {
-    whereConditions.push(`(tk.ticket_number ILIKE :query)`);
+    whereConditions.push(`(
+    tk.ticket_number ILIKE :query OR
+
+    pnusr.first_name ILIKE :query OR
+    pnusr.last_name ILIKE :query OR
+    (pnusr.first_name || ' ' || pnusr.last_name) ILIKE :query OR
+
+    cstu.first_name ILIKE :query OR
+    cstu.last_name ILIKE :query OR
+    (cstu.first_name || ' ' || cstu.last_name) ILIKE :query
+  )`);
+
     queryParams.query = `%${q}%`;
   }
 
@@ -236,13 +267,25 @@ const get = async (req) => {
         CONCAT(pnusr.first_name, ' ', COALESCE(pnusr.last_name, '')) as punch_by_username,
         CONCAT(cstu.first_name, ' ', COALESCE(cstu.last_name, '')) as customer_name,
         cstu.mobile_number as customer_phone,
-        tcn.technician_name as assigned_technician
+        tcn.technician_name as assigned_technician,
+        cst.state, cst.city,
+        parts_data.parts
     FROM ${constants.models.TICKET_TABLE} tk
     LEFT JOIN ${constants.models.USER_TABLE} cstu ON cstu.id = tk.customer_id
+    LEFT JOIN ${constants.models.CUSTOMER_TABLE} cst ON cst.user_id = cstu.id
+    LEFT JOIN ${constants.models.CUSTOMER_DEALERS_TABLE} cstdlr ON cstdlr.customer_id = cst.id
+    LEFT JOIN ${constants.models.DEALER_TABLE} dlr ON dlr.id = cstdlr.dealer_id
     LEFT JOIN ${constants.models.USER_TABLE} pnusr ON pnusr.id = tk.punch_by_id
     LEFT JOIN ${constants.models.TECHNICIAN_TABLE} tcn ON tk.assigned_technician = tcn.id
     LEFT JOIN ${constants.models.USER_TABLE} creusr ON creusr.id = tk.assigned_cre
     LEFT JOIN ${constants.models.USER_TABLE} mgusr ON mgusr.id = tk.assigned_manager
+    LEFT JOIN LATERAL (
+      SELECT json_agg(prt) AS parts
+      FROM ${constants.models.PART_TABLE} prt
+      WHERE prt.id IN (
+        SELECT jsonb_array_elements_text(tk.part_ids)::uuid
+      )
+    ) parts_data ON TRUE
     ${whereClause}
     ORDER BY tk.created_at DESC
     LIMIT :limit OFFSET :offset
@@ -253,10 +296,20 @@ const get = async (req) => {
         COUNT(tk.id) OVER()::integer as total
       FROM ${constants.models.TICKET_TABLE} tk
     LEFT JOIN ${constants.models.USER_TABLE} cstu ON cstu.id = tk.customer_id
+    LEFT JOIN ${constants.models.CUSTOMER_TABLE} cst ON cst.user_id = cstu.id
+    LEFT JOIN ${constants.models.CUSTOMER_DEALERS_TABLE} cstdlr ON cstdlr.customer_id = cst.id
+    LEFT JOIN ${constants.models.DEALER_TABLE} dlr ON dlr.id = cstdlr.dealer_id
     LEFT JOIN ${constants.models.USER_TABLE} pnusr ON pnusr.id = tk.punch_by_id
     LEFT JOIN ${constants.models.TECHNICIAN_TABLE} tcn ON tk.assigned_technician = tcn.id
     LEFT JOIN ${constants.models.USER_TABLE} creusr ON creusr.id = tk.assigned_cre
     LEFT JOIN ${constants.models.USER_TABLE} mgusr ON mgusr.id = tk.assigned_manager
+    LEFT JOIN LATERAL (
+      SELECT json_agg(prt) AS parts
+      FROM ${constants.models.PART_TABLE} prt
+      WHERE prt.id IN (
+        SELECT jsonb_array_elements_text(tk.part_ids)::uuid
+      )
+    ) parts_data ON TRUE
       ${whereClause}
     `;
 
@@ -304,18 +357,36 @@ const getLastCREAssignedTicket = async () => {
     raw: true,
   });
 };
-
 const getTicketDetailsById = async (req, id) => {
   const query = `
   SELECT
       tk.*,
       pnchusr.first_name as punch_user_first_name, pnchusr.last_name as punch_user_last_name, pnchusr.mobile_number as punch_user_phone,
       cstu.first_name as customer_first_name, cstu.last_name as customer_last_name, cstu.mobile_number as customer_phone,
-      tcn.technician_name as assigned_technician_name, tcn.technician_phone as assigned_technician_phone
+      tcn.technician_name as assigned_technician_name, tcn.technician_phone as assigned_technician_phone,
+      cst.state, cst.city, cst.address,
+      dlrusr.first_name as dealership_first_name,
+      dlrusr.last_name as dealership_last_name,
+      dlrusr.mobile_number as dealership_phone,
+      dlr.location as dealership_location,
+      dlr.state as dealership_state,
+      dlr.city as dealership_city,
+      parts_data.parts
     FROM ${constants.models.TICKET_TABLE} tk
     LEFT JOIN ${constants.models.USER_TABLE} cstu ON cstu.id = tk.customer_id
+    LEFT JOIN ${constants.models.CUSTOMER_TABLE} cst ON cst.user_id = cstu.id
+    LEFT JOIN ${constants.models.CUSTOMER_DEALERS_TABLE} cstdlr ON cstdlr.customer_id = cst.id
+    LEFT JOIN ${constants.models.DEALER_TABLE} dlr ON dlr.id = cstdlr.dealer_id
+    LEFT JOIN ${constants.models.USER_TABLE} dlrusr ON dlrusr.id = dlr.user_id
     LEFT JOIN ${constants.models.USER_TABLE} pnchusr ON pnchusr.id = tk.punch_by_id
     LEFT JOIN ${constants.models.TECHNICIAN_TABLE} tcn ON tk.assigned_technician = tcn.id
+    LEFT JOIN LATERAL (
+      SELECT json_agg(prt) AS parts
+      FROM ${constants.models.PART_TABLE} prt
+      WHERE prt.id IN (
+        SELECT jsonb_array_elements_text(tk.part_ids)::uuid
+      )
+    ) parts_data ON TRUE
     WHERE tk.id = :id
   `;
 

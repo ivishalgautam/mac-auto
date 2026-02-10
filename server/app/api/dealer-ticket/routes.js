@@ -19,6 +19,7 @@ export default async function routes(fastify, options) {
           "images_urls",
           "job_card_urls",
           "expected_closure_date",
+          "videos_urls",
         ]),
     },
     controller.update

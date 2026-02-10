@@ -62,18 +62,50 @@ const baseFields = {
 export const userSchema = z
   .object({
     ...baseFields,
-    username: z.string().optional(),
-    dealer_code: z.string().optional(),
-    password: z.string().optional(),
-    confirm_password: z.string().optional(),
-    location: z.string().optional(),
-    address: z.string().optional(),
+    username: z.string().optional().nullable(),
+    dealer_code: z.string().optional().nullable(),
+    password: z.string().optional().nullable(),
+    confirm_password: z.string().optional().nullable(),
+    location: z.string().optional().nullable(),
+    state: z.string().optional().nullable(),
+    city: z.string().optional().nullable(),
+    address: z.string().optional().nullable(),
   })
   .superRefine((data, ctx) => {
     // Dealer rules
     if (data.role === "dealer") {
       const parsed = dealerFields.safeParse(data);
       if (!parsed.success) parsed.error.issues.forEach((i) => ctx.addIssue(i));
+    }
+    if (data.role === "dealer" && !data.state?.trim()) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Dealer state is required",
+        path: ["state"],
+      });
+    }
+    if (data.role === "dealer" && !data.city?.trim()) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Dealer city is required",
+        path: ["city"],
+      });
+    }
+
+    // customer rules
+    if (data.role === "customer" && !data.state?.trim()) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Customer state is required",
+        path: ["state"],
+      });
+    }
+    if (data.role === "customer" && !data.city?.trim()) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Customer city is required",
+        path: ["city"],
+      });
     }
     if (data.role === "customer" && !data.address?.trim()) {
       ctx.addIssue({

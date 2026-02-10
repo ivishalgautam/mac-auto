@@ -30,6 +30,9 @@ const create = async (req, res) => {
         {
           user_id: user.id,
           location: validateData.location,
+          address: validateData.address,
+          state: validateData.state,
+          city: validateData.city,
           dealer_code: req.body.dealer_code,
           aadhaar: req.body.aadhaar,
           pan: req.body.pan,
@@ -41,8 +44,14 @@ const create = async (req, res) => {
 
     if (validateData.role === "customer") {
       const customer = await table.CustomerModel.create(
+        {
+          body: {
+            state: validateData.state,
+            city: validateData.city,
+            address: validateData.address,
+          },
+        },
         user.id,
-        validateData.address,
         transaction
       );
       if (role === "dealer") {
@@ -78,14 +87,21 @@ const update = async (req, res) => {
   try {
     const record = await table.UserModel.getById(req);
     if (!record) {
-      return res.code(404).send({ message: "User not exists" });
+      await cleanupFiles(req.filePaths);
+      return res.code(404).send({ status: false, message: "User not exists" });
     }
-    const user = await table.UserModel.update(req, 0, transaction);
+    const user = await table.UserModel.update(req, record.id, transaction);
+    if (!user) {
+      await cleanupFiles(req.filePaths);
+      return res.code(404).send({ status: false, message: "User not exists" });
+    }
 
     const documentsToDelete = [];
     if (user.role === "dealer") {
+      const dealerRecord = await table.DealerModel.getByUserId(record.id);
+
       // Aadhaar
-      const existingAadhaarDocs = record.aadhaar;
+      const existingAadhaarDocs = dealerRecord.aadhaar;
       const updatedAadhaarDocs = req.body.aadhaar_urls;
       if (updatedAadhaarDocs) {
         req.body.aadhaar = [
@@ -98,7 +114,7 @@ const update = async (req, res) => {
       }
 
       // PAN
-      const existingPanDocs = record.pan;
+      const existingPanDocs = dealerRecord.pan;
       const updatedPanDocs = req.body.pan_urls;
       if (updatedPanDocs) {
         req.body.pan = [...(req.body?.pan ?? []), ...updatedPanDocs];
@@ -108,7 +124,7 @@ const update = async (req, res) => {
       }
 
       // GST
-      const existingGstDocs = record.gst;
+      const existingGstDocs = dealerRecord.gst;
       const updatedGstDocs = req.body.gst_urls;
       if (updatedGstDocs) {
         req.body.gst = [...(req.body?.gst ?? []), ...updatedGstDocs];
@@ -118,15 +134,24 @@ const update = async (req, res) => {
       }
 
       const location = req.body.location;
+      const state = req.body.state;
+      const city = req.body.city;
       const data = await table.DealerModel.updateByUser(
-        { body: { location, ...req.body } },
-        user.id
+        { body: { location, state, city, ...req.body } },
+        user.id,
+        transaction
       );
     }
 
     if (user.role === "customer") {
-      await table.CustomerModel.updateAddress(
-        req.body.address,
+      await table.CustomerModel.update(
+        {
+          body: {
+            state: req.body.state,
+            city: req.body.city,
+            address: req.body.address,
+          },
+        },
         user.id,
         transaction
       );

@@ -28,6 +28,8 @@ import invoiceModel from "./models/invoice.model.js";
 import orderModel from "./models/order.model.js";
 import orderItemModel from "./models/order-item.model.js";
 import orderStatusModel from "./models/order-status.model.js";
+import partModel from "./models/part.model.js";
+import ticketUpdateModel from "./models/ticket-update.model.js";
 
 export default {
   UserModel: userModel,
@@ -60,4 +62,6 @@ export default {
   OrderModel: orderModel,
   OrderItemModel: orderItemModel,
   OrderStatusModel: orderStatusModel,
+  PartModel: partModel,
+  TicketUpdateModel: ticketUpdateModel,
 };

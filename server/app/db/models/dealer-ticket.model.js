@@ -76,6 +76,10 @@ const init = async (sequelize) => {
         type: DataTypes.JSONB,
         defaultValue: [],
       },
+      videos: {
+        type: DataTypes.JSONB,
+        defaultValue: [],
+      },
     },
     {
       createdAt: "created_at",
@@ -118,6 +122,7 @@ const create = async (req) => {
     assigned_manager: req.body.assigned_manager,
     job_card: req.body.job_card,
     images: req.body.images,
+    videos: req.body.videos,
   });
 };
 
@@ -135,6 +140,7 @@ const update = async (req, id, transaction) => {
       assigned_manager: req.body.assigned_manager,
       job_card: req.body.job_card,
       images: req.body.images,
+      videos: req.body.videos,
     },
     options
   );
@@ -168,9 +174,16 @@ const get = async (req) => {
     queryParams.status = `{${status.join(",")}}`;
   }
 
-  let q = req.query.q;
+  let q = req.query.q?.trim();
+
   if (q) {
-    whereConditions.push(`(tk.ticket_number ILIKE :query)`);
+    whereConditions.push(`(
+      tk.ticket_number ILIKE :query OR
+
+      usr.first_name ILIKE :query OR
+      usr.last_name ILIKE :query OR
+      (usr.first_name || ' ' || usr.last_name) ILIKE :query
+    )`);
     queryParams.query = `%${q}%`;
   }
 
@@ -198,7 +211,8 @@ const get = async (req) => {
     SELECT
         tk.*,
         CONCAT(usr.first_name, ' ', COALESCE(usr.last_name, ''), ' (', dl.location, ')') as dealership_name,
-        usr.mobile_number as dealership_phone
+        usr.mobile_number as dealership_phone,
+        dl.state, dl.city
       FROM ${constants.models.DEALER_TICKET_TABLE} tk
       LEFT JOIN ${constants.models.DEALER_TABLE} dl ON dl.id = tk.dealer_id
       LEFT JOIN ${constants.models.USER_TABLE} usr ON usr.id = dl.user_id

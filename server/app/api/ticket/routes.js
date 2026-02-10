@@ -7,7 +7,7 @@ export default async function routes(fastify, options) {
     "/",
     {
       preHandler: (req, res) =>
-        multipartPreHandler(req, res, ["expected_closure_date", "parts"]),
+        multipartPreHandler(req, res, ["expected_closure_date", "part_ids"]),
     },
     controller.create
   );
@@ -17,8 +17,9 @@ export default async function routes(fastify, options) {
       preHandler: (req, res) =>
         multipartPreHandler(req, res, [
           "expected_closure_date",
-          "parts",
+          "part_ids",
           "images_urls",
+          "videos_urls",
         ]),
     },
     controller.update
