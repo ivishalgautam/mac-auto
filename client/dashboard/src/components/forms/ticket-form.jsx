@@ -2,7 +2,13 @@
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AlertCircle, EyeIcon, LoaderCircleIcon, XIcon } from "lucide-react";
+import {
+  AlertCircle,
+  ExternalLink,
+  EyeIcon,
+  LoaderCircleIcon,
+  XIcon,
+} from "lucide-react";
 import { Controller, FormProvider, useForm } from "react-hook-form";
 import { cn } from "@/lib/utils";
 import { Alert, AlertDescription } from "../ui/alert";
@@ -34,6 +40,10 @@ import { DatePicker } from "../ui/date-picker";
 import TagInput from "../tag-input";
 import TechnicianSelect from "@/features/technician-select";
 import UserSelect from "@/features/user-select";
+import { Input } from "../ui/input";
+import { ROLES } from "@/data/routes";
+import CustomMultiSelect from "../custom-multi-select";
+import { useFormattedParts } from "@/mutations/use-parts";
 
 const defaultValues = {
   images: [],
@@ -41,6 +51,7 @@ const defaultValues = {
   assigned_technician: null,
   assigned_manager: null,
   parts: [],
+  part_ids: [],
 };
 
 const schemaByRole = {
@@ -54,9 +65,11 @@ export default function TicketForm({ id, type }) {
   const router = useRouter();
   const [files, setFiles] = useState({
     images: [],
+    videos: [],
   });
   const [fileUrls, setFileUrls] = useState({
     images_urls: [],
+    videos_urls: [],
   });
   const methods = useForm({
     resolver: zodResolver(schemaByRole[user?.role] ?? ticketSchema),
@@ -72,7 +85,6 @@ export default function TicketForm({ id, type }) {
     watch,
   } = methods;
   const isPartsRelated = watch("complaint_type") === "Spare Parts Related";
-
   const createMutation = useCreateTicket(() => {
     reset();
     router.push("/tickets?page=1&limit=10");
@@ -81,11 +93,21 @@ export default function TicketForm({ id, type }) {
     reset();
     router.push("/tickets?page=1&limit=10");
   });
+  const {
+    data: parts,
+    isLoading: isPartsLoading,
+    isError: isPartsError,
+    error: partsError,
+  } = useFormattedParts(id);
+
   const { data, isLoading, isError, error } = useGetTicket(id);
   const onSubmit = (data) => {
     const formData = new FormData();
     files.images?.forEach((file) => {
       formData.append("images", file);
+    });
+    files.videos?.forEach((file) => {
+      formData.append("videos", file);
     });
 
     Object.entries(data).forEach(([key, value]) => {
@@ -112,14 +134,18 @@ export default function TicketForm({ id, type }) {
     (type === "edit" && updateMutation.isPending);
 
   useEffect(() => {
-    if (["edit", "view"].includes(type) && data) {
+    if (["edit", "view"].includes(type) && data && parts) {
       setFileUrls((prev) => ({
         ...prev,
         images_urls: data.images,
+        videos_urls: data.videos,
       }));
-      reset({ ...data });
+      reset({
+        ...data,
+        part_ids: parts?.filter((p) => data.part_ids.includes(p.value)),
+      });
     }
-  }, [data, type, reset]);
+  }, [data, type, reset, parts]);
 
   const handleImagesChange = useCallback((data) => {
     setFiles((prev) => ({ ...prev, images: data }));
@@ -196,6 +222,51 @@ export default function TicketForm({ id, type }) {
             </div>
           </div>
 
+          {/* Videos */}
+          <div className="col-span-full space-y-4">
+            <Label>Videos</Label>
+            <Input
+              type="file"
+              multiple
+              onChange={(e) =>
+                setFiles((prev) => ({
+                  ...prev,
+                  videos: Array.from(e.target.files),
+                }))
+              }
+              accept="video/*"
+            />
+            <div className="flex flex-wrap items-center justify-start gap-2">
+              {fileUrls?.videos_urls?.map((file, index) => (
+                <div
+                  key={index}
+                  className="hover:bg-muted/50 relative flex items-center justify-between rounded-lg border px-3 py-2 text-sm"
+                >
+                  <a href={`${config.file_base}/${file}`} target="_blank">
+                    <div className="flex min-w-0 flex-1 items-center gap-2">
+                      <ExternalLink className="h-4 w-4" />
+                      <span className="truncate">{file.split("\\").pop()}</span>
+                    </div>
+                  </a>
+                  <Button
+                    onClick={() =>
+                      setFileUrls((prev) => ({
+                        ...prev,
+                        videos_urls: prev.videos_urls.filter((i) => i !== file),
+                      }))
+                    }
+                    size="icon"
+                    className="border-background focus-visible:border-background absolute -top-2 -right-2 size-6 rounded-full border-2 shadow-none"
+                    aria-label="Remove image"
+                    type="button"
+                  >
+                    <XIcon className="size-3.5" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </div>
+
           {/* customer_id */}
           {user && user.role !== "customer" && type === "create" && (
             <div className="space-y-2">
@@ -244,6 +315,38 @@ export default function TicketForm({ id, type }) {
             </div>
           )}
 
+          {/* warranty detail */}
+          <div className="space-y-2">
+            <Label htmlFor="complaint_type">Warranty *</Label>
+            <Controller
+              name="warranty_detail"
+              control={control}
+              render={({ field }) => (
+                <CustomSelect
+                  onChange={field.onChange}
+                  value={field.value}
+                  placeholder="Select warranty"
+                  className={cn({
+                    "border border-red-500 dark:border-red-500":
+                      errors.warranty_detail,
+                  })}
+                  disabled={type === "view"}
+                  key={"warranty_detail"}
+                  options={[
+                    {
+                      value: "Under warranty",
+                      label: "Under warranty",
+                    },
+                    {
+                      value: "Not in warranty",
+                      label: "Not in warranty",
+                    },
+                  ]}
+                />
+              )}
+            />
+          </div>
+
           {/* complaint type */}
           <div className="space-y-2">
             <Label htmlFor="complaint_type">Complaint type *</Label>
@@ -269,15 +372,29 @@ export default function TicketForm({ id, type }) {
 
           {/* message */}
           <div className="col-span-full space-y-2">
-            <Label htmlFor="message">Message *</Label>
+            <Label htmlFor="message">Customer observation *</Label>
             <Textarea
               id="message"
               {...register("message")}
               className={cn({ "border-red-500": errors.message })}
-              placeholder="Enter message"
+              placeholder="Enter observation"
               disabled={type === "view"}
             />
           </div>
+
+          {/* mac message */}
+          {["admin", "cre", "manager"].includes(user?.role) && (
+            <div className="col-span-full space-y-2">
+              <Label htmlFor="mac_message">Mac observation *</Label>
+              <Textarea
+                id="mac_message"
+                {...register("mac_message")}
+                className={cn({ "border-red-500": errors.mac_message })}
+                placeholder="Enter observation"
+                disabled={type === "view"}
+              />
+            </div>
+          )}
 
           {/* expected closure date */}
           {["admin", "cre", "manager"].includes(user?.role) && (
@@ -318,7 +435,7 @@ export default function TicketForm({ id, type }) {
           )}
 
           {/* assigned technician */}
-          {["manager"].includes(user?.role) && (
+          {[ROLES.ADMIN, ROLES.MANAGER, ROLES.DEALER].includes(user?.role) && (
             <div className="space-y-2">
               <Label htmlFor="assigned_technician">Technician</Label>
               <Controller
@@ -336,24 +453,33 @@ export default function TicketForm({ id, type }) {
 
           {/* parts */}
           {isPartsRelated && (
-            <div className="col-span-full space-y-1">
-              <Label className="block text-sm font-medium">Parts</Label>
-              <Controller
-                name="parts"
-                control={control}
-                render={({ field }) => (
-                  <TagInput
-                    value={field.value ?? []}
-                    onChange={field.onChange}
-                    placeholder="Add a tag"
-                    inlineTags={true}
-                    inputFieldPosition="top"
-
-                    // activeIndex, setActiveIndex
-                  />
-                )}
-              />
-            </div>
+            <>
+              {/* Parts */}
+              <div className="col-span-full space-y-2">
+                <Label htmlFor="part_ids">Parts *</Label>
+                <Controller
+                  name="part_ids"
+                  control={control}
+                  render={({ field }) => (
+                    <CustomMultiSelect
+                      onChange={field.onChange}
+                      value={field.value}
+                      placeholder="Select parts"
+                      className={cn({
+                        "border border-red-500 dark:border-red-500":
+                          errors.part_ids,
+                      })}
+                      disabled={type === "view"}
+                      key={"part_ids"}
+                      options={parts}
+                      isLoading={isPartsLoading}
+                      isError={isPartsError}
+                      error={partsError}
+                    />
+                  )}
+                />
+              </div>
+            </>
           )}
         </div>
 

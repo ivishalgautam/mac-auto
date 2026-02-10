@@ -33,17 +33,17 @@ const defaultValues = {
   //   variant: "",
   //   colour: "",
   vehicle_price_breakups: [
-    {
-      model: "",
-      base_price_ex_showroom: "",
-      gst: 5,
-      insurance: "",
-      rto_registration_charges: "",
-      accessories_fitments: "",
-      total_ex_showroom_price: "",
-      discount: "",
-      on_road_price: "",
-    },
+    // {
+    //   model: "",
+    //   base_price_ex_showroom: "",
+    //   gst: 5,
+    //   insurance: "",
+    //   rto_registration_charges: "",
+    //   accessories_fitments: "",
+    //   total_ex_showroom_price: "",
+    //   discount: "",
+    //   on_road_price: "",
+    // },
   ],
 };
 
@@ -68,6 +68,7 @@ const createSchema = z.object({
   date: z.union([z.date(), z.null()]).default(null),
   vehicle_price_breakups: z.array(
     z.object({
+      quantity: z.coerce.number().min(1, { message: "Quantity is required." }),
       model: z.string().optional(),
       base_price_ex_showroom: z.string().default(0),
       gst: z.coerce.number().default(0),
@@ -103,14 +104,12 @@ export default function QuotationForm({
     resolver: zodResolver(createSchema),
     defaultValues: { ...defaultValues, enquiry_id: enquiryId ?? null },
   });
-
   const selectedVehicles = watch("vehicle_ids");
 
   const watchPriceBreakUps = useWatch({
     control,
     name: "vehicle_price_breakups",
   });
-
   const { fields: priceBreakUps } = useFieldArray({
     name: "vehicle_price_breakups",
     control,
@@ -161,6 +160,8 @@ export default function QuotationForm({
     if (!watchPriceBreakUps) return;
 
     watchPriceBreakUps.forEach((pb, ind) => {
+      const qty = parseFloat(pb.quantity) || 1;
+
       const bp = parseFloat(pb.base_price_ex_showroom) || 0;
       const gstPercent = parseFloat(pb.gst) || 0;
       const ins = parseFloat(pb.insurance) || 0;
@@ -168,9 +169,16 @@ export default function QuotationForm({
       const acc = parseFloat(pb.accessories_fitments) || 0;
       const disc = parseFloat(pb.discount) || 0;
 
-      const gstValue = (bp * gstPercent) / 100;
-      const totalExShowroom = bp + gstValue + ins + rtoVal + acc;
-      const onRoad = totalExShowroom - disc;
+      // Per unit calculations
+      const gstValuePerUnit = (bp * gstPercent) / 100;
+
+      const totalExShowroomPerUnit = bp + gstValuePerUnit + ins + rtoVal + acc;
+
+      const onRoadPerUnit = totalExShowroomPerUnit - disc;
+
+      // Multiply by quantity
+      const totalExShowroom = totalExShowroomPerUnit * qty;
+      const onRoad = onRoadPerUnit * qty;
 
       if (pb.total_ex_showroom_price !== totalExShowroom.toFixed(2)) {
         setValue(
@@ -188,7 +196,7 @@ export default function QuotationForm({
         );
       }
     });
-  }, [watchPriceBreakUps]);
+  }, [watchPriceBreakUps, setValue]);
 
   useEffect(() => {
     if (type === "create" && vehiclesData && selectedVehicles) {
@@ -198,6 +206,7 @@ export default function QuotationForm({
 
       const mapped = filteredVehicles.map((v) => ({
         model: v.title,
+        quantity: 1,
         base_price_ex_showroom: v.base_price,
       }));
 
@@ -249,43 +258,8 @@ export default function QuotationForm({
       </div> */}
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {/* Customer Name */}
-        {/* <div className="space-y-2">
-          <Label htmlFor="customer_name">Customer Name</Label>
-          <Input id="customer_name" {...register("customer_name")} />
-          {errors.customer_name && (
-            <p className="text-destructive text-sm">
-              {errors.customer_name.message}
-            </p>
-          )}
-        </div> */}
-
-        {/* Mobile No */}
-        {/* <div className="space-y-2">
-          <Label htmlFor="mobile_no">Mobile No</Label>
-          <Controller
-            control={control}
-            name="mobile_no"
-            render={({ field }) => (
-              <PhoneSelect
-                value={field.value}
-                onChange={field.onChange}
-                placeholder="Enter mobile number"
-                className={cn({
-                  "border border-red-500": errors.mobile_no,
-                })}
-              />
-            )}
-          />
-          {errors.mobile_no && (
-            <p className="text-destructive text-sm">
-              {errors.mobile_no.message}
-            </p>
-          )}
-        </div> */}
-
         {/* customer */}
-        <div className="space-y-2">
+        <div>
           <Label>Customer *</Label>
           <Controller
             name="customer_id"
@@ -301,10 +275,16 @@ export default function QuotationForm({
               />
             )}
           />
+
+          {errors.customer_id && (
+            <span className="text-destructive text-sm">
+              {errors.customer_id.message}
+            </span>
+          )}
         </div>
 
         {/* Date */}
-        <div className="space-y-2">
+        <div>
           <Label htmlFor="date">Date</Label>
           <Controller
             name="date"
@@ -357,7 +337,7 @@ export default function QuotationForm({
         </div>
 
         {/* Variant */}
-        {/* <div className="space-y-2">
+        {/* <div >
               <Label htmlFor="vehicle_variant_map_id">Variant</Label>
               <Controller
                 name="vehicle_variant_map_id"
@@ -380,7 +360,7 @@ export default function QuotationForm({
             </div> */}
 
         {/* Colour */}
-        {/* <div className="space-y-2">
+        {/* <div >
               <Label htmlFor="vehicle_color_id">Colour</Label>
               <Controller
                 name="vehicle_color_id"
@@ -413,6 +393,21 @@ export default function QuotationForm({
                     {priceBreakUps?.[ind]?.model ?? "-"}
                   </H5>
                   <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                    <div>
+                      <Label>Quantity</Label>
+                      <Input
+                        type="number"
+                        {...register(`vehicle_price_breakups.${ind}.quantity`)}
+                      />
+                      {errors?.vehicle_price_breakups?.[ind]?.quantity && (
+                        <p className="text-destructive text-sm">
+                          {
+                            errors?.vehicle_price_breakups?.[ind]?.quantity
+                              .message
+                          }
+                        </p>
+                      )}
+                    </div>
                     <div>
                       <Label>Base Price</Label>
                       <Input

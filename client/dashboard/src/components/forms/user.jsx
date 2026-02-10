@@ -36,6 +36,8 @@ import config from "@/config";
 import { useAuth } from "@/providers/auth-provider";
 import { ROLES } from "@/data/routes";
 import { Textarea } from "../ui/textarea";
+import * as csc from "country-state-city";
+import CustomCommandMenu from "../custom-command-menu";
 
 export default function UserForm({ id, type, role = "" }) {
   const { user } = useAuth();
@@ -62,6 +64,8 @@ export default function UserForm({ id, type, role = "" }) {
     reset,
     watch,
     setError,
+    getValues,
+    resetField,
   } = useForm({
     resolver: zodResolver(
       type === "create" ? userFormSchema : userUpdateSchema,
@@ -76,6 +80,8 @@ export default function UserForm({ id, type, role = "" }) {
       role: role,
     },
   });
+  const states = csc.State.getStatesOfCountry("IN");
+
   const router = useRouter();
 
   const selectedRole = watch("role");
@@ -96,6 +102,8 @@ export default function UserForm({ id, type, role = "" }) {
   const { data, isLoading, isError, error } = useGetUser(id);
 
   const onSubmit = (data) => {
+    data.state = states.find((s) => s.isoCode === data.state)?.name;
+
     if (selectedRole === "dealer") {
       let isFileError = false;
       if (!fileUrls?.aadhaar_urls?.length && !files.aadhaar.length) {
@@ -167,6 +175,8 @@ export default function UserForm({ id, type, role = "" }) {
         username: data.username || "",
         location: data.location || "",
         dealer_code: data.dealer_code || "",
+        state: states.find((s) => s.name === data.state)?.isoCode || "",
+        city: data.city || "",
         address: data.address || "",
       });
     }
@@ -493,6 +503,67 @@ export default function UserForm({ id, type, role = "" }) {
                 </div>
               </div>
             )}
+          </>
+        )}
+
+        {[ROLES.CUSTOMER, ROLES.DEALER].includes(selectedRole) && (
+          <>
+            {/* state */}
+            <div>
+              <Label>State *</Label>
+              <Controller
+                name={`state`}
+                control={control}
+                render={({ field }) => {
+                  return (
+                    <CustomCommandMenu
+                      onChange={(value) => {
+                        field.onChange(value);
+                        resetField(`city`);
+                      }}
+                      value={field.value}
+                      placeholder="Select state"
+                      data={
+                        states?.map((c) => ({
+                          value: c.isoCode,
+                          label: c.name,
+                        })) ?? []
+                      }
+                      disabled={type === "view"}
+                    />
+                  );
+                }}
+              />
+            </div>
+
+            {/* city */}
+            <div>
+              <Label>City *</Label>
+              <Controller
+                name={`city`}
+                control={control}
+                render={({ field }) => {
+                  const state = getValues(`state`);
+                  const cities = csc.City.getCitiesOfState("IN", state);
+                  return (
+                    <CustomCommandMenu
+                      onChange={(value) => {
+                        field.onChange(value);
+                      }}
+                      value={field.value}
+                      placeholder="Select country"
+                      data={
+                        cities?.map((c) => ({
+                          value: c.name,
+                          label: c.name,
+                        })) ?? []
+                      }
+                      disabled={type === "view"}
+                    />
+                  );
+                }}
+              />
+            </div>
           </>
         )}
 

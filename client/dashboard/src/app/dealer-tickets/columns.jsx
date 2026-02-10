@@ -29,7 +29,15 @@ export const columns = (updateMutation, setId, openModal, user) =>
       header: "Ticket",
       cell: ({ row }) => {
         const ticketNumber = row.getValue("ticket_number");
-        return <Badge className="capitalize">{ticketNumber}</Badge>;
+        const id = row.original.id;
+        return (
+          <Link
+            href={`/dealer-tickets/${id}/view`}
+            className="hover:text-primary capitalize underline"
+          >
+            {ticketNumber}
+          </Link>
+        );
       },
     },
     ["admin", "cre"].includes(user?.role) && {
@@ -51,6 +59,14 @@ export const columns = (updateMutation, setId, openModal, user) =>
           </div>
         );
       },
+    },
+    {
+      accessorKey: "state",
+      header: "State",
+    },
+    {
+      accessorKey: "city",
+      header: "City",
     },
     ["admin"].includes(user?.role) && {
       accessorKey: "status",
@@ -136,6 +152,12 @@ export const columns = (updateMutation, setId, openModal, user) =>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem>
+                <Link href={`/dealer-tickets/${id}/updates`}>
+                  Ticket updates
+                </Link>
+              </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem>
                 <Link href={`/dealer-tickets/${id}/view`}>View</Link>

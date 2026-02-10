@@ -35,8 +35,17 @@ export const columns = (
       accessorKey: "ticket_number",
       header: "Ticket",
       cell: ({ row }) => {
+        const id = row.original.id;
+
         const ticketNumber = row.getValue("ticket_number");
-        return <div className="capitalize">{ticketNumber}</div>;
+        return (
+          <Link
+            className="hover:text-primary capitalize underline"
+            href={`/tickets/${id}/view`}
+          >
+            {ticketNumber}
+          </Link>
+        );
       },
     },
     {
@@ -46,6 +55,14 @@ export const columns = (
         const name = row.getValue("customer_name");
         return <div className="capitalize">{name}</div>;
       },
+    },
+    {
+      accessorKey: "state",
+      header: "State",
+    },
+    {
+      accessorKey: "city",
+      header: "City",
     },
     {
       accessorKey: "customer_phone",
@@ -139,9 +156,9 @@ export const columns = (
             {row.getValue("complaint_type")}
             {isSparePartsComplaint && (
               <div className="flew-wrap flex gap-1">
-                {row.original.parts.map((p) => (
-                  <Badge key={p.text} variant={"outline"}>
-                    {p.text}
+                {row.original.parts.map((p, ind) => (
+                  <Badge key={ind} variant={"outline"}>
+                    {p.part_name ?? p.text}
                   </Badge>
                 ))}
               </div>
@@ -149,6 +166,10 @@ export const columns = (
           </div>
         );
       },
+    },
+    {
+      accessorKey: "warranty_detail",
+      header: "Warranty detail",
     },
     {
       accessorKey: "created_at",
@@ -207,6 +228,10 @@ export const columns = (
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem>
+                <Link href={`/tickets/${id}/updates`}>Ticket updates</Link>
+              </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem>
                 <Link href={`/tickets/${id}/view`}>View</Link>

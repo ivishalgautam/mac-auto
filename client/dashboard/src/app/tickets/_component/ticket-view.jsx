@@ -33,6 +33,7 @@ import {
 import { ticketStatus } from "./table-actions";
 import { useAuth } from "@/providers/auth-provider";
 import { Muted } from "@/components/ui/typography";
+import TicketUpdates from "../../../components/ticket-updates";
 
 const formatDate = (dateString) => {
   return new Date(dateString).toLocaleDateString("en-US", {
@@ -93,13 +94,23 @@ export default function TicketView({ id }) {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div>
-            <h4 className="text-card-foreground mb-2 font-medium">
-              Description
-            </h4>
-            <p className="text-muted-foreground leading-relaxed">
-              {data.message}
-            </p>
+          <div className="grid grid-cols-2">
+            <div>
+              <h4 className="text-card-foreground mb-2 font-medium">
+                Customer observation
+              </h4>
+              <p className="text-muted-foreground leading-relaxed">
+                {data.message}
+              </p>
+            </div>
+            <div>
+              <h4 className="text-card-foreground mb-2 font-medium">
+                Mac observation
+              </h4>
+              <p className="text-muted-foreground leading-relaxed">
+                {data.mac_message}
+              </p>
+            </div>
           </div>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="flex items-center gap-2">
@@ -136,7 +147,7 @@ export default function TicketView({ id }) {
           <div className="flex flex-wrap space-y-2">
             {data.parts.map((part, index) => (
               <Badge key={index} variant={"outline"}>
-                {part.text}
+                {part.part_name ?? part.text}
               </Badge>
             ))}
           </div>
@@ -182,9 +193,23 @@ export default function TicketView({ id }) {
                 {data.customer_first_name} {data.customer_last_name || ""}
               </h4>
             </div>
+
             <div className="flex items-center gap-2">
-              <Phone className="text-muted-foreground h-4 w-4" />
+              <Muted>Phone:</Muted>
               <span className="text-sm">{data.customer_phone}</span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Muted>State:</Muted>
+              <span className="text-sm">{data.state}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Muted>City:</Muted>
+              <span className="text-sm">{data.city}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Muted>Address:</Muted>
+              <span className="text-sm">{data.address}</span>
             </div>
           </CardContent>
         </Card>
@@ -203,10 +228,21 @@ export default function TicketView({ id }) {
                 {data.dealership_first_name} {data.dealership_last_name}
               </h4>
             </div>
+
             <div className="flex items-center gap-2">
               <Phone className="text-muted-foreground h-4 w-4" />
               <span className="text-sm">{data.dealership_phone}</span>
             </div>
+
+            <div className="flex items-center gap-2">
+              <Muted>State:</Muted>
+              <span className="text-sm">{data.dealership_state}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Muted>City:</Muted>
+              <span className="text-sm">{data.dealership_city}</span>
+            </div>
+
             <div className="flex items-center gap-2">
               <MapPin className="text-muted-foreground h-4 w-4" />
               <span className="text-sm">{data.dealership_location}</span>
@@ -281,6 +317,8 @@ export default function TicketView({ id }) {
           </Select>
         </div>
       )}
+
+      <TicketUpdates ticketId={id} />
     </div>
   );
 }

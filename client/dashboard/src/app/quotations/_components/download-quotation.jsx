@@ -329,6 +329,9 @@ export default function DownloadQuotation({ id }) {
                     backgroundColor: "#f3f4f6",
                     padding: "12px 16px",
                     borderBottom: "1px solid #e5e7eb",
+                    display: "flex",
+                    gap: "4px",
+                    alignItems: "center",
                   }}
                 >
                   <h3
@@ -341,6 +344,18 @@ export default function DownloadQuotation({ id }) {
                   >
                     Vehicle {index + 1}: {vehicle.model}
                   </h3>
+                  <span
+                    style={{
+                      border: "1px solid #222",
+                      color: "#000",
+                      borderRadius: "66px",
+                      paddingInline: "10px",
+                      paddingBlock: "1px",
+                      fontSize: "12px",
+                    }}
+                  >
+                    x{vehicle.quantity}
+                  </span>
                 </div>
 
                 {/* Price Table */}

@@ -57,6 +57,14 @@ export const columns = (updateMutation, setUserId, openModal) => [
     header: "Email",
   },
   {
+    accessorKey: "state",
+    header: "State",
+  },
+  {
+    accessorKey: "city",
+    header: "City",
+  },
+  {
     accessorKey: "is_active",
     header: ({ column }) => {
       return <Button variant="ghost">Status</Button>;

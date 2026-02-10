@@ -41,6 +41,14 @@ export const columns = (setCustomerId, openModal, setId) => [
     header: "Email",
   },
   {
+    accessorKey: "state",
+    header: "State",
+  },
+  {
+    accessorKey: "city",
+    header: "City",
+  },
+  {
     accessorKey: "dealership",
     header: "Dealership",
   },

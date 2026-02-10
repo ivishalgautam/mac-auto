@@ -13,23 +13,16 @@ import { H4, H5 } from "../ui/typography";
 import Loader from "../loader";
 import ErrorMessage from "../ui/error";
 import { useEffect, useMemo } from "react";
-import PhoneSelect from "../ui/phone-input";
 import { cn } from "@/lib/utils";
-import { useGetVehicles } from "@/mutations/vehicle-mutation";
 import moment from "moment";
 import CustomMultiSelect from "../custom-multi-select";
-import { Textarea } from "../ui/textarea";
 import {
   useCreateInvoice,
   useGetInvoice,
   useUpdateInvoice,
 } from "@/mutations/invoices-mutation";
 import CustomerSelect from "@/features/customer-select";
-import DealerVehicleColorSelect from "@/features/dealer-vehicle-color-select";
-import {
-  useGetDealerInventory,
-  useGetFormattedAvailableVehicles,
-} from "@/mutations/dealer-inventory.mutation";
+import { useGetFormattedAvailableVehicles } from "@/mutations/dealer-inventory.mutation";
 
 const defaultValues = {
   customer_name: "",
@@ -39,17 +32,17 @@ const defaultValues = {
   //   variant: "",
   //   colour: "",
   vehicle_price_breakups: [
-    {
-      model: "",
-      base_price_ex_showroom: "",
-      gst: 5,
-      insurance: "",
-      rto_registration_charges: "",
-      accessories_fitments: "",
-      total_ex_showroom_price: "",
-      discount: "",
-      on_road_price: "",
-    },
+    // {
+    //   model: "",
+    //   base_price_ex_showroom: "",
+    //   gst: 5,
+    //   insurance: "",
+    //   rto_registration_charges: "",
+    //   accessories_fitments: "",
+    //   total_ex_showroom_price: "",
+    //   discount: "",
+    //   on_road_price: "",
+    // },
   ],
 };
 

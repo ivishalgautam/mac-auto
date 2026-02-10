@@ -37,6 +37,8 @@ export const endpoints = {
   followUps: { getAll: "/follow-ups" },
   schemes: { getAll: "/schemes" },
   queries: { getAll: "/queries" },
+  parts: { getAll: "/parts" },
+  ticketUpdates: { getAll: "/ticket-updates" },
   vehicleEnquiries: { getAll: "/vehicle-enquiries" },
   financers: { getAll: "/financers" },
   tickets: { getAll: "/tickets" },

@@ -2,6 +2,7 @@ import { QuestionMarkCircledIcon } from "@radix-ui/react-icons";
 import {
   CarFront,
   CirclePercent,
+  Component,
   Handshake,
   LayoutDashboard,
   ScrollText,
@@ -496,6 +497,18 @@ export const sidebarData = [
         roles: [ROLES.ADMIN, ROLES.CRE, ROLES.MANAGER, ROLES.DEALER],
         isVisible: false,
       },
+      {
+        title: "Updates",
+        url: "/tickets/:id/updates",
+        roles: [
+          ROLES.ADMIN,
+          ROLES.CRE,
+          ROLES.MANAGER,
+          ROLES.DEALER,
+          ROLES.CUSTOMER,
+        ],
+        isVisible: false,
+      },
     ],
   },
   {
@@ -539,6 +552,45 @@ export const sidebarData = [
           ROLES.DEALER,
           ROLES.CUSTOMER,
         ],
+        isVisible: false,
+      },
+      {
+        title: "Updates",
+        url: "/tickets/:id/updates",
+        roles: [
+          ROLES.ADMIN,
+          ROLES.CRE,
+          ROLES.MANAGER,
+          ROLES.DEALER,
+          ROLES.CUSTOMER,
+        ],
+        isVisible: false,
+      },
+    ],
+  },
+  {
+    title: "Parts",
+    url: "/parts?page=1&limit=10",
+    icon: Component,
+    roles: [ROLES.ADMIN, ROLES.CRE, ROLES.MANAGER],
+    isVisible: true,
+    items: [
+      {
+        title: "Create",
+        url: "/parts/create",
+        roles: [ROLES.ADMIN, ROLES.CRE, ROLES.MANAGER],
+        isVisible: true,
+      },
+      {
+        title: "Edit",
+        url: "/parts/:id/edit",
+        roles: [ROLES.ADMIN, ROLES.CRE, ROLES.MANAGER],
+        isVisible: false,
+      },
+      {
+        title: "View",
+        url: "/parts/:id/view",
+        roles: [ROLES.ADMIN, ROLES.CRE, ROLES.MANAGER],
         isVisible: false,
       },
     ],

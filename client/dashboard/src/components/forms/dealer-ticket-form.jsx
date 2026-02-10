@@ -37,6 +37,7 @@ import config from "@/config";
 import { Input } from "../ui/input";
 import FileUpload from "../file-uploader";
 import Image from "next/image";
+import TicketUpdates from "../ticket-updates";
 
 const defaultValues = {
   assigned_technician: "",
@@ -49,10 +50,12 @@ export default function DealerTicketForm({ id, type }) {
   const [files, setFiles] = useState({
     job_card: [],
     images: [],
+    videos: [],
   });
   const [fileUrls, setFileUrls] = useState({
     job_card_urls: [],
     images_urls: [],
+    videos_urls: [],
   });
   const router = useRouter();
   const schema =
@@ -115,6 +118,7 @@ export default function DealerTicketForm({ id, type }) {
         ...prev,
         job_card_urls: data?.job_card ?? [],
         images_urls: data?.images ?? [],
+        videos_urls: data?.videos ?? [],
       }));
       reset({ ...data });
     }
@@ -129,43 +133,107 @@ export default function DealerTicketForm({ id, type }) {
     return <ErrorMessage error={error} />;
 
   return (
-    <FormProvider {...methods}>
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-        <div className="grid grid-cols-3 gap-4">
-          {/* images */}
-          <div className="col-span-full space-y-4">
-            <Label>Images</Label>
-            {["create", "edit"].includes(type) && (
-              <FileUpload
-                onFileChange={handleImagesChange}
-                inputName={"images"}
-                className={cn({ "border-red-500": errors.images })}
-                initialFiles={[]}
-                multiple={true}
-                maxFiles={50}
-              />
-            )}
+    <>
+      <FormProvider {...methods}>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+          <div className="grid grid-cols-3 gap-4">
+            {/* images */}
+            <div className="col-span-full space-y-4">
+              <Label>Images</Label>
+              {["create", "edit"].includes(type) && (
+                <FileUpload
+                  onFileChange={handleImagesChange}
+                  inputName={"images"}
+                  className={cn({ "border-red-500": errors.images })}
+                  initialFiles={[]}
+                  multiple={true}
+                  maxFiles={50}
+                />
+              )}
 
-            <div className="grid grid-cols-[repeat(auto-fill,minmax(100px,1fr))] gap-4">
-              {fileUrls.images_urls?.map((src, index) => (
-                <div
-                  className="bg-accent group relative aspect-square w-24 rounded-md"
-                  key={index}
-                >
-                  <Image
-                    src={`${config.file_base}/${src}`}
-                    width={200}
-                    height={200}
-                    className="size-full rounded-[inherit] object-cover"
-                    alt={`carousel-${index}`}
-                  />
-                  {type === "edit" && (
+              <div className="grid grid-cols-[repeat(auto-fill,minmax(100px,1fr))] gap-4">
+                {fileUrls.images_urls?.map((src, index) => (
+                  <div
+                    className="bg-accent group relative aspect-square w-24 rounded-md"
+                    key={index}
+                  >
+                    <Image
+                      src={`${config.file_base}/${src}`}
+                      width={200}
+                      height={200}
+                      className="size-full rounded-[inherit] object-cover"
+                      alt={`carousel-${index}`}
+                    />
+                    {type === "edit" && (
+                      <Button
+                        onClick={() =>
+                          setFileUrls((prev) => ({
+                            ...prev,
+                            images_urls: prev.images_urls.filter(
+                              (i) => i !== src,
+                            ),
+                          }))
+                        }
+                        size="icon"
+                        className="border-background focus-visible:border-background absolute -top-2 -right-2 size-6 rounded-full border-2 shadow-none"
+                        aria-label="Remove image"
+                        type="button"
+                      >
+                        <XIcon className="size-3.5" />
+                      </Button>
+                    )}
+
+                    <div className="absolute inset-0 flex items-center justify-center rounded-md bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
+                      <a
+                        target="_blank"
+                        className={buttonVariants({
+                          size: "icon",
+                          variant: "ghost",
+                        })}
+                        href={`${config.file_base}/${src}`}
+                      >
+                        <EyeIcon className="size-5 text-white" />
+                      </a>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Videos */}
+            <div className="col-span-full space-y-4">
+              <Label>Videos</Label>
+              <Input
+                type="file"
+                multiple
+                onChange={(e) =>
+                  setFiles((prev) => ({
+                    ...prev,
+                    videos: Array.from(e.target.files),
+                  }))
+                }
+                accept="video/*"
+              />
+              <div className="flex flex-wrap items-center justify-start gap-2">
+                {fileUrls?.videos_urls?.map((file, index) => (
+                  <div
+                    key={index}
+                    className="hover:bg-muted/50 relative flex items-center justify-between rounded-lg border px-3 py-2 text-sm"
+                  >
+                    <a href={`${config.file_base}/${file}`} target="_blank">
+                      <div className="flex min-w-0 flex-1 items-center gap-2">
+                        <ExternalLink className="h-4 w-4" />
+                        <span className="truncate">
+                          {file.split("\\").pop()}
+                        </span>
+                      </div>
+                    </a>
                     <Button
                       onClick={() =>
                         setFileUrls((prev) => ({
                           ...prev,
-                          images_urls: prev.images_urls.filter(
-                            (i) => i !== src,
+                          videos_urls: prev.videos_urls.filter(
+                            (i) => i !== file,
                           ),
                         }))
                       }
@@ -176,200 +244,190 @@ export default function DealerTicketForm({ id, type }) {
                     >
                       <XIcon className="size-3.5" />
                     </Button>
-                  )}
-
-                  <div className="absolute inset-0 flex items-center justify-center rounded-md bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
-                    <a
-                      target="_blank"
-                      className={buttonVariants({
-                        size: "icon",
-                        variant: "ghost",
-                      })}
-                      href={`${config.file_base}/${src}`}
-                    >
-                      <EyeIcon className="size-5 text-white" />
-                    </a>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
 
-          {/* dealer select */}
-          {user && ["admin", "cre"].includes(user?.role) && (
-            <div className="space-y-2">
-              <Label htmlFor="dealer_id">Dealer *</Label>
-              <Controller
-                name="dealer_id"
-                control={control}
-                render={({ field }) => (
-                  <DealerSelect
-                    onChange={field.onChange}
-                    value={field.value}
-                    key={"dealer_id"}
-                    className={cn({ "!border-destructive": errors.dealer_id })}
-                  />
-                )}
-              />
-            </div>
-          )}
-
-          {/* complaint type */}
-          <div className="space-y-2">
-            <Label htmlFor="complaint_type">Complaint type *</Label>
-            <Controller
-              name="complaint_type"
-              control={control}
-              render={({ field }) => (
-                <CustomSelect
-                  onChange={field.onChange}
-                  value={field.value}
-                  placeholder="Select complaint"
-                  disabled={type === "view"}
-                  key={"complaint_type"}
-                  options={dealerComplaintTypes}
-                  className={cn({
-                    "!border-destructive": errors.complaint_type,
-                  })}
-                />
-              )}
-            />
-          </div>
-
-          {/* message */}
-          <div className="col-span-full space-y-2">
-            <Label htmlFor="message">Message *</Label>
-            <Textarea
-              id="message"
-              {...register("message")}
-              className={cn({ "border-red-500": errors.message })}
-              placeholder="Enter message"
-              disabled={type === "view"}
-            />
-          </div>
-
-          {/* expected closure date */}
-          {["admin", "cre", "manager"].includes(user?.role) && (
-            <div>
-              <Label>Expected closure date</Label>
-              <div>
+            {/* dealer select */}
+            {user && ["admin", "cre"].includes(user?.role) && (
+              <div className="space-y-2">
+                <Label htmlFor="dealer_id">Dealer *</Label>
                 <Controller
-                  name="expected_closure_date"
+                  name="dealer_id"
                   control={control}
                   render={({ field }) => (
-                    <DatePicker
+                    <DealerSelect
                       onChange={field.onChange}
                       value={field.value}
-                      disabled={type === "view"}
+                      key={"dealer_id"}
+                      className={cn({
+                        "!border-destructive": errors.dealer_id,
+                      })}
                     />
                   )}
                 />
               </div>
-            </div>
-          )}
+            )}
 
-          {/* assigned manager */}
-          {["cre"].includes(user?.role) && (
+            {/* complaint type */}
             <div className="space-y-2">
-              <Label htmlFor="assigned_manager">Manager</Label>
+              <Label htmlFor="complaint_type">Complaint type *</Label>
               <Controller
-                name="assigned_manager"
+                name="complaint_type"
                 control={control}
                 render={({ field }) => (
-                  <UserSelect
+                  <CustomSelect
                     onChange={field.onChange}
                     value={field.value}
-                    role="manager"
+                    placeholder="Select complaint"
+                    disabled={type === "view"}
+                    key={"complaint_type"}
+                    options={dealerComplaintTypes}
+                    className={cn({
+                      "!border-destructive": errors.complaint_type,
+                    })}
                   />
                 )}
               />
             </div>
-          )}
 
-          {/* Job Card */}
-          <div className="col-span-full space-y-4">
-            <Label>Job Card *</Label>
-            {["admin", "cre"].includes(user?.role) &&
-              !fileUrls.job_card_urls.length && (
-                <Input
-                  type="file"
-                  onChange={(e) =>
-                    setFiles((prev) => ({
-                      ...prev,
-                      job_card: Array.from(e.target.files),
-                    }))
-                  }
-                  className={cn({ "border-destructive": errors.job_card })}
+            {/* message */}
+            <div className="col-span-full space-y-2">
+              <Label htmlFor="message">Message *</Label>
+              <Textarea
+                id="message"
+                {...register("message")}
+                className={cn({ "border-red-500": errors.message })}
+                placeholder="Enter message"
+                disabled={type === "view"}
+              />
+            </div>
+
+            {/* expected closure date */}
+            {["admin", "cre", "manager"].includes(user?.role) && (
+              <div>
+                <Label>Expected closure date</Label>
+                <div>
+                  <Controller
+                    name="expected_closure_date"
+                    control={control}
+                    render={({ field }) => (
+                      <DatePicker
+                        onChange={field.onChange}
+                        value={field.value}
+                        disabled={type === "view"}
+                      />
+                    )}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* assigned manager */}
+            {["cre"].includes(user?.role) && (
+              <div className="space-y-2">
+                <Label htmlFor="assigned_manager">Manager</Label>
+                <Controller
+                  name="assigned_manager"
+                  control={control}
+                  render={({ field }) => (
+                    <UserSelect
+                      onChange={field.onChange}
+                      value={field.value}
+                      role="manager"
+                    />
+                  )}
                 />
-              )}
-            <div className="flex flex-wrap items-center justify-start gap-2">
-              {fileUrls?.job_card_urls?.map((file, index) => (
-                <div
-                  key={index}
-                  className="hover:bg-muted/50 relative flex items-center justify-between rounded-lg border px-3 py-2 text-sm"
-                >
-                  <div className="flex min-w-0 flex-1 items-center gap-2">
-                    <a href={`${config.file_base}/${file}`} target="_blank">
-                      <ExternalLink className="h-4 w-4" />
-                    </a>
-                    <span className="truncate">Document {index + 1}</span>
-                  </div>
-                  <Button
-                    onClick={() =>
-                      setFileUrls((prev) => ({
+              </div>
+            )}
+
+            {/* Job Card */}
+            <div className="col-span-full space-y-4">
+              <Label>Job Card *</Label>
+              {["admin", "cre"].includes(user?.role) &&
+                !fileUrls.job_card_urls.length && (
+                  <Input
+                    type="file"
+                    onChange={(e) =>
+                      setFiles((prev) => ({
                         ...prev,
-                        job_card_urls: prev.job_card_urls.filter(
-                          (i) => i !== file,
-                        ),
+                        job_card: Array.from(e.target.files),
                       }))
                     }
-                    size="icon"
-                    className="border-background focus-visible:border-background absolute -top-2 -right-2 size-6 rounded-full border-2 shadow-none"
-                    aria-label="Remove image"
-                    type="button"
+                    className={cn({ "border-destructive": errors.job_card })}
+                  />
+                )}
+              <div className="flex flex-wrap items-center justify-start gap-2">
+                {fileUrls?.job_card_urls?.map((file, index) => (
+                  <div
+                    key={index}
+                    className="hover:bg-muted/50 relative flex items-center justify-between rounded-lg border px-3 py-2 text-sm"
                   >
-                    <XIcon className="size-3.5" />
-                  </Button>
-                </div>
-              ))}
+                    <div className="flex min-w-0 flex-1 items-center gap-2">
+                      <a href={`${config.file_base}/${file}`} target="_blank">
+                        <ExternalLink className="h-4 w-4" />
+                      </a>
+                      <span className="truncate">Document {index + 1}</span>
+                    </div>
+                    <Button
+                      onClick={() =>
+                        setFileUrls((prev) => ({
+                          ...prev,
+                          job_card_urls: prev.job_card_urls.filter(
+                            (i) => i !== file,
+                          ),
+                        }))
+                      }
+                      size="icon"
+                      className="border-background focus-visible:border-background absolute -top-2 -right-2 size-6 rounded-full border-2 shadow-none"
+                      aria-label="Remove image"
+                      type="button"
+                    >
+                      <XIcon className="size-3.5" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* errors print */}
-        {hasErrors && (
-          <Alert variant="destructive">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>
-              <div className="mb-2 font-medium">
-                Please fix the following errors:
-              </div>
-              <ul className="list-inside list-disc space-y-1">
-                {formErrors.map((err, i) => (
-                  <li key={i} className="text-sm">
-                    {err}
-                  </li>
-                ))}
-              </ul>
-            </AlertDescription>
-          </Alert>
-        )}
+          {/* errors print */}
+          {hasErrors && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                <div className="mb-2 font-medium">
+                  Please fix the following errors:
+                </div>
+                <ul className="list-inside list-disc space-y-1">
+                  {formErrors.map((err, i) => (
+                    <li key={i} className="text-sm">
+                      {err}
+                    </li>
+                  ))}
+                </ul>
+              </AlertDescription>
+            </Alert>
+          )}
 
-        {["create", "edit"].includes(type) && (
-          <div className="text-end">
-            <Button
-              type="submit"
-              disabled={isFormPending}
-              className="w-full sm:w-auto"
-            >
-              {isFormPending && (
-                <LoaderCircleIcon className="-ms-1 animate-spin" size={16} />
-              )}
-              Submit
-            </Button>
-          </div>
-        )}
-      </form>
-    </FormProvider>
+          {["create", "edit"].includes(type) && (
+            <div className="text-end">
+              <Button
+                type="submit"
+                disabled={isFormPending}
+                className="w-full sm:w-auto"
+              >
+                {isFormPending && (
+                  <LoaderCircleIcon className="-ms-1 animate-spin" size={16} />
+                )}
+                Submit
+              </Button>
+            </div>
+          )}
+        </form>
+      </FormProvider>
+      {type === "view" && <TicketUpdates dealerTicketId={id} />}
+    </>
   );
 }
