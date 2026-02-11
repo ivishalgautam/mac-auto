@@ -116,7 +116,7 @@ export default function TicketView({ id }) {
             <div className="flex items-center gap-2">
               <CalendarDays className="text-muted-foreground h-4 w-4" />
               <span className="text-sm">
-                <strong>Filed:</strong>{" "}
+                <strong>Complaint date:</strong>{" "}
                 {moment(data.created_at).format("DD MMM YYYY HH:mm")}
               </span>
             </div>
