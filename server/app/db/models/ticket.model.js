@@ -23,11 +23,11 @@ const init = async (sequelize) => {
       },
       images: {
         type: DataTypes.JSONB,
-        defaultValue: false,
+        defaultValue: [],
       },
       videos: {
         type: DataTypes.JSONB,
-        defaultValue: false,
+        defaultValue: [],
       },
       message: {
         type: DataTypes.TEXT,
