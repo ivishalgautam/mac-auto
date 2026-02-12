@@ -10,6 +10,11 @@ export function useTableFilters() {
       .withDefault(""),
   );
 
+  const [dealerFilter, setDealerFilter] = useQueryState(
+    "dealers",
+    searchParams.role.withDefault(""),
+  );
+
   const [mode, setMode] = useQueryState(
     "mode",
     searchParams.q
@@ -34,11 +39,12 @@ export function useTableFilters() {
     setPage(1);
     setMode(null);
     setStatus(null);
-  }, [setSearchQuery, setPage, setMode, setStatus]);
+    setDealerFilter(null);
+  }, [setSearchQuery, setPage, setDealerFilter, setMode, setStatus]);
 
   const isAnyFilterActive = useMemo(() => {
-    return !!searchQuery || !!mode || !!status;
-  }, [searchQuery, mode, status]);
+    return !!searchQuery || !!mode || !!status || !!dealerFilter;
+  }, [searchQuery, mode, status, dealerFilter]);
 
   return {
     searchQuery,
@@ -51,5 +57,7 @@ export function useTableFilters() {
     isAnyFilterActive,
     status,
     setStatus,
+    dealerFilter,
+    setDealerFilter,
   };
 }
