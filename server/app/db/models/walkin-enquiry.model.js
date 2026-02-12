@@ -213,6 +213,13 @@ const get = async (req) => {
     );
     queryParams.query = `%${q}%`;
   }
+
+  const dealers = req.query?.dealers ? req.query.dealers.split(".") : null;
+  if (dealers) {
+    whereConditions.push(`enq.dealer_id = ANY(:dealers)`);
+    queryParams.dealers = `{${dealers.join(",")}}`;
+  }
+
   const enquiryType = req.query?.enqt ? req.query.enqt.split(".") : null;
   if (enquiryType) {
     whereConditions.push(`enq.enquiry_type = ANY(:enquiryType)`);
