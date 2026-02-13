@@ -25,6 +25,7 @@ import { Muted } from "@/components/ui/typography";
 export const orderStatuses = [
   { value: "pending", label: "Pending", color: "bg-amber-500" },
   { value: "in process", label: "In Process", color: "bg-blue-500" },
+  { value: "completed", label: "Completed", color: "bg-emerald-500" },
   { value: "dispatched", label: "Dispatched", color: "bg-violet-500" },
   {
     value: "out for delivery",
