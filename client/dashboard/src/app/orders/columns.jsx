@@ -21,6 +21,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { DotsHorizontalIcon } from "@radix-ui/react-icons";
+import { Muted } from "@/components/ui/typography";
 
 export const orderStatuses = [
   { value: "pending", label: "Pending", color: "bg-amber-500" },
@@ -93,52 +94,62 @@ export const columns = (setId, updateMutation, user, openModal) =>
       cell: ({ row }) => {
         const status = row.getValue("status");
         const id = row.original.id;
+        const statusUpdatedAt = row.original.status_updated_at;
 
         return (
-          <Select
-            value={status}
-            onValueChange={(value) => {
-              setId(id);
-              if (value === "out for delivery") {
-                return openModal("delivery-details");
-              }
-              setTimeout(() => {
-                const formData = new FormData();
-                formData.append("status", value);
+          <div>
+            <Select
+              value={status}
+              onValueChange={(value) => {
+                setId(id);
+                if (value === "out for delivery") {
+                  return openModal("delivery-details");
+                }
+                setTimeout(() => {
+                  const formData = new FormData();
+                  formData.append("status", value);
 
-                updateMutation.mutate(formData);
-              }, 0);
-            }}
-          >
-            <SelectTrigger className={"capitalize"}>
-              <SelectValue placeholder="Select a status" />
-            </SelectTrigger>
-            <SelectContent>
-              {orderStatuses.map((option) => {
-                const statusOrder = orderStatuses.map((o) => o.value);
-                const currentIndex = statusOrder.indexOf(status);
-                const optionIndex = statusOrder.indexOf(option.value);
+                  updateMutation.mutate(formData);
+                }, 0);
+              }}
+            >
+              <SelectTrigger className={"capitalize"}>
+                <SelectValue placeholder="Select a status" />
+              </SelectTrigger>
+              <SelectContent>
+                {orderStatuses.map((option) => {
+                  const statusOrder = orderStatuses.map((o) => o.value);
+                  const currentIndex = statusOrder.indexOf(status);
+                  const optionIndex = statusOrder.indexOf(option.value);
 
-                const disabled =
-                  optionIndex < currentIndex ||
-                  ["cancel", "delivered"].includes(status);
+                  const disabled =
+                    optionIndex < currentIndex ||
+                    ["cancel", "delivered"].includes(status);
 
-                return (
-                  <SelectItem
-                    key={option.value}
-                    value={option.value}
-                    className={`flex items-center gap-2 capitalize`}
-                    disabled={disabled}
-                  >
-                    <span
-                      className={`inline-block h-2 w-2 rounded-full ${option.color}`}
-                    />
-                    {option.label}
-                  </SelectItem>
-                );
-              })}
-            </SelectContent>
-          </Select>
+                  return (
+                    <SelectItem
+                      key={option.value}
+                      value={option.value}
+                      className={`flex items-center gap-2 capitalize`}
+                      disabled={disabled}
+                    >
+                      <span
+                        className={`inline-block h-2 w-2 rounded-full ${option.color}`}
+                      />
+                      {option.label}
+                    </SelectItem>
+                  );
+                })}
+              </SelectContent>
+            </Select>
+
+            {statusUpdatedAt && (
+              <Muted className={"mt-1 text-xs"}>
+                Updated at:{" "}
+                {moment(statusUpdatedAt).format("DDD MMM YYYY HH:mm A")}
+              </Muted>
+            )}
+          </div>
         );
       },
     },
