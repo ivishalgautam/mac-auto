@@ -146,7 +146,7 @@ export const columns = (setId, updateMutation, user, openModal) =>
             {statusUpdatedAt && (
               <Muted className={"mt-1 text-xs"}>
                 Updated at:{" "}
-                {moment(statusUpdatedAt).format("d MMM YYYY HH:mm A")}
+                {moment(statusUpdatedAt).format("DD MMM, YYYY hh:mm A")}
               </Muted>
             )}
           </div>
