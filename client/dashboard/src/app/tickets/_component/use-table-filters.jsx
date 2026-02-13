@@ -1,5 +1,5 @@
 import { searchParams } from "@/lib/searchparams";
-import { useQueryState } from "nuqs";
+import { parseAsString, useQueryState } from "nuqs";
 import { useCallback, useMemo } from "react";
 
 export function useTableFilters() {
@@ -19,16 +19,35 @@ export function useTableFilters() {
     searchParams.status.withDefault(""),
   );
 
+  const [startDateFilter, setStartDateFilter] = useQueryState(
+    "start_date",
+    parseAsString.withDefault(""),
+  );
+  const [endDateFilter, setEndDateFilter] = useQueryState(
+    "end_date",
+    parseAsString.withDefault(""),
+  );
+
   const resetFilters = useCallback(() => {
     setSearchQuery(null);
     setStatusFilter(null);
+    setStartDateFilter(null);
+    setEndDateFilter(null);
 
     setPage(1);
-  }, [setSearchQuery, setStatusFilter, setPage]);
+  }, [
+    setSearchQuery,
+    setStatusFilter,
+    setPage,
+    setStartDateFilter,
+    setEndDateFilter,
+  ]);
 
   const isAnyFilterActive = useMemo(() => {
-    return !!searchQuery || !!statusFilter;
-  }, [searchQuery, statusFilter]);
+    return (
+      !!searchQuery || !!statusFilter || !!startDateFilter || !!endDateFilter
+    );
+  }, [searchQuery, statusFilter, startDateFilter, endDateFilter]);
 
   return {
     searchQuery,
@@ -39,5 +58,9 @@ export function useTableFilters() {
     setStatusFilter,
     resetFilters,
     isAnyFilterActive,
+    startDateFilter,
+    setStartDateFilter,
+    endDateFilter,
+    setEndDateFilter,
   };
 }

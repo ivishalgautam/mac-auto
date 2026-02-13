@@ -3,6 +3,7 @@ import { DataTableResetFilter } from "@/components/ui/table/data-table-reset-fil
 import { DataTableSearch } from "@/components/ui/table/data-table-search";
 import { useTableFilters } from "./use-table-filters";
 import { DataTableFilterBox } from "@/components/ui/table/data-table-filter-box";
+import { DataTableDatePickerWithRange } from "@/components/ui/table/data-table-date-range-selector";
 
 export const ticketStatus = [
   {
@@ -31,6 +32,10 @@ export default function TableActions() {
     setStatusFilter,
     setSearchQuery,
     isAnyFilterActive,
+    startDateFilter,
+    setStartDateFilter,
+    endDateFilter,
+    setEndDateFilter,
   } = useTableFilters();
 
   return (
@@ -48,6 +53,14 @@ export default function TableActions() {
         setFilterValue={setStatusFilter}
         filterValue={statusFilter}
       />
+
+      <DataTableDatePickerWithRange
+        startDate={startDateFilter}
+        setStartDate={setStartDateFilter}
+        endDate={endDateFilter}
+        setEndDate={setEndDateFilter}
+      />
+
       <DataTableResetFilter
         isFilterActive={isAnyFilterActive}
         onReset={resetFilters}
