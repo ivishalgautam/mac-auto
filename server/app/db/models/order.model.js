@@ -211,11 +211,13 @@ const get = async (req) => {
   let query = `
     SELECT
         ord.id, ord.order_code, ord.punch_by, ord.status, ord.message, ord.created_at, ord.oc_number, ord.deleted_at,
-        CONCAT(usr.first_name, ' ', COALESCE(usr.last_name, ''), ' (', dlr.location, ')') as dealership_name
+        CONCAT(usr.first_name, ' ', COALESCE(usr.last_name, ''), ' (', dlr.location, ')') as dealership_name,
+        ordst.created_at as status_updated_at
       FROM ${constants.models.ORDER_TABLE} ord
       LEFT JOIN ${constants.models.USER_TABLE} punchusr ON punchusr.id = ord.user_id
       LEFT JOIN ${constants.models.DEALER_TABLE} dlr ON dlr.id = ord.dealer_id
       LEFT JOIN ${constants.models.USER_TABLE} usr ON usr.id = dlr.user_id
+      LEFT JOIN ${constants.models.ORDER_STATUS_TABLE} ordst ON ordst.order_id = ord.id AND ordst.status::text = ord.status::text
       ${whereClause}
       ORDER BY ord.created_at DESC
       LIMIT :limit OFFSET :offset
