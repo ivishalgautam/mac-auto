@@ -61,6 +61,7 @@ const init = async (sequelize) => {
         type: DataTypes.ENUM([
           "pending",
           "in process",
+          "completed",
           "dispatched",
           "out for delivery",
           "delivered",
