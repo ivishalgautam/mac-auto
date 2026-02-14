@@ -95,6 +95,7 @@ const init = async (sequelize) => {
     }
   );
 
+  return DealerTicketModel;
   await DealerTicketModel.sync({ alter: true });
 };
 

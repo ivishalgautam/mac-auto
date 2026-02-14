@@ -52,6 +52,7 @@ const init = async (sequelize) => {
     }
   );
 
+  return FollowupModel;
   await FollowupModel.sync({ alter: true });
 };
 

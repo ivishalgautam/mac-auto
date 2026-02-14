@@ -50,6 +50,7 @@ const init = async (sequelize) => {
     }
   );
 
+  return OTPModel;
   await OTPModel.sync({ alter: true });
 };
 

@@ -57,6 +57,7 @@ const init = async (sequelize) => {
     }
   );
 
+  return PDICheckModel;
   await PDICheckModel.sync({ alter: true });
 };
 

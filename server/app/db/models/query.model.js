@@ -47,6 +47,7 @@ const init = async (sequelize) => {
     }
   );
 
+  return QueryModel;
   await QueryModel.sync({ alter: true });
 };
 

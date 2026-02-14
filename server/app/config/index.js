@@ -14,6 +14,8 @@ const config = {
   pg_host: process.env.PG_HOST,
   pg_dialect: process.env.DB_DIALECT,
 
+  allowed_origins: process.env.ALLOWED_ORIGINS?.split(",") ?? [],
+
   // jwt secret key
   jwt_secret: process.env.JWT_SECRET,
   jwt_refresh_secret: process.env.JWT_REFRESH_SECRET,

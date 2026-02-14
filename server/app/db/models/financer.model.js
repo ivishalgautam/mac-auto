@@ -40,12 +40,13 @@ const init = async (sequelize) => {
     }
   );
 
-  await FinancerModel.sync({ alter: true });
+  // await FinancerModel.sync({ alter: true });
   await sequelize.query(`
     CREATE INDEX IF NOT EXISTS financer_area_serve_gin
     ON ${constants.models.FINANCER_TABLE}
     USING GIN (area_serve)
-  `);
+    `);
+  return FinancerModel;
 };
 
 const create = async (req) => {

@@ -53,6 +53,7 @@ const init = async (sequelize) => {
     }
   );
 
+  return VehicleColorModel;
   await VehicleColorModel.sync({ alter: true });
 };
 

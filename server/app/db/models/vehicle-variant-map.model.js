@@ -41,6 +41,7 @@ const init = async (sequelize) => {
     }
   );
 
+  return VehicleVariantMapModel;
   await VehicleVariantMapModel.sync({ alter: true });
 };
 

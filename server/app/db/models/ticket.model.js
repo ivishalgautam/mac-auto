@@ -66,6 +66,16 @@ const init = async (sequelize) => {
         },
         onDelete: "CASCADE",
       },
+      customer_inventory_id: {
+        type: DataTypes.UUID,
+        allowNull: true,
+        references: {
+          model: constants.models.CUSTOMER_INVENTORY_TABLE,
+          key: "id",
+          deferrable: Deferrable.INITIALLY_IMMEDIATE,
+        },
+        onDelete: "CASCADE",
+      },
       punch_by_id: {
         type: DataTypes.UUID,
         allowNull: false,
@@ -126,6 +136,15 @@ const init = async (sequelize) => {
         type: DataTypes.JSONB,
         defaultValue: [],
       },
+      payment_status: {
+        type: DataTypes.ENUM(["paid", "unpaid"]),
+        defaultValue: "unpaid",
+      },
+      payment_amount: {
+        type: DataTypes.DECIMAL(10, 2).UNSIGNED,
+        allowNull: false,
+        defaultValue: 0,
+      },
     },
     {
       createdAt: "created_at",
@@ -139,6 +158,7 @@ const init = async (sequelize) => {
     }
   );
 
+  // return TicketModel;
   await TicketModel.sync({ alter: true });
 };
 
@@ -160,6 +180,7 @@ const create = async (req) => {
     images: req.body?.images ?? [],
     videos: req.body?.videos ?? [],
     ticket_number: newTicketNo,
+    customer_inventory_id: req.body.customer_inventory_id,
     message: req.body.message,
     mac_message: req.body.mac_message,
     // purchase_id: req.body.purchase_id,
@@ -179,6 +200,9 @@ const create = async (req) => {
     warranty_detail: req.body.warranty_detail,
 
     part_ids: req.body.part_ids,
+
+    payment_status: req.body.payment_status,
+    payment_amount: req.body.payment_amount,
   });
 };
 
@@ -190,6 +214,7 @@ const update = async (req, id, transaction) => {
     {
       images: req.body?.images ?? [],
       videos: req.body?.videos ?? [],
+      customer_inventory_id: req.body.customer_inventory_id,
       message: req.body.message,
       mac_message: req.body.mac_message,
       status: req.body.status,
@@ -201,6 +226,8 @@ const update = async (req, id, transaction) => {
       parts: req.body.parts,
       warranty_detail: req.body.warranty_detail,
       part_ids: req.body.part_ids,
+      payment_status: req.body.payment_status,
+      payment_amount: req.body.payment_amount,
     },
     options
   );
@@ -246,7 +273,13 @@ const get = async (req) => {
 
     cstu.first_name ILIKE :query OR
     cstu.last_name ILIKE :query OR
-    (cstu.first_name || ' ' || cstu.last_name) ILIKE :query
+    (cstu.first_name || ' ' || cstu.last_name) ILIKE :query OR
+
+    cstinv.chassis_no ILIKE :query OR 
+    cstinv.motor_no ILIKE :query OR
+    cstinv.battery_no ILIKE :query OR
+    cstinv.controller_no ILIKE :query OR
+    cstinv.charger_no ILIKE :query
   )`);
 
     queryParams.query = `%${q}%`;
@@ -285,8 +318,10 @@ const get = async (req) => {
         cstu.mobile_number as customer_phone,
         tcn.technician_name as assigned_technician,
         cst.state, cst.city,
-        parts_data.parts
+        parts_data.parts,
+        cstinv.chassis_no, cstinv.motor_no, cstinv.battery_no, cstinv.controller_no, cstinv.charger_no
     FROM ${constants.models.TICKET_TABLE} tk
+    LEFT JOIN ${constants.models.CUSTOMER_INVENTORY_TABLE} cstinv ON cstinv.id = tk.customer_inventory_id
     LEFT JOIN ${constants.models.USER_TABLE} cstu ON cstu.id = tk.customer_id
     LEFT JOIN ${constants.models.CUSTOMER_TABLE} cst ON cst.user_id = cstu.id
     LEFT JOIN ${constants.models.CUSTOMER_DEALERS_TABLE} cstdlr ON cstdlr.customer_id = cst.id
@@ -311,6 +346,7 @@ const get = async (req) => {
     SELECT
         COUNT(tk.id) OVER()::integer as total
       FROM ${constants.models.TICKET_TABLE} tk
+    LEFT JOIN ${constants.models.CUSTOMER_INVENTORY_TABLE} cstinv ON cstinv.id = tk.customer_inventory_id
     LEFT JOIN ${constants.models.USER_TABLE} cstu ON cstu.id = tk.customer_id
     LEFT JOIN ${constants.models.CUSTOMER_TABLE} cst ON cst.user_id = cstu.id
     LEFT JOIN ${constants.models.CUSTOMER_DEALERS_TABLE} cstdlr ON cstdlr.customer_id = cst.id

@@ -107,6 +107,7 @@ const init = async (sequelize) => {
     }
   );
 
+  return OrderModel;
   await OrderModel.sync({ alter: true });
 };
 

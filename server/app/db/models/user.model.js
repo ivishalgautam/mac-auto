@@ -110,6 +110,7 @@ const init = async (sequelize) => {
     }
   );
 
+  return UserModel;
   await UserModel.sync({ alter: true });
 };
 

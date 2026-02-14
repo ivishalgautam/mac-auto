@@ -93,6 +93,7 @@ const init = async (sequelize) => {
     }
   );
 
+  return CustomerPurchaseModel;
   await CustomerPurchaseModel.sync({ alter: true });
 };
 

@@ -11,6 +11,7 @@ const responseMessage = constants.error.message;
 
 const create = async (req, res) => {
   const filePaths = req.filePaths;
+
   try {
     const { role, id } = req.user_data;
     const validateData = ticketSchema.parse(req.body);

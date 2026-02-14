@@ -81,6 +81,7 @@ const init = async (sequelize) => {
     }
   );
 
+  return VehicleEnquiryModel;
   await VehicleEnquiryModel.sync({ alter: true });
 };
 

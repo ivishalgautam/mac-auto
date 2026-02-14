@@ -24,17 +24,22 @@ export const ticketSchema = z
     //   .default([]),
     part_ids: z.array(z.string().uuid()).optional().default([]),
     warranty_detail: z.string().min(1, { message: "Select warranty." }),
+
+    payment_status: z.enum(["paid", "unpaid"], {
+      message: "Payment status is required.",
+    }),
+
+    payment_amount: z.coerce.number().optional().nullable(),
   })
   .superRefine((data, ctx) => {
     if (
-      data.complaint_type === "Spare Parts Related" &&
-      (!data.part_ids || data.part_ids.length === 0)
+      data.payment_status === "paid" &&
+      (!data.payment_amount || data.payment_amount <= 0)
     ) {
       ctx.addIssue({
-        path: ["part_ids"],
+        path: ["payment_amount"],
         code: z.ZodIssueCode.custom,
-        message:
-          "At least one part must be selected for Spare Parts Related complaints",
+        message: "Payment amount is required.",
       });
     }
   });

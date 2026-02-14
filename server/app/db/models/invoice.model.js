@@ -82,6 +82,7 @@ const init = async (sequelize) => {
     }
   );
 
+  return InvoiceModel;
   await InvoiceModel.sync({ alter: true });
 };
 

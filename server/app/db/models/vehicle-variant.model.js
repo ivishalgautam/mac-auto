@@ -25,6 +25,7 @@ const init = async (sequelize) => {
     }
   );
 
+  return VehicleVariantModel;
   await VehicleVariantModel.sync({ alter: true });
 };
 

@@ -30,6 +30,7 @@ import orderItemModel from "./models/order-item.model.js";
 import orderStatusModel from "./models/order-status.model.js";
 import partModel from "./models/part.model.js";
 import ticketUpdateModel from "./models/ticket-update.model.js";
+import customerInventoryModel from "./models/customer-inventory.model.js";
 
 export default {
   UserModel: userModel,
@@ -64,4 +65,5 @@ export default {
   OrderStatusModel: orderStatusModel,
   PartModel: partModel,
   TicketUpdateModel: ticketUpdateModel,
+  CustomerInventoryModel: customerInventoryModel,
 };

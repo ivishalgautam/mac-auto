@@ -90,6 +90,7 @@ const init = async (sequelize) => {
     }
   );
 
+  return QuotationModel;
   await QuotationModel.sync({ alter: true });
 };
 

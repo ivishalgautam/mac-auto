@@ -39,6 +39,7 @@ const init = async (sequelize) => {
     }
   );
 
+  return SchemeModel;
   await SchemeModel.sync({ alter: true });
 };
 

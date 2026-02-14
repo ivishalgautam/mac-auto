@@ -75,6 +75,7 @@ const init = async (sequelize) => {
     }
   );
 
+  return OrderItemModel;
   await OrderItemModel.sync({ alter: true });
 };
 

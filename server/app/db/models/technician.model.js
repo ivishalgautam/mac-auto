@@ -32,6 +32,7 @@ const init = async (sequelize) => {
     }
   );
 
+  return TechnicianModel;
   await TechnicianModel.sync({ alter: true });
 };
 

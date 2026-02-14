@@ -99,6 +99,7 @@ const init = async (sequelize) => {
     }
   );
 
+  return DealerInventoryModel;
   await DealerInventoryModel.sync({ alter: true });
 };
 

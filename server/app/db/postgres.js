@@ -13,13 +13,22 @@ export const sequelize = new Sequelize(
   }
 );
 
+async function initDatabase(fastify) {
+  await sequelize.authenticate();
+  fastify.log.info(`Postgres Database connection OK!`);
+
+  // define models
+  fastify.log.info(`Initializing sequelize connection and models...`);
+  await migration.init(sequelize);
+  fastify.log.info(`Migration sucessfully completed...`);
+
+  // create tables (DEV ONLY)
+  await sequelize.sync({});
+}
+
 async function postgresConnection(fastify, options) {
   try {
-    await sequelize.authenticate();
-    fastify.log.info(`Postgres Database connection OK!`);
-    fastify.log.info(`Initializing sequelize connection and models...`);
-    await migration.init(sequelize);
-    fastify.log.info(`Migration sucessfully completed...`);
+    await initDatabase(fastify);
   } catch (error) {
     throw error;
   }

@@ -29,6 +29,7 @@ const init = async (sequelize) => {
     }
   );
 
+  return ColorModel;
   await ColorModel.sync({ alter: true });
 };
 

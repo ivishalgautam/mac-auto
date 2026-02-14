@@ -16,6 +16,20 @@ const get = async (req, res) => {
   }
 };
 
+const getById = async (req, res) => {
+  try {
+    const record = await table.CustomerModel.getById(req);
+    if (!record)
+      return res
+        .code(StatusCodes.NOT_FOUND)
+        .send({ status: false, message: "Customer not found!" });
+
+    res.send({ status: true, data: record });
+  } catch (error) {
+    throw error;
+  }
+};
+
 const deleteById = async (req, res) => {
   try {
     const record = await table.CustomerModel.getById(req);
@@ -64,7 +78,7 @@ const assignToDealer = async (req, res) => {
 
 const getCustomerPurchases = async (req, res) => {
   try {
-    const data = await table.CustomerPurchaseModel.get(req);
+    const data = await table.CustomerInventoryModel.get(req);
     res.send({ status: true, data });
   } catch (error) {
     throw error;
@@ -75,6 +89,7 @@ export default {
   getDealerCustomers: getDealerCustomers,
   get: get,
   assignToDealer: assignToDealer,
+  getById: getById,
   deleteById: deleteById,
   getCustomerPurchases: getCustomerPurchases,
 };

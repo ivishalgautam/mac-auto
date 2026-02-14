@@ -27,6 +27,7 @@ const init = async (sequelize) => {
     }
   );
 
+  return PartModel;
   await PartModel.sync({ alter: true });
 };
 

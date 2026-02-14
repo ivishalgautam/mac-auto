@@ -25,6 +25,7 @@ import invoiceRoutes from "../../api/invoices/routes.js";
 import orderRoutes from "../../api/order/routes.js";
 import partRoutes from "../../api/part/routes.js";
 import ticketUpdateRoutes from "../../api/ticket-update/routes.js";
+import customerInventoryRoutes from "../../api/customer-inventory/routes.js";
 
 export default async function routes(fastify, options) {
   // middlewares
@@ -60,4 +61,5 @@ export default async function routes(fastify, options) {
   fastify.register(orderRoutes, { prefix: "orders" });
   fastify.register(partRoutes, { prefix: "parts" });
   fastify.register(ticketUpdateRoutes, { prefix: "ticket-updates" });
+  fastify.register(customerInventoryRoutes, { prefix: "customer-inventories" });
 }

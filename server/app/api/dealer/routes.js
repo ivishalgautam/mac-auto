@@ -4,7 +4,6 @@ import { multipartPreHandler } from "../../middlewares/multipart-prehandler.js";
 import controller from "./controller.js";
 
 export default async function routes(fastify, opts) {
-  fastify.get("/", {}, controller.get);
   fastify.post(
     "/import",
     { preHandler: (req, res) => multipartPreHandler(req, res, []) },
@@ -40,4 +39,8 @@ export default async function routes(fastify, opts) {
     {},
     controller.getVariants
   );
+}
+
+export async function dealerPublicRoutes(fastify, opt) {
+  fastify.get("/", {}, controller.get);
 }

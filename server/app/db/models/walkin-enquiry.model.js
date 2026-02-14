@@ -7,7 +7,7 @@ import { sequelize } from "../postgres.js";
 const { DataTypes } = sequelizeFwk;
 
 import table from "./dealer.model.js";
-const DealerModel = await table.init(sequelize);
+// const DealerModel = await table.init(sequelize);
 
 let WalkInEnquiryModel = null;
 const init = async (sequelize) => {
@@ -150,6 +150,7 @@ const init = async (sequelize) => {
     }
   );
 
+  return WalkInEnquiryModel;
   await WalkInEnquiryModel.sync({ alter: true });
 };
 

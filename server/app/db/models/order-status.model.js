@@ -44,6 +44,7 @@ const init = async (sequelize) => {
     }
   );
 
+  return OrderStatusModel;
   await OrderStatusModel.sync({ alter: true });
 };
 

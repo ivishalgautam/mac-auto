@@ -46,6 +46,7 @@ const init = async (sequelize) => {
     }
   );
 
+  return DriverDetailModel;
   await DriverDetailModel.sync({ alter: true });
 };
 

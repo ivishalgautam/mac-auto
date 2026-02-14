@@ -47,6 +47,7 @@ const constants = {
     VEHICLE_TABLE: "vehicles",
     INVENTORY_TABLE: "inventories",
     DEALER_INVENTORY_TABLE: "dealer_inventories",
+    CUSTOMER_INVENTORY_TABLE: "customer_inventories",
     QUERY_TABLE: "queries",
     PART_TABLE: "parts",
     TICKET_UPDATE_TABLE: "ticket_updates",

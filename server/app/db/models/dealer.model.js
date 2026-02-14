@@ -1,4 +1,5 @@
 "use strict";
+import { toPgArray } from "../../helpers/to-pg-array.js";
 import constants from "../../lib/constants/index.js";
 import { DataTypes, Deferrable, QueryTypes } from "sequelize";
 
@@ -66,9 +67,9 @@ const init = async (sequelize) => {
     }
   );
 
-  await DealerModel.sync({ alter: true });
-
   return DealerModel;
+
+  await DealerModel.sync({ alter: true });
 };
 
 const create = async (
@@ -152,7 +153,18 @@ const get = async (req) => {
   const whereConditions = [];
   const queryParams = {};
   const q = req.query.q ? req.query.q : null;
-  const roles = req.query.role ? req.query.role.split(".") : null;
+  const states = req.query.states ? req.query.states.split(".") : null;
+  const cities = req.query.cities ? req.query.cities.split(".") : null;
+
+  if (states && states.length) {
+    whereConditions.push(`LOWER(dlr.state) = ANY(:states)`);
+    queryParams.states = toPgArray(states.map((d) => d.toLowerCase()));
+  }
+
+  if (cities && cities.length) {
+    whereConditions.push(`LOWER(dlr.city) = ANY(:cities)`);
+    queryParams.cities = toPgArray(cities.map((d) => d.toLowerCase()));
+  }
 
   if (q) {
     whereConditions.push(

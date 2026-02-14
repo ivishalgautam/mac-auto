@@ -6,6 +6,7 @@ import { walkinEnquiriesPublicRoutes } from "../../api/walkin-enquiry/routes.js"
 import { kylasPublicRoutes } from "../../api/kylas/routes.js";
 import { vehicleColorPublicRoutes } from "../../api/vehicle-color/routes.js";
 import { queryPublicRoutes } from "../../api/query/routes.js";
+import { dealerPublicRoutes } from "../../api/dealer/routes.js";
 
 export default async function routes(fastify, options) {
   fastify.addHook("preHandler", async (request, reply) => {
@@ -17,6 +18,7 @@ export default async function routes(fastify, options) {
   fastify.register(queryPublicRoutes, { prefix: "queries" });
   fastify.register(walkinEnquiriesPublicRoutes, { prefix: "walkin-enquiries" });
   fastify.register(vehicleColorPublicRoutes, { prefix: "vehicle-colors" });
+  fastify.register(dealerPublicRoutes, { prefix: "dealers" });
 
   fastify.register(kylasPublicRoutes, { prefix: "kylas" });
 }
