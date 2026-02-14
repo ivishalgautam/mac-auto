@@ -92,6 +92,12 @@ export const columns = (setUserId, openModal, user) => [
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem>
+              <Link href={`/tickets/create?cid=${customerId}`}>
+                Create ticket
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem>
               <Link href={`/customers/${customerId}/purchases`}>Purchases</Link>
             </DropdownMenuItem>
             {["admin", "cre"].includes(user?.role) && (

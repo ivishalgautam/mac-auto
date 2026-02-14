@@ -9,6 +9,13 @@ export function useGetCustomers(searchParams) {
   });
 }
 
+export function useGetCustomer(customerId) {
+  return useQuery({
+    queryKey: ["customers", customerId],
+    queryFn: () => customer.getById(customerId),
+  });
+}
+
 export function useGetDealerCustomers(searchParams) {
   return useQuery({
     queryKey: ["dealer-customers", searchParams],

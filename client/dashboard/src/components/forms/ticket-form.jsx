@@ -13,7 +13,7 @@ import { Controller, FormProvider, useForm } from "react-hook-form";
 import { cn } from "@/lib/utils";
 import { Alert, AlertDescription } from "../ui/alert";
 import { getFormErrors } from "@/lib/get-form-errors";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import Loader from "../loader";
 import ErrorMessage from "../ui/error";
 import { Textarea } from "../ui/textarea";
@@ -37,13 +37,23 @@ import { useAuth } from "@/providers/auth-provider";
 import CustomSelect from "../ui/custom-select";
 import { customerComplaintTypes } from "@/data";
 import { DatePicker } from "../ui/date-picker";
-import TagInput from "../tag-input";
 import TechnicianSelect from "@/features/technician-select";
 import UserSelect from "@/features/user-select";
 import { Input } from "../ui/input";
 import { ROLES } from "@/data/routes";
 import CustomMultiSelect from "../custom-multi-select";
 import { useFormattedParts } from "@/mutations/use-parts";
+import {
+  useCustomerInventories,
+  useCustomerInventory,
+  useFormattedCustomerInventories,
+} from "@/mutations/use-customer-inventories";
+import CustomerSelect from "@/features/customer-select";
+import {
+  useGetCustomer,
+  useGetCustomers,
+  useGetDealerCustomers,
+} from "@/mutations/customer-mutation";
 
 const defaultValues = {
   images: [],
@@ -60,7 +70,7 @@ const schemaByRole = {
   admin: ticketSchema,
 };
 
-export default function TicketForm({ id, type }) {
+export default function TicketForm({ id, type, inventoryId, customerId }) {
   const { user } = useAuth();
   const router = useRouter();
   const [files, setFiles] = useState({
@@ -73,7 +83,9 @@ export default function TicketForm({ id, type }) {
   });
   const methods = useForm({
     resolver: zodResolver(schemaByRole[user?.role] ?? ticketSchema),
-    defaultValues,
+    defaultValues: {
+      ...defaultValues,
+    },
   });
 
   const {
@@ -83,6 +95,7 @@ export default function TicketForm({ id, type }) {
     reset,
     control,
     watch,
+    setValue,
   } = methods;
   const isPartsRelated = watch("complaint_type") === "Spare Parts Related";
   const createMutation = useCreateTicket(() => {
@@ -100,7 +113,49 @@ export default function TicketForm({ id, type }) {
     error: partsError,
   } = useFormattedParts(id);
 
+  const {
+    data: inventoryRecord,
+    isLoading: isInventoryRecordLoading,
+    isError: isInventoryRecordError,
+    error: inventoryRecordError,
+  } = useCustomerInventory(inventoryId);
+
+  const {
+    data: customersRecord,
+    isLoading: isCustomersRecordLoading,
+    isError: isCustomersRecordError,
+    error: customersRecordError,
+  } = useGetDealerCustomers("");
+
+  const formattedCustomers = useMemo(() => {
+    if (!customersRecord) return [];
+
+    return customersRecord?.customers?.map((cst) => ({
+      value: cst.user_id,
+      label: cst.fullname,
+    }));
+  }, [customersRecord]);
+
+  console.log({ customersRecord });
+
+  const {
+    data: customerRecord,
+    isLoading: isCustomerRecordLoading,
+    isError: isCustomerRecordError,
+    error: customerRecordError,
+  } = useGetCustomer(customerId);
+
+  const {
+    data: inventories,
+    isLoading: isInventoriesLoading,
+    isError: isInventoriesError,
+    error: inventoriesError,
+  } = useFormattedCustomerInventories(
+    customerId ? `customer=${customerId}` : "",
+  );
+
   const { data, isLoading, isError, error } = useGetTicket(id);
+
   const onSubmit = (data) => {
     const formData = new FormData();
     files.images?.forEach((file) => {
@@ -137,8 +192,8 @@ export default function TicketForm({ id, type }) {
     if (["edit", "view"].includes(type) && data && parts) {
       setFileUrls((prev) => ({
         ...prev,
-        images_urls: data.images,
-        videos_urls: data.videos,
+        images_urls: Array.isArray(data.images) ? data.images : [],
+        videos_urls: Array.isArray(data.videos) ? data.videos : [],
       }));
       reset({
         ...data,
@@ -146,6 +201,19 @@ export default function TicketForm({ id, type }) {
       });
     }
   }, [data, type, reset, parts]);
+
+  useEffect(() => {
+    if (inventoryRecord) {
+      setValue("customer_inventory_id", inventoryRecord.id);
+      setValue("customer_id", inventoryRecord.customer_user_id);
+    }
+  }, [inventoryRecord]);
+
+  useEffect(() => {
+    if (customerRecord) {
+      setValue("customer_id", customerRecord.user_id);
+    }
+  }, [customerRecord]);
 
   const handleImagesChange = useCallback((data) => {
     setFiles((prev) => ({ ...prev, images: data }));
@@ -275,21 +343,37 @@ export default function TicketForm({ id, type }) {
                 name="customer_id"
                 control={control}
                 render={({ field }) => (
-                  <UserSelect
-                    onChange={(selected) => {
-                      field.onChange(selected);
-                    }}
+                  <CustomSelect
+                    options={formattedCustomers}
+                    isError={isCustomersRecordError}
+                    isLoading={isCustomersRecordLoading}
+                    error={customersRecordError}
+                    onChange={field.onChange}
                     value={field.value}
-                    className={cn({
-                      "border border-red-500 dark:border-red-500":
-                        errors.customer_id,
-                    })}
-                    role="customer"
                   />
                 )}
               />
             </div>
           )}
+
+          {/* customer_id */}
+          <div className="space-y-2">
+            <Label htmlFor="customer_inventory_id">Chassis </Label>
+            <Controller
+              name="customer_inventory_id"
+              control={control}
+              render={({ field }) => (
+                <CustomSelect
+                  options={inventories}
+                  onChange={field.onChange}
+                  value={field.value}
+                  isLoading={isInventoriesLoading}
+                  isError={isInventoriesError}
+                  error={inventoriesError}
+                />
+              )}
+            />
+          </div>
 
           {/* assigned_cre */}
           {user && !["cre", "customer"].includes(user.role) && (
@@ -338,8 +422,8 @@ export default function TicketForm({ id, type }) {
                       label: "Under warranty",
                     },
                     {
-                      value: "Not in warranty",
-                      label: "Not in warranty",
+                      value: "Out of warranty",
+                      label: "Out of warranty",
                     },
                   ]}
                 />
@@ -369,6 +453,45 @@ export default function TicketForm({ id, type }) {
               )}
             />
           </div>
+
+          {/* payment status */}
+          <div className="space-y-2">
+            <Label htmlFor="payment_status">Payment status *</Label>
+            <Controller
+              name="payment_status"
+              control={control}
+              render={({ field }) => (
+                <CustomSelect
+                  onChange={field.onChange}
+                  value={field.value}
+                  placeholder="Select payment"
+                  className={cn({
+                    "border border-red-500 dark:border-red-500":
+                      errors.payment_status,
+                  })}
+                  disabled={type === "view"}
+                  key={"payment_status"}
+                  options={[
+                    { value: "paid", label: "Paid" },
+                    { value: "unpaid", label: "Unpaid" },
+                  ]}
+                />
+              )}
+            />
+          </div>
+
+          {/* Payment amount */}
+          {watch("payment_status") === "paid" && (
+            <div className="space-y-2">
+              <Label htmlFor="payment_amount">Payment amount *</Label>
+              <Input
+                {...register("payment_amount", { valueAsNumber: true })}
+                className={cn({ "border-red-500": errors.payment_amount })}
+                placeholder="Enter payment amount"
+                disabled={type === "view"}
+              />
+            </div>
+          )}
 
           {/* message */}
           <div className="col-span-full space-y-2">
@@ -451,36 +574,31 @@ export default function TicketForm({ id, type }) {
             </div>
           )}
 
-          {/* parts */}
-          {isPartsRelated && (
-            <>
-              {/* Parts */}
-              <div className="col-span-full space-y-2">
-                <Label htmlFor="part_ids">Parts *</Label>
-                <Controller
-                  name="part_ids"
-                  control={control}
-                  render={({ field }) => (
-                    <CustomMultiSelect
-                      onChange={field.onChange}
-                      value={field.value}
-                      placeholder="Select parts"
-                      className={cn({
-                        "border border-red-500 dark:border-red-500":
-                          errors.part_ids,
-                      })}
-                      disabled={type === "view"}
-                      key={"part_ids"}
-                      options={parts}
-                      isLoading={isPartsLoading}
-                      isError={isPartsError}
-                      error={partsError}
-                    />
-                  )}
+          {/* Parts */}
+          <div className="col-span-full space-y-2">
+            <Label htmlFor="part_ids">Parts</Label>
+            <Controller
+              name="part_ids"
+              control={control}
+              render={({ field }) => (
+                <CustomMultiSelect
+                  onChange={field.onChange}
+                  value={field.value}
+                  placeholder="Select parts"
+                  className={cn({
+                    "border border-red-500 dark:border-red-500":
+                      errors.part_ids,
+                  })}
+                  disabled={type === "view"}
+                  key={"part_ids"}
+                  options={parts}
+                  isLoading={isPartsLoading}
+                  isError={isPartsError}
+                  error={partsError}
                 />
-              </div>
-            </>
-          )}
+              )}
+            />
+          </div>
         </div>
 
         {/* errors print */}

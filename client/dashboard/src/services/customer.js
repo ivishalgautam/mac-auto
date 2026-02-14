@@ -13,7 +13,8 @@ const deleteById = async (id) => {
 };
 
 const getById = async (id) => {
-  return await http().get(`${endpoints.customers.getAll}/${id}`);
+  const { data } = await http().get(`${endpoints.customers.getAll}/${id}`);
+  return data;
 };
 
 const get = async (searchParams = "") => {

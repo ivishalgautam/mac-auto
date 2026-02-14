@@ -53,4 +53,5 @@ export const endpoints = {
     dealers: "/dealer-orders",
     customers: "/customer-orders",
   },
+  customerInventories: { getAll: "/customer-inventories" },
 };

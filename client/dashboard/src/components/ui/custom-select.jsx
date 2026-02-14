@@ -17,6 +17,8 @@ import {
 } from "@/components/ui/popover";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import ErrorMessage from "./error";
+import { Skeleton } from "./skeleton";
 
 export default function CustomSelect({
   options = [],
@@ -25,12 +27,18 @@ export default function CustomSelect({
   className = "",
   disabled = false,
   placeholder = "Select an option",
+  isLoading,
+  isError,
+  error,
 }) {
   const [open, setOpen] = useState(false);
 
   const selectedLabel = options.find((opt) => opt.value === value)?.label;
+  if (isError) return <ErrorMessage error={error} />;
 
-  return (
+  return isLoading ? (
+    <Skeleton className={"h-9 w-full"} />
+  ) : (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button

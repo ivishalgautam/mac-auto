@@ -21,6 +21,7 @@ import { SelectValue } from "@radix-ui/react-select";
 import { ticketStatus } from "./_component/table-actions";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { rupee } from "@/lib/Intl";
 
 export const columns = (
   updateMutation,
@@ -49,6 +50,31 @@ export const columns = (
       },
     },
     {
+      accessorKey: "payment_status",
+      header: "Payment status",
+      cell: ({ row }) => {
+        const status = row.getValue("payment_status");
+        return (
+          <Badge className="capitalize" variant={"outline"}>
+            {status === "paid" ? (
+              <span className="size-2 rounded-full bg-emerald-500" />
+            ) : status === "unpaid" ? (
+              <span className="size-2 rounded-full bg-yellow-500" />
+            ) : null}
+            {status}
+          </Badge>
+        );
+      },
+    },
+    {
+      accessorKey: "payment_amount",
+      header: "Amount paid",
+      cell: ({ row }) => {
+        const amt = row.getValue("payment_amount");
+        return <div className="capitalize">{rupee.format(amt)}</div>;
+      },
+    },
+    {
       accessorKey: "customer_name",
       header: "Customer name",
       cell: ({ row }) => {
@@ -63,6 +89,26 @@ export const columns = (
     {
       accessorKey: "city",
       header: "City",
+    },
+    {
+      accessorKey: "chassis_no",
+      header: "Chassis no.",
+    },
+    {
+      accessorKey: "motor_no",
+      header: "Motor no.",
+    },
+    {
+      accessorKey: "battery_no",
+      header: "Battery no.",
+    },
+    {
+      accessorKey: "controller_no",
+      header: "Controller no.",
+    },
+    {
+      accessorKey: "charger_no",
+      header: "Charger no.",
     },
     {
       accessorKey: "customer_phone",

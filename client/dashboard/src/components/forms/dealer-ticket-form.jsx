@@ -116,9 +116,9 @@ export default function DealerTicketForm({ id, type }) {
     if (["edit", "view"].includes(type) && data) {
       setFileUrls((prev) => ({
         ...prev,
-        job_card_urls: data?.job_card ?? [],
-        images_urls: data?.images ?? [],
-        videos_urls: data?.videos ?? [],
+        job_card_urls: Array.isArray(data?.job_card) ? data?.job_card : [],
+        images_urls: Array.isArray(data?.images) ? data?.images : [],
+        videos_urls: Array.isArray(data?.videos) ? data?.videos : [],
       }));
       reset({ ...data });
     }

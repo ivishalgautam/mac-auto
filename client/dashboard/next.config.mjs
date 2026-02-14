@@ -6,16 +6,13 @@ const nextConfig = {
         protocol: "http",
         hostname: "localhost",
         port: "3001",
-      },
-      {
-        protocol: "http",
-        hostname: "localhost",
-        port: "3002",
+        pathname: "/public/**",
       },
       {
         protocol: "https",
         hostname: "api.macautoindia.com",
         port: "",
+        pathname: "/public/**",
       },
     ],
   },

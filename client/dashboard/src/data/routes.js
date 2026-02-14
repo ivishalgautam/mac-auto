@@ -143,6 +143,12 @@ export const sidebarData = [
         roles: [ROLES.DEALER, ROLES.CRE],
         isVisible: true,
       },
+      {
+        title: "Customer inventory",
+        url: "/customer-inventories?page=1&limit=10",
+        roles: [...Object.values(ROLES)],
+        isVisible: true,
+      },
     ],
   },
   {
@@ -624,9 +630,9 @@ export const sidebarData = [
   },
   {
     title: "Customer Purchase",
-    url: "/customer-purchases?page=1&limit=10",
+    url: "/customer-inventories?page=1&limit=10",
     icon: SwatchBook,
-    roles: [ROLES.ADMIN, ROLES.CRE, ROLES.MANAGER],
+    roles: [...Object.values(ROLES)],
     isVisible: true,
     items: [],
   },

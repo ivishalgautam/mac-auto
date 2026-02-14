@@ -21,20 +21,25 @@ const baseTicketSchema = z.object({
     .transform((data) => data?.map((d) => d.value) ?? []),
 
   warranty_detail: z.string().min(1, { message: "Select warranty." }),
+
+  payment_status: z.enum(["paid", "unpaid"], {
+    message: "Payment status is required.",
+  }),
+
+  payment_amount: z.coerce.number().optional().nullable(),
 });
 
 export const customerTicketSchema = baseTicketSchema
   .extend({})
   .superRefine((data, ctx) => {
     if (
-      data.complaint_type === "Spare Parts Related" &&
-      (!data.part_ids || data.part_ids.length === 0)
+      data.payment_status === "paid" &&
+      (!data.payment_amount || data.payment_amount <= 0)
     ) {
       ctx.addIssue({
-        path: ["part_ids"],
+        path: ["payment_amount"],
         code: z.ZodIssueCode.custom,
-        message:
-          "At least one part must be selected for Spare Parts Related complaints",
+        message: "Payment amount is required.",
       });
     }
   });
@@ -46,6 +51,8 @@ export const creTicketSchema = baseTicketSchema
       .uuid()
       .min(1, { message: "Customer ID is required*" }),
 
+    customer_inventory_id: z.string().uuid().optional().nullable(),
+
     expected_closure_date: z.coerce.date().nullable(),
 
     assigned_technician: z.string().optional().nullable(),
@@ -53,14 +60,13 @@ export const creTicketSchema = baseTicketSchema
   })
   .superRefine((data, ctx) => {
     if (
-      data.complaint_type === "Spare Parts Related" &&
-      (!data.part_ids || data.part_ids.length === 0)
+      data.payment_status === "paid" &&
+      (!data.payment_amount || data.payment_amount <= 0)
     ) {
       ctx.addIssue({
-        path: ["part_ids"],
+        path: ["payment_amount"],
         code: z.ZodIssueCode.custom,
-        message:
-          "At least one part must be selected for Spare Parts Related complaints",
+        message: "Payment amount is required.",
       });
     }
   });
@@ -71,6 +77,8 @@ export const ticketSchema = baseTicketSchema
       .string({ required_error: "Customer ID is required*" })
       .uuid()
       .min(1, { message: "Customer ID is required*" }),
+
+    customer_inventory_id: z.string().uuid().optional().nullable(),
 
     expected_closure_date: z.coerce.date().nullable(),
 
@@ -83,14 +91,13 @@ export const ticketSchema = baseTicketSchema
   })
   .superRefine((data, ctx) => {
     if (
-      data.complaint_type === "Spare Parts Related" &&
-      (!data.part_ids || data.part_ids.length === 0)
+      data.payment_status === "paid" &&
+      (!data.payment_amount || data.payment_amount <= 0)
     ) {
       ctx.addIssue({
-        path: ["part_ids"],
+        path: ["payment_amount"],
         code: z.ZodIssueCode.custom,
-        message:
-          "At least one part must be selected for Spare Parts Related complaints",
+        message: "Payment amount is required.",
       });
     }
   });

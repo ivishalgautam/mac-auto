@@ -16,7 +16,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { Muted, Small } from "@/components/ui/typography";
 import { cn } from "@/lib/utils";
-import { useGetFormattedCustomers } from "@/mutations/customer-mutation";
+import { useGetDealerCustomers } from "@/mutations/customer-mutation";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { useState } from "react";
 
@@ -27,7 +27,7 @@ export default function CustomerSelect({
   disabled,
 }) {
   const [open, setOpen] = useState(false);
-  const { data, isLoading, isError, error } = useGetFormattedCustomers();
+  const { data, isLoading, isError, error } = useGetDealerCustomers();
 
   if (isError) return <ErrorMessage error={error} />;
 

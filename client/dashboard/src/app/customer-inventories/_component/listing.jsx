@@ -1,25 +1,25 @@
 "use client";
+
 import ErrorMessage from "@/components/ui/error";
 import { DataTable } from "@/components/ui/table/data-table";
 import { DataTableSkeleton } from "@/components/ui/table/data-table-skeleton";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { columns } from "../columns";
-import { useGetCustomerPurchases } from "@/mutations/customer-mutation";
 import { useAuth } from "@/providers/auth-provider";
-import { FormDialog } from "@/components/form-dialog";
-import CustomerInventoryForm from "@/components/forms/customer-inventory-form";
 import {
   useCreateCustomerInventory,
+  useCustomerInventories,
   useDeleteCustomerInventory,
   useUpdateCustomerInventory,
 } from "@/mutations/use-customer-inventories";
+import { FormDialog } from "@/components/form-dialog";
+import CustomerInventoryForm from "@/components/forms/customer-inventory-form";
 import { DeleteDialog } from "@/components/delete-dialog";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 
 export default function Listing() {
-  const { id: customerId } = useParams();
   const { user } = useAuth();
   const [isModal, setIsModal] = useState(false);
   const [isDeleteModal, setIsDeleteModal] = useState(false);
@@ -28,21 +28,6 @@ export default function Listing() {
   const searchParams = useSearchParams();
   const searchParamsStr = searchParams.toString();
   const router = useRouter();
-
-  const { data, isLoading, isError, error } = useGetCustomerPurchases(
-    searchParamsStr
-      ? `${searchParamsStr}&customer=${customerId}`
-      : searchParamsStr,
-  );
-
-  useEffect(() => {
-    if (!searchParamsStr) {
-      const params = new URLSearchParams();
-      params.set("page", 1);
-      params.set("limit", 10);
-      router.replace(`?${params.toString()}`);
-    }
-  }, [searchParamsStr, router]);
 
   const openModal = (type) => {
     if (type === "create") setIsModal(true);
@@ -55,6 +40,9 @@ export default function Listing() {
     if (type === "edit") setIsUpdateModal(false);
   };
 
+  const { data, isLoading, isError, error } =
+    useCustomerInventories(searchParamsStr);
+
   const createMutation = useCreateCustomerInventory(() => closeModal("create"));
   const updateMutation = useUpdateCustomerInventory(id, () =>
     closeModal("edit"),
@@ -62,6 +50,15 @@ export default function Listing() {
   const deleteMutation = useDeleteCustomerInventory(id, () =>
     closeModal("delete"),
   );
+
+  useEffect(() => {
+    if (!searchParamsStr) {
+      const params = new URLSearchParams();
+      params.set("page", 1);
+      params.set("limit", 10);
+      router.replace(`?${params.toString()}`);
+    }
+  }, [searchParamsStr, router]);
 
   if (isLoading) return <DataTableSkeleton columnCount={6} rowCount={10} />;
   if (isError) return <ErrorMessage error={error} />;
@@ -85,7 +82,6 @@ export default function Listing() {
         <CustomerInventoryForm
           createMutation={createMutation}
           type={"create"}
-          customerId={customerId}
         />
       </FormDialog>
 

@@ -32,8 +32,9 @@ import {
 } from "@/components/ui/select";
 import { ticketStatus } from "./table-actions";
 import { useAuth } from "@/providers/auth-provider";
-import { Muted } from "@/components/ui/typography";
+import { Large, Muted } from "@/components/ui/typography";
 import TicketUpdates from "../../../components/ticket-updates";
+import { rupee } from "@/lib/Intl";
 
 const formatDate = (dateString) => {
   return new Date(dateString).toLocaleDateString("en-US", {
@@ -70,6 +71,21 @@ export default function TicketView({ id }) {
 
   return (
     <div className="mx-auto max-w-4xl space-y-6 p-6">
+      <div className="space-x-1 text-end">
+        <Badge className="capitalize" variant={"outline"}>
+          {data.payment_status === "paid" ? (
+            <span className="size-2 rounded-full bg-emerald-500" />
+          ) : data.payment_status === "unpaid" ? (
+            <span className="size-2 rounded-full bg-yellow-500" />
+          ) : null}
+          {data.payment_status}
+        </Badge>
+
+        <Badge className="capitalize" variant={"secondary"}>
+          {rupee.format(data.payment_amount)}
+        </Badge>
+      </div>
+
       {/* Header Section */}
       <div className="bg-primary text-primary-foreground rounded-lg p-6">
         <div className="flex items-center justify-between">
@@ -144,7 +160,7 @@ export default function TicketView({ id }) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-wrap space-y-2">
+          <div className="flex flex-wrap gap-1">
             {data.parts.map((part, index) => (
               <Badge key={index} variant={"outline"}>
                 {part.part_name ?? part.text}
@@ -163,17 +179,21 @@ export default function TicketView({ id }) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center gap-4">
-            <div className="bg-primary flex h-12 w-12 items-center justify-center rounded-full">
-              <User className="text-primary-foreground h-6 w-6" />
+          {data.assigned_technician_name ? (
+            <div className="flex items-center gap-4">
+              <div className="bg-primary flex h-12 w-12 items-center justify-center rounded-full">
+                <User className="text-primary-foreground h-6 w-6" />
+              </div>
+              <div>
+                <h4 className="text-card-foreground font-medium capitalize">
+                  {data.assigned_technician_name}
+                </h4>
+                <Muted>{data.assigned_technician_phone}</Muted>
+              </div>
             </div>
-            <div>
-              <h4 className="text-card-foreground font-medium capitalize">
-                {data.assigned_technician_name}
-              </h4>
-              <Muted>{data.assigned_technician_phone}</Muted>
-            </div>
-          </div>
+          ) : (
+            <Muted>Not assigned</Muted>
+          )}
         </CardContent>
       </Card>
 
@@ -225,27 +245,38 @@ export default function TicketView({ id }) {
           <CardContent className="space-y-3">
             <div>
               <h4 className="text-card-foreground font-medium">
-                {data.dealership_first_name} {data.dealership_last_name}
+                {data.dealership_first_name
+                  ? data.dealership_first_name
+                  : "N/a"}{" "}
+                {data.dealership_last_name && data.dealership_last_name}
               </h4>
             </div>
 
             <div className="flex items-center gap-2">
               <Phone className="text-muted-foreground h-4 w-4" />
-              <span className="text-sm">{data.dealership_phone}</span>
+              <span className="text-sm">
+                {data.dealership_phone ? data.dealership_phone : "N/a"}
+              </span>
             </div>
 
             <div className="flex items-center gap-2">
               <Muted>State:</Muted>
-              <span className="text-sm">{data.dealership_state}</span>
+              <span className="text-sm">
+                {data.dealership_state ? data.dealership_state : "N/a"}
+              </span>
             </div>
             <div className="flex items-center gap-2">
               <Muted>City:</Muted>
-              <span className="text-sm">{data.dealership_city}</span>
+              <span className="text-sm">
+                {data.dealership_city ? data.dealership_city : "N/a"}
+              </span>
             </div>
 
             <div className="flex items-center gap-2">
               <MapPin className="text-muted-foreground h-4 w-4" />
-              <span className="text-sm">{data.dealership_location}</span>
+              <span className="text-sm">
+                {data.dealership_location ? data.dealership_location : "N/a"}
+              </span>
             </div>
           </CardContent>
         </Card>
@@ -284,6 +315,34 @@ export default function TicketView({ id }) {
                       <EyeIcon className="size-5 text-white" />
                     </a>
                   </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* videos Section */}
+      {data.videos && data.videos.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="">Videos</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4 md:grid-cols-2">
+              {data.videos.map((video, index) => (
+                <div
+                  className="bg-accent group relative aspect-video rounded-md"
+                  key={index}
+                >
+                  <video
+                    src={`${config.file_base}/${video}`}
+                    width={200}
+                    height={200}
+                    className="size-full rounded-[inherit] object-cover"
+                    alt={`video-${index}`}
+                    controls
+                  />
                 </div>
               ))}
             </div>
