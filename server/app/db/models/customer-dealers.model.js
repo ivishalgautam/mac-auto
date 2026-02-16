@@ -102,19 +102,23 @@ const get = async (req) => {
 
   const query = `
   SELECT 
-    cstdlrs.*,
-    usr.id as user_id, CONCAT(usr.first_name, ' ', usr.last_name) as fullname,
-    usr.mobile_number, usr.email,
-    COUNT(cinv.id) as total_purchases
-  FROM ${constants.models.CUSTOMER_DEALERS_TABLE} cstdlrs
-  LEFT JOIN ${constants.models.CUSTOMER_TABLE} cst ON cst.id = cstdlrs.customer_id
-  LEFT JOIN ${constants.models.USER_TABLE} usr ON usr.id = cst.user_id
-  LEFT JOIN ${constants.models.DEALER_TABLE} dlr ON dlr.id = cstdlrs.dealer_id
-  LEFT JOIN ${constants.models.CUSTOMER_INVENTORY_TABLE} cinv ON cinv.customer_id = cstdlrs.customer_id
-  ${whereClause}
-  GROUP BY cstdlrs.id, usr.id
-  ORDER BY cstdlrs.created_at DESC
-  LIMIT :limit OFFSET :offset
+      cstdlrs.*,
+      usr.id as user_id, CONCAT(usr.first_name, ' ', usr.last_name) as fullname,
+      usr.mobile_number, usr.email,
+      tp.total_purchases,
+      cst.state, cst.city
+    FROM ${constants.models.CUSTOMER_DEALERS_TABLE} cstdlrs
+    LEFT JOIN ${constants.models.CUSTOMER_TABLE} cst ON cst.id = cstdlrs.customer_id
+    LEFT JOIN ${constants.models.USER_TABLE} usr ON usr.id = cst.user_id
+    LEFT JOIN ${constants.models.DEALER_TABLE} dlr ON dlr.id = cstdlrs.dealer_id
+    LEFT JOIN LATERAL (
+      SELECT COUNT(cinv.id) AS total_purchases 
+        FROM ${constants.models.CUSTOMER_INVENTORY_TABLE} cinv 
+        WHERE cinv.customer_id = cstdlrs.customer_id
+    ) tp ON TRUE
+    ${whereClause}
+    ORDER BY cstdlrs.created_at DESC
+    LIMIT :limit OFFSET :offset
   `;
 
   const countQuery = `
