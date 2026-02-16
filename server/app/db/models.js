@@ -33,6 +33,7 @@ import ticketUpdateModel from "./models/ticket-update.model.js";
 import customerInventoryModel from "./models/customer-inventory.model.js";
 
 export default {
+  CustomerInventoryModel: customerInventoryModel,
   UserModel: userModel,
   OTPModel: otpModel,
   VehicleModel: vehicleModel,
@@ -65,5 +66,4 @@ export default {
   OrderStatusModel: orderStatusModel,
   PartModel: partModel,
   TicketUpdateModel: ticketUpdateModel,
-  CustomerInventoryModel: customerInventoryModel,
 };
