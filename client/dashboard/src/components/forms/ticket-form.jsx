@@ -44,14 +44,11 @@ import { ROLES } from "@/data/routes";
 import CustomMultiSelect from "../custom-multi-select";
 import { useFormattedParts } from "@/mutations/use-parts";
 import {
-  useCustomerInventories,
   useCustomerInventory,
   useFormattedCustomerInventories,
 } from "@/mutations/use-customer-inventories";
-import CustomerSelect from "@/features/customer-select";
 import {
   useGetCustomer,
-  useGetCustomers,
   useGetDealerCustomers,
 } from "@/mutations/customer-mutation";
 
@@ -135,8 +132,6 @@ export default function TicketForm({ id, type, inventoryId, customerId }) {
       label: cst.fullname,
     }));
   }, [customersRecord]);
-
-  console.log({ customersRecord });
 
   const {
     data: customerRecord,

@@ -12,7 +12,8 @@ import { Loader2 } from "lucide-react";
 import { useGetFormattedVehicles } from "@/mutations/vehicle-mutation";
 import CustomSelect from "../ui/custom-select";
 import { useCustomerInventory } from "@/mutations/use-customer-inventories";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
+import { useGetDealerCustomers } from "@/mutations/customer-mutation";
 
 export default function CustomerInventoryForm({
   createMutation,
@@ -47,6 +48,21 @@ export default function CustomerInventoryForm({
     isError: isVehiclesError,
     error: vehiclesError,
   } = useGetFormattedVehicles("");
+
+  const {
+    data: customersRecord,
+    isLoading: isCustomersRecordLoading,
+    isError: isCustomersRecordError,
+    error: customersRecordError,
+  } = useGetDealerCustomers("");
+  const formattedCustomers = useMemo(() => {
+    if (!customersRecord) return [];
+
+    return customersRecord?.customers?.map((cst) => ({
+      value: cst.customer_id,
+      label: cst.fullname,
+    }));
+  }, [customersRecord]);
 
   const { data, isLoading, isError, error } = useCustomerInventory(id);
 
@@ -109,18 +125,18 @@ export default function CustomerInventoryForm({
 
         {/* customer id */}
         <div className="col-span-full space-y-2">
-          <Label>Customer</Label>
+          <Label htmlFor="customer_id">Customer ID *</Label>
           <Controller
             name="customer_id"
             control={control}
             render={({ field }) => (
-              <CustomerSelect
-                value={field.value}
+              <CustomSelect
+                options={formattedCustomers}
+                isError={isCustomersRecordError}
+                isLoading={isCustomersRecordLoading}
+                error={customersRecordError}
                 onChange={field.onChange}
-                className={cn({
-                  "border-red-500 dark:border-red-500": errors.customer_id,
-                })}
-                disabled={customerId}
+                value={field.value}
               />
             )}
           />

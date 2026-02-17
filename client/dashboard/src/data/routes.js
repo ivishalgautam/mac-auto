@@ -632,7 +632,7 @@ export const sidebarData = [
     title: "Customer Purchase",
     url: "/customer-inventories?page=1&limit=10",
     icon: SwatchBook,
-    roles: [...Object.values(ROLES)],
+    roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.CRE],
     isVisible: true,
     items: [],
   },
