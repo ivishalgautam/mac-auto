@@ -290,10 +290,10 @@ const getByCustomer = async (req, customerId) => {
 };
 
 const deleteById = async (req, id, transaction = null) => {
-  return await CustomerInventoryModel.destroy(
-    { where: req.params?.id || id },
-    { transaction }
-  );
+  return await CustomerInventoryModel.destroy({
+    where: { id: req.params?.id || id },
+    transaction,
+  });
 };
 
 export default {
