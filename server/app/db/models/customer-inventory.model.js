@@ -289,12 +289,20 @@ const getByCustomer = async (req, customerId) => {
   };
 };
 
+const deleteById = async (req, id, transaction = null) => {
+  return await CustomerInventoryModel.destroy(
+    { where: req.params?.id || id },
+    { transaction }
+  );
+};
+
 export default {
   init: init,
   create: create,
   bulkCreate: bulkCreate,
   update: update,
   getById: getById,
+  deleteById: deleteById,
   get: get,
   getByCustomer: getByCustomer,
 };
