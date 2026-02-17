@@ -462,7 +462,10 @@ export default function TicketForm({ id, type, inventoryId, customerId }) {
               control={control}
               render={({ field }) => (
                 <CustomSelect
-                  onChange={field.onChange}
+                  onChange={(value) => {
+                    field.onChange(value);
+                    if (value === "unpaid") setValue("payment_amount", 0);
+                  }}
                   value={field.value}
                   placeholder="Select payment"
                   className={cn({
