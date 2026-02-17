@@ -202,11 +202,13 @@ export const columns = (
             {row.getValue("complaint_type")}
             {isSparePartsComplaint && (
               <div className="flew-wrap flex gap-1">
-                {row.original.parts.map((p, ind) => (
-                  <Badge key={ind} variant={"outline"}>
-                    {p.part_name ?? p.text}
-                  </Badge>
-                ))}
+                {Array.isArray(row.original.parts) &&
+                  row.original.parts.length &&
+                  row.original.parts.map((p, ind) => (
+                    <Badge key={ind} variant={"outline"}>
+                      {p.part_name ?? p.text}
+                    </Badge>
+                  ))}
               </div>
             )}
           </div>
