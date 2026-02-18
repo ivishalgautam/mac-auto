@@ -261,6 +261,20 @@ const get = async (req) => {
     queryParams.status = `{${status.join(",")}}`;
   }
 
+  const dealers = req.query.dealers ? req.query.dealers.split(".") : null;
+  if (dealers?.length) {
+    whereConditions.push(`dlr.id = any(:dealers)`);
+    queryParams.dealers = `{${dealers.join(",")}}`;
+  }
+
+  const technicians = req.query.technicians
+    ? req.query.technicians.split(".")
+    : null;
+  if (technicians?.length) {
+    whereConditions.push(`tk.assigned_technician = any(:technicians)`);
+    queryParams.technicians = `{${technicians.join(",")}}`;
+  }
+
   let q = req.query.q?.trim();
 
   if (q) {
