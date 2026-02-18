@@ -4,6 +4,12 @@ import { DataTableSearch } from "@/components/ui/table/data-table-search";
 import { useTableFilters } from "./use-table-filters";
 import { DataTableFilterBox } from "@/components/ui/table/data-table-filter-box";
 import { DataTableDatePickerWithRange } from "@/components/ui/table/data-table-date-range-selector";
+import useGetDealers from "@/hooks/use-get-dealers";
+import { useAuth } from "@/providers/auth-provider";
+import { Skeleton } from "@/components/ui/skeleton";
+import ErrorMessage from "@/components/ui/error";
+import { ROLES } from "@/data/routes";
+import { useGetFormattedTechnicians } from "@/mutations/technician-mutation";
 
 export const ticketStatus = [
   {
@@ -36,7 +42,20 @@ export default function TableActions() {
     setStartDateFilter,
     endDateFilter,
     setEndDateFilter,
+    dealerFilter,
+    setDealerFilter,
+    setTechniciansFilter,
+    techniciansFilter,
   } = useTableFilters();
+
+  const { data, isLoading, isError, error } = useGetDealers();
+  const {
+    data: technicians,
+    isLoading: isTechniciansLoading,
+    isError: isTechniciansError,
+    error: techniciansError,
+  } = useGetFormattedTechnicians("");
+  const { user } = useAuth();
 
   return (
     <div className="my-3 flex flex-wrap items-center gap-4">
@@ -53,6 +72,42 @@ export default function TableActions() {
         setFilterValue={setStatusFilter}
         filterValue={statusFilter}
       />
+
+      {isLoading ? (
+        <Skeleton className={"h-10 w-32"} />
+      ) : isError ? (
+        <ErrorMessage error={error} />
+      ) : (
+        user &&
+        [ROLES.ADMIN, ROLES.CRE, ROLES.MANAGER].includes(user?.role) && (
+          <DataTableFilterBox
+            filterKey="dealers"
+            title="Dealers"
+            options={data ?? []}
+            setFilterValue={setDealerFilter}
+            filterValue={dealerFilter}
+          />
+        )
+      )}
+
+      {isTechniciansLoading ? (
+        <Skeleton className={"h-10 w-32"} />
+      ) : isTechniciansError ? (
+        <ErrorMessage error={techniciansError} />
+      ) : (
+        user &&
+        [ROLES.ADMIN, ROLES.CRE, ROLES.MANAGER, ROLES.DEALER].includes(
+          user?.role,
+        ) && (
+          <DataTableFilterBox
+            filterKey="technicians"
+            title="Technicians"
+            options={technicians ?? []}
+            setFilterValue={setTechniciansFilter}
+            filterValue={techniciansFilter}
+          />
+        )
+      )}
 
       <DataTableDatePickerWithRange
         startDate={startDateFilter}

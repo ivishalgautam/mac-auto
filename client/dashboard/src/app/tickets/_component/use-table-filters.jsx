@@ -18,6 +18,14 @@ export function useTableFilters() {
     "status",
     searchParams.status.withDefault(""),
   );
+  const [dealerFilter, setDealerFilter] = useQueryState(
+    "dealers",
+    searchParams.role.withDefault(""),
+  );
+  const [techniciansFilter, setTechniciansFilter] = useQueryState(
+    "technicians",
+    parseAsString.withDefault(""),
+  );
 
   const [startDateFilter, setStartDateFilter] = useQueryState(
     "start_date",
@@ -33,6 +41,8 @@ export function useTableFilters() {
     setStatusFilter(null);
     setStartDateFilter(null);
     setEndDateFilter(null);
+    setDealerFilter(null);
+    setTechniciansFilter(null);
 
     setPage(1);
   }, [
@@ -41,13 +51,27 @@ export function useTableFilters() {
     setPage,
     setStartDateFilter,
     setEndDateFilter,
+    setDealerFilter,
+    setTechniciansFilter,
   ]);
 
   const isAnyFilterActive = useMemo(() => {
     return (
-      !!searchQuery || !!statusFilter || !!startDateFilter || !!endDateFilter
+      !!searchQuery ||
+      !!statusFilter ||
+      !!startDateFilter ||
+      !!endDateFilter ||
+      !!dealerFilter ||
+      !!techniciansFilter
     );
-  }, [searchQuery, statusFilter, startDateFilter, endDateFilter]);
+  }, [
+    searchQuery,
+    statusFilter,
+    startDateFilter,
+    endDateFilter,
+    dealerFilter,
+    techniciansFilter,
+  ]);
 
   return {
     searchQuery,
@@ -62,5 +86,9 @@ export function useTableFilters() {
     setStartDateFilter,
     endDateFilter,
     setEndDateFilter,
+    dealerFilter,
+    setDealerFilter,
+    setTechniciansFilter,
+    techniciansFilter,
   };
 }
