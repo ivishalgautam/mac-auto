@@ -161,11 +161,13 @@ export default function TicketView({ id }) {
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-1">
-            {data.parts.map((part, index) => (
-              <Badge key={index} variant={"outline"}>
-                {part.part_name ?? part.text}
-              </Badge>
-            ))}
+            {Array.isArray(data.parts) && data.parts.lenght
+              ? data.parts.map((part, index) => (
+                  <Badge key={index} variant={"outline"}>
+                    {part.part_name ?? part.text}
+                  </Badge>
+                ))
+              : "N/a"}
           </div>
         </CardContent>
       </Card>
@@ -290,33 +292,35 @@ export default function TicketView({ id }) {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-[repeat(auto-fill,minmax(100px,1fr))] gap-4">
-              {data.images.map((image, index) => (
-                <div
-                  className="bg-accent group relative aspect-square w-24 rounded-md"
-                  key={index}
-                >
-                  <Image
-                    src={`${config.file_base}/${image}`}
-                    width={200}
-                    height={200}
-                    className="size-full rounded-[inherit] object-cover"
-                    alt={`carousel-${index}`}
-                  />
+              {Array.isArray(data.images) &&
+                data.images.length &&
+                data.images.map((image, index) => (
+                  <div
+                    className="bg-accent group relative aspect-square w-24 rounded-md"
+                    key={index}
+                  >
+                    <Image
+                      src={`${config.file_base}/${image}`}
+                      width={200}
+                      height={200}
+                      className="size-full rounded-[inherit] object-cover"
+                      alt={`carousel-${index}`}
+                    />
 
-                  <div className="absolute inset-0 flex items-center justify-center rounded-md bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
-                    <a
-                      target="_blank"
-                      className={buttonVariants({
-                        size: "icon",
-                        variant: "ghost",
-                      })}
-                      href={`${config.file_base}/${image}`}
-                    >
-                      <EyeIcon className="size-5 text-white" />
-                    </a>
+                    <div className="absolute inset-0 flex items-center justify-center rounded-md bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
+                      <a
+                        target="_blank"
+                        className={buttonVariants({
+                          size: "icon",
+                          variant: "ghost",
+                        })}
+                        href={`${config.file_base}/${image}`}
+                      >
+                        <EyeIcon className="size-5 text-white" />
+                      </a>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
             </div>
           </CardContent>
         </Card>
@@ -330,21 +334,23 @@ export default function TicketView({ id }) {
           </CardHeader>
           <CardContent>
             <div className="grid gap-4 md:grid-cols-2">
-              {data.videos.map((video, index) => (
-                <div
-                  className="bg-accent group relative aspect-video rounded-md"
-                  key={index}
-                >
-                  <video
-                    src={`${config.file_base}/${video}`}
-                    width={200}
-                    height={200}
-                    className="size-full rounded-[inherit] object-cover"
-                    alt={`video-${index}`}
-                    controls
-                  />
-                </div>
-              ))}
+              {Array.isArray(data.videos) &&
+                data.videos.length &&
+                data.videos.map((video, index) => (
+                  <div
+                    className="bg-accent group relative aspect-video rounded-md"
+                    key={index}
+                  >
+                    <video
+                      src={`${config.file_base}/${video}`}
+                      width={200}
+                      height={200}
+                      className="size-full rounded-[inherit] object-cover"
+                      alt={`video-${index}`}
+                      controls
+                    />
+                  </div>
+                ))}
             </div>
           </CardContent>
         </Card>
