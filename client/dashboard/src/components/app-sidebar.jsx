@@ -50,7 +50,7 @@ export function AppSidebar({ ...props }) {
   return (
     <Sidebar variant="sidebar" collapsible="icon" {...props}>
       <div>
-        <div className="flex h-16 items-center justify-center p-2">
+        <div className="mt-10 flex h-16 items-center justify-center p-2">
           {state === "expanded" ? (
             <Image
               src="/logo-dark.png"
