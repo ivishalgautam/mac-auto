@@ -127,7 +127,6 @@ export default function OrderStepperForm({ type, id }) {
     control,
     name: "order_items",
   });
-
   const orderItems = watch("order_items");
   const handleNext = () => setStep((s) => s + 1);
   const handleBack = () => setStep((s) => s - 1);
@@ -287,7 +286,7 @@ export default function OrderStepperForm({ type, id }) {
                                   >
                                     <figure>
                                       <Image
-                                        src={config.file_base + v.carousel[0]}
+                                        src={`${config.file_base}/${v.carousel[0]}`}
                                         width={200}
                                         height={200}
                                         alt={v.title}
@@ -436,9 +435,16 @@ export default function OrderStepperForm({ type, id }) {
                 { shouldDirty: true },
               );
             } else {
-              setValue(colorsPath, [...colorFields, { color, quantity: 1 }], {
-                shouldDirty: true,
-              });
+              setValue(
+                colorsPath,
+                [
+                  ...colorFields,
+                  { color, quantity: 1, battery_type: "Lead Acid" },
+                ],
+                {
+                  shouldDirty: true,
+                },
+              );
             }
           };
 
@@ -452,6 +458,7 @@ export default function OrderStepperForm({ type, id }) {
             );
           };
           const commitBatteryType = (color, type) => {
+            console.log({ colorFields, color, type });
             setValue(
               colorsPath,
               colorFields.map((c) =>
