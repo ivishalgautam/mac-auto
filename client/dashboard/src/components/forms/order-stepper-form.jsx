@@ -286,7 +286,7 @@ export default function OrderStepperForm({ type, id }) {
                                   >
                                     <figure>
                                       <Image
-                                        src={`${config.file_base}/${v.carousel[0]}`}
+                                        src={`${config.file_base}${v.carousel[0]}`}
                                         width={200}
                                         height={200}
                                         alt={v.title}
