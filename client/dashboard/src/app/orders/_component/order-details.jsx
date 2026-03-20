@@ -255,7 +255,7 @@ export default function OrderDetails({ data }) {
                   )}
                 </div>
               ) : (
-                <div className="grid grid-cols-[repeat(auto-fit,minmax(100px,1fr))] py-2">
+                <div className="grid grid-cols-3 py-2">
                   {orderStatuses.map((order) => {
                     const statusOrder = orderStatuses.map((o) => o.value);
                     const currentIndex = statusOrder.indexOf(data.status);
