@@ -14,53 +14,56 @@ const create = async (req, res) => {
 
   try {
     const validateData = createOrderSchema.parse(req.body);
-    // console.log(validateData.order_items[0].colors);
-    // throw new Error("Error");
     const { role, id } = req.user_data;
-    let userRecord = null;
-    if (role === "dealer") {
-      const dealerRecord = await table.DealerModel.getByUserId(id);
-      req.body.dealer_id = dealerRecord.id;
-      userRecord = req.user_data;
-    } else {
-      const dealerRecord = await table.DealerModel.getById(
-        validateData.dealer_id
-      );
-      userRecord = await table.UserModel.getById(0, dealerRecord.user_id);
-    }
+
+    // Resolve the user record for the email notification
+    const userRecord = await resolveUserRecord(role, id, validateData);
 
     const orderRecord = await table.OrderModel.create(req, transaction);
-    const itemRecords = await Promise.all(
-      validateData.order_items.map(async (item) => {
-        const vehicle = await table.VehicleModel.getById(0, item.vehicle_id);
-        if (!vehicle) throw new Error(`Vehicle not found: ${item.vehicle_id}`);
 
-        const colorEntries = item.colors || [];
-
-        return {
-          order_id: orderRecord.id,
-          vehicle_id: item.vehicle_id,
-          battery_type: item.battery_type,
-          colors: colorEntries,
-        };
-      })
+    // Validate all vehicles in parallel before building item records
+    const vehicles = await Promise.all(
+      validateData.order_items.map(({ vehicle_id }) =>
+        table.VehicleModel.getById(0, vehicle_id).then((v) => {
+          if (!v) throw new Error(`Vehicle not found: ${vehicle_id}`);
+          return v;
+        }),
+      ),
     );
 
-    await table.OrderItemModel.bulkCreate(itemRecords, transaction);
-    await table.OrderStatusModel.create(
-      { body: { status: "pending", order_id: orderRecord.id } },
-      transaction
-    );
+    const itemRecords = validateData.order_items.map((item) => ({
+      order_id: orderRecord.id,
+      vehicle_id: item.vehicle_id,
+      battery_type: item.battery_type,
+      colors: item.colors ?? [],
+    }));
+
+    await Promise.all([
+      table.OrderItemModel.bulkCreate(itemRecords, transaction),
+      table.OrderStatusModel.create(
+        { body: { status: "pending", order_id: orderRecord.id } },
+        transaction,
+      ),
+    ]);
 
     await transaction.commit();
 
+    // Fire-and-forget — don't block the response on email delivery
     if (userRecord?.email) {
-      await mailer.sendOrderCreatedEmail({
-        email: userRecord.email,
-        order_code: orderRecord.order_code,
-        fullname: userRecord.first_name + " " + userRecord?.last_name ?? "",
-        status: orderRecord.status,
-      });
+      mailer
+        .sendOrderCreatedEmail({
+          email: userRecord.email,
+          order_code: orderRecord.order_code,
+          fullname:
+            `${userRecord.first_name} ${userRecord.last_name ?? ""}`.trim(),
+          status: orderRecord.status,
+        })
+        .catch((err) =>
+          console.error("Order email failed", {
+            err,
+            order_id: orderRecord.id,
+          }),
+        );
     }
 
     res
@@ -71,6 +74,17 @@ const create = async (req, res) => {
     throw error;
   }
 };
+
+async function resolveUserRecord(role, id, validateData) {
+  if (role === "dealer") {
+    const dealer = await table.DealerModel.getByUserId(id);
+    validateData.dealer_id = dealer.id;
+    return req.user_data;
+  }
+
+  const dealer = await table.DealerModel.getById(validateData.dealer_id);
+  return table.UserModel.getById(0, dealer.user_id);
+}
 
 const get = async (req, res) => {
   try {
@@ -122,7 +136,7 @@ const update = async (req, res) => {
     if (updatedInvoiceDocs) {
       req.body.invoice = [...(req.body?.invoice ?? []), ...updatedInvoiceDocs];
       documentsToDelete.push(
-        ...getItemsToDelete(existingInvoiceDocs, updatedInvoiceDocs)
+        ...getItemsToDelete(existingInvoiceDocs, updatedInvoiceDocs),
       );
     }
 
@@ -131,7 +145,7 @@ const update = async (req, res) => {
     if (updatedPDIDocs) {
       req.body.pdi = [...(req.body?.pdi ?? []), ...updatedPDIDocs];
       documentsToDelete.push(
-        ...getItemsToDelete(existingPDIDocs, updatedPDIDocs)
+        ...getItemsToDelete(existingPDIDocs, updatedPDIDocs),
       );
     }
 
@@ -143,7 +157,7 @@ const update = async (req, res) => {
         ...updatedEWayBillDocs,
       ];
       documentsToDelete.push(
-        ...getItemsToDelete(existingEWayBillDocs, updatedEWayBillDocs)
+        ...getItemsToDelete(existingEWayBillDocs, updatedEWayBillDocs),
       );
     }
 
@@ -158,8 +172,8 @@ const update = async (req, res) => {
                 ...detail,
                 vehicle_id: item.vehicle_id,
                 vehicle_color_id: c.vehicle_color_id,
-              }))
-          )
+              })),
+          ),
         )
         .filter(Boolean);
 
@@ -177,13 +191,13 @@ const update = async (req, res) => {
 
       const newBulkData = await table.DealerInventoryModel.bulkCreate(
         bulkAddData,
-        transaction
+        transaction,
       );
     }
 
     await table.OrderStatusModel.create(
       { body: { status: validatedData.status, order_id: record.id } },
-      transaction
+      transaction,
     );
 
     await cleanupFiles(documentsToDelete);
@@ -222,7 +236,7 @@ const updateDetails = async (req, res) => {
       userRecord = req.user_data;
     } else {
       const dealerRecord = await table.DealerModel.getById(
-        validateData.dealer_id
+        validateData.dealer_id,
       );
       userRecord = await table.UserModel.getById(0, dealerRecord.user_id);
     }
@@ -251,7 +265,7 @@ const updateDetails = async (req, res) => {
     if (chassisNumbers.length) {
       await table.InventoryModel.deleteByChassisNumbers(
         chassisNumbers,
-        transaction
+        transaction,
       );
     }
 
@@ -268,7 +282,7 @@ const updateDetails = async (req, res) => {
           // battery_type: item.battery_type,
           colors: colorEntries,
         };
-      })
+      }),
     );
 
     await table.OrderItemModel.bulkCreate(itemRecords, transaction);
