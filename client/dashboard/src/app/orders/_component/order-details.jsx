@@ -255,7 +255,7 @@ export default function OrderDetails({ data }) {
                   )}
                 </div>
               ) : (
-                <div className="grid grid-cols-3 py-2">
+                <div className="bg-border grid grid-cols-3 gap-px overflow-hidden rounded border-[1px]">
                   {orderStatuses.map((order) => {
                     const statusOrder = orderStatuses.map((o) => o.value);
                     const currentIndex = statusOrder.indexOf(data.status);
@@ -408,7 +408,7 @@ function TimelineItem({ label, isActive, isHorizontal = false, date }) {
     return (
       <div
         className={
-          "flex h-full min-w-max flex-col items-center justify-center gap-1 rounded border p-3"
+          "bg-card flex h-full min-w-max flex-col items-center justify-center gap-1 p-3"
         }
       >
         <div
