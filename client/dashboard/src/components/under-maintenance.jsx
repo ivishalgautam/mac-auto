@@ -18,7 +18,7 @@ export default function UnderMaintenance() {
           <EmptyMedia variant="icon" className={"bg-red-500/20"}>
             <ExclamationTriangleIcon className="text-red-500" />
           </EmptyMedia>
-          <EmptyTitle className={"text-2xl font-bold"}>
+          <EmptyTitle className={"text-2xl font-bold text-black"}>
             Server upgrade in progress
           </EmptyTitle>
           <EmptyDescription className="font-semibold">
