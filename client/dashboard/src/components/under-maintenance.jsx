@@ -13,7 +13,9 @@ import { Muted } from "./ui/typography";
 export default function UnderMaintenance() {
   return (
     <div className="flex h-screen items-center justify-center bg-gray-200">
-      <Empty className={"max-w-lg border bg-white"}>
+      <Empty
+        className={"max-w-lg border border-solid border-gray-300 bg-white"}
+      >
         <EmptyHeader>
           <EmptyMedia variant="icon" className={"bg-red-500/20"}>
             <ExclamationTriangleIcon className="text-red-500" />
