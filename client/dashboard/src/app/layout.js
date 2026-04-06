@@ -3,7 +3,6 @@ import Layout from "@/components/layout";
 import { Toaster } from "sonner";
 import { ThemeProvider } from "@/providers/theme-provider";
 import { Manrope } from "next/font/google";
-import UnderMaintenance from "@/components/under-maintenance";
 
 const manrope = Manrope({
   subsets: ["latin"],
@@ -29,8 +28,7 @@ export default function RootLayout({ children }) {
           enableSystem
           disableTransitionOnChange
         >
-          {/* <Layout>{children}</Layout> */}
-          <UnderMaintenance />
+          <Layout>{children}</Layout>
           <Toaster richColors closeButton theme="system" />
         </ThemeProvider>
       </body>
