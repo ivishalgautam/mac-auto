@@ -15,6 +15,7 @@ import {
   MapPin,
   Building2,
   Clock,
+  EyeIcon,
 } from "lucide-react";
 
 import moment from "moment";
@@ -33,6 +34,7 @@ import { ticketStatus } from "./table-actions";
 import { useAuth } from "@/providers/auth-provider";
 import { Muted } from "@/components/ui/typography";
 import { useGetDealerTicketDetails } from "@/mutations/dealer-ticket-mutation";
+import { buttonVariants } from "@/components/ui/button";
 
 const getStatusColor = (status) => {
   switch (status?.toLowerCase()) {
@@ -166,7 +168,7 @@ export default function TicketView({ id }) {
               {images.map((image, index) => (
                 <div
                   key={index}
-                  className="relative aspect-square w-24 overflow-hidden rounded-md"
+                  className="group relative aspect-square w-24 overflow-hidden rounded-md"
                 >
                   <Image
                     src={`${config.file_base}/${image}`}
@@ -175,6 +177,19 @@ export default function TicketView({ id }) {
                     className="h-full w-full object-cover"
                     alt={`image-${index}`}
                   />
+
+                  <div className="absolute inset-0 flex items-center justify-center rounded-md bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
+                    <a
+                      target="_blank"
+                      className={buttonVariants({
+                        size: "icon",
+                        variant: "ghost",
+                      })}
+                      href={`${config.file_base}/${image}`}
+                    >
+                      <EyeIcon className="size-5 text-white" />
+                    </a>
+                  </div>
                 </div>
               ))}
             </div>
