@@ -9,7 +9,7 @@ export default async function ViewPage({ params }) {
   return (
     <PageContainer className="">
       <Heading title="View ticket" description="View ticket." />
-      <DealerTicketForm id={id} type={"view"} />
+      <TicketView id={id} type={"view"} />
     </PageContainer>
   );
 }

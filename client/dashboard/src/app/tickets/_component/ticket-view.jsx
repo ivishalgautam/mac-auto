@@ -8,7 +8,7 @@ import {
   useUpdateTicket,
 } from "@/mutations/ticket-mutation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import {
   CalendarDays,
   User,
@@ -32,19 +32,9 @@ import {
 } from "@/components/ui/select";
 import { ticketStatus } from "./table-actions";
 import { useAuth } from "@/providers/auth-provider";
-import { Large, Muted } from "@/components/ui/typography";
+import { Muted } from "@/components/ui/typography";
 import TicketUpdates from "../../../components/ticket-updates";
 import { rupee } from "@/lib/Intl";
-
-const formatDate = (dateString) => {
-  return new Date(dateString).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-};
 
 const getStatusColor = (status) => {
   switch (status.toLowerCase()) {
@@ -69,6 +59,8 @@ export default function TicketView({ id }) {
   if (isLoading) return <Loader />;
   if (isError) return <ErrorMessage error={error} />;
 
+  const resolvedAt = data.resolved_at || data.updated_at;
+
   return (
     <div className="mx-auto max-w-4xl space-y-6 p-6">
       <div className="space-x-1 text-end">
@@ -84,6 +76,12 @@ export default function TicketView({ id }) {
         <Badge className="capitalize" variant={"secondary"}>
           {rupee.format(data.payment_amount)}
         </Badge>
+
+        {data.status === "resolved" && resolvedAt && (
+          <Muted className={"mt-1 text-xs"}>
+            Resolved at: {moment(resolvedAt).format("DD MMM, YYYY hh:mm A")}
+          </Muted>
+        )}
       </div>
 
       {/* Header Section */}
@@ -358,7 +356,7 @@ export default function TicketView({ id }) {
 
       {/* Action Buttons */}
       {["admin", "cre"].includes(user?.role) && (
-        <div className="flex gap-4 pt-4">
+        <div className="pt-4">
           <Select
             value={data.status}
             onValueChange={(value) => {
@@ -380,6 +378,12 @@ export default function TicketView({ id }) {
               ))}
             </SelectContent>
           </Select>
+
+          {data.status === "resolved" && resolvedAt && (
+            <Muted className={"mt-1 text-xs"}>
+              Resolved at: {moment(resolvedAt).format("DD MMM, YYYY hh:mm A")}
+            </Muted>
+          )}
         </div>
       )}
 

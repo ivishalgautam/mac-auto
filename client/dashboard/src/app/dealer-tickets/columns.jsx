@@ -21,6 +21,7 @@ import { SelectValue } from "@radix-ui/react-select";
 import { ticketStatus } from "./_component/table-actions";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { Muted } from "@/components/ui/typography";
 
 export const columns = (updateMutation, setId, openModal, user) =>
   [
@@ -74,30 +75,39 @@ export const columns = (updateMutation, setId, openModal, user) =>
       cell: ({ row }) => {
         const status = row.getValue("status");
         const id = row.original.id;
+        const resolvedAt = row.original.resolved_at || row.original.updated_at;
 
         return (
-          <Select
-            value={status}
-            onValueChange={(value) => {
-              setId(id);
-              updateMutation.mutate({ status: value });
-            }}
-          >
-            <SelectTrigger className={"capitalize"}>
-              <SelectValue placeholder="Select a status" />
-            </SelectTrigger>
-            <SelectContent>
-              {ticketStatus.map((option) => (
-                <SelectItem
-                  key={option.value}
-                  value={option.value}
-                  className={"capitalize"}
-                >
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div>
+            <Select
+              value={status}
+              onValueChange={(value) => {
+                setId(id);
+                updateMutation.mutate({ status: value });
+              }}
+            >
+              <SelectTrigger className={"capitalize"}>
+                <SelectValue placeholder="Select a status" />
+              </SelectTrigger>
+              <SelectContent>
+                {ticketStatus.map((option) => (
+                  <SelectItem
+                    key={option.value}
+                    value={option.value}
+                    className={"capitalize"}
+                  >
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            {status === "resolved" && resolvedAt && (
+              <Muted className={"mt-1 text-xs"}>
+                Resolved at: {moment(resolvedAt).format("DD MMM, YYYY hh:mm A")}
+              </Muted>
+            )}
+          </div>
         );
       },
     },
