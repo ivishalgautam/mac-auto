@@ -80,6 +80,10 @@ const init = async (sequelize) => {
         type: DataTypes.JSONB,
         defaultValue: [],
       },
+      resolved_at: {
+        type: DataTypes.DATE,
+        allowNull: true,
+      },
     },
     {
       createdAt: "created_at",
@@ -92,10 +96,10 @@ const init = async (sequelize) => {
         { fields: ["expected_closure_date"] },
         { fields: ["dealer_id"] },
       ],
-    }
+    },
   );
 
-  return DealerTicketModel;
+  // return DealerTicketModel;
   await DealerTicketModel.sync({ alter: true });
 };
 
@@ -128,10 +132,14 @@ const create = async (req) => {
 };
 
 const update = async (req, id, transaction) => {
-  const options = { where: { id: req?.params?.id || id } };
+  const options = {
+    where: { id: req?.params?.id || id },
+    returning: true,
+    raw: true,
+  };
   if (transaction) options.transaction = transaction;
 
-  return await DealerTicketModel.update(
+  const [, rows] = await DealerTicketModel.update(
     {
       status: req.body.status,
       message: req.body.message,
@@ -142,9 +150,12 @@ const update = async (req, id, transaction) => {
       job_card: req.body.job_card,
       images: req.body.images,
       videos: req.body.videos,
+      resolved_at: req.body.resolved_at,
     },
-    options
+    options,
   );
+
+  return rows;
 };
 
 const get = async (req) => {
@@ -192,7 +203,7 @@ const get = async (req) => {
   const endDate = req.query.end_date || null;
   if (startDate && endDate) {
     whereConditions.push(
-      `(tk.created_at::date >= :startDate AND tk.created_at::date <= :endDate)`
+      `(tk.created_at::date >= :startDate AND tk.created_at::date <= :endDate)`,
     );
     queryParams.startDate = startDate;
     queryParams.endDate = endDate;

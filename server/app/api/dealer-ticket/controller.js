@@ -40,7 +40,7 @@ const create = async (req, res) => {
     let creToBeAssign = null;
     if (creUsers.length > 0) {
       const assignedCREIndex = creUsers.findIndex(
-        (c) => c.id === lastCREAssignedTicket?.assigned_cre
+        (c) => c.id === lastCREAssignedTicket?.assigned_cre,
       );
 
       creToBeAssign =
@@ -110,7 +110,7 @@ const update = async (req, res) => {
     if (updatedImageDocs) {
       req.body.images = [...(req.body?.images ?? []), ...updatedImageDocs];
       documentsToDelete.push(
-        ...getItemsToDelete(existingImageDocs, updatedImageDocs)
+        ...getItemsToDelete(existingImageDocs, updatedImageDocs),
       );
     }
 
@@ -119,8 +119,12 @@ const update = async (req, res) => {
     if (updatedVideos) {
       req.body.videos = [...(req.body?.videos ?? []), ...updatedVideos];
       documentsToDelete.push(
-        ...getItemsToDelete(existingVideos, updatedVideos)
+        ...getItemsToDelete(existingVideos, updatedVideos),
       );
+    }
+
+    if (record.status !== "resolved" && req.body.status === "resolved") {
+      req.body.resolved_at = new Date();
     }
 
     await table.DealerTicketModel.update(req, 0, transaction);

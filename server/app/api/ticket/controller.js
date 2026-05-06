@@ -26,7 +26,7 @@ const create = async (req, res) => {
       const creUsers = await table.UserModel.getCREs();
       if (creUsers.length > 0) {
         const assignedCREIndex = creUsers.findIndex(
-          (c) => c.id === lastCREAssignedTicket?.assigned_cre
+          (c) => c.id === lastCREAssignedTicket?.assigned_cre,
         );
 
         creToBeAssign =
@@ -89,6 +89,10 @@ const update = async (req, res) => {
     const record = await table.TicketModel.getById(req);
     if (!record) return res.code(404).send({ message: "Ticket not found!" });
 
+    if (record.status !== "resolved" && req.body.status === "resolved") {
+      req.body.resolved_at = new Date();
+    }
+
     await table.TicketModel.update(req, 0, transaction);
 
     const documentsToDelete = [];
@@ -98,7 +102,7 @@ const update = async (req, res) => {
     if (updatedImages) {
       req.body.images = [...(req.body?.images ?? []), ...updatedImages];
       documentsToDelete.push(
-        ...getItemsToDelete(existingImages, updatedImages)
+        ...getItemsToDelete(existingImages, updatedImages),
       );
     }
 
@@ -107,7 +111,7 @@ const update = async (req, res) => {
     if (updatedVideos) {
       req.body.videos = [...(req.body?.videos ?? []), ...updatedVideos];
       documentsToDelete.push(
-        ...getItemsToDelete(existingVideos, updatedVideos)
+        ...getItemsToDelete(existingVideos, updatedVideos),
       );
     }
 

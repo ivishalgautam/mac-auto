@@ -145,6 +145,10 @@ const init = async (sequelize) => {
         allowNull: false,
         defaultValue: 0,
       },
+      resolved_at: {
+        type: DataTypes.DATE,
+        allowNull: true,
+      },
     },
     {
       createdAt: "created_at",
@@ -155,7 +159,7 @@ const init = async (sequelize) => {
         { fields: ["punch_by_id"] },
         { fields: ["assigned_technician"] },
       ],
-    }
+    },
   );
 
   // return TicketModel;
@@ -207,10 +211,14 @@ const create = async (req) => {
 };
 
 const update = async (req, id, transaction) => {
-  const options = { where: { id: req?.params?.id || id } };
+  const options = {
+    where: { id: req?.params?.id || id },
+    returning: true,
+    raw: true,
+  };
   if (transaction) options.transaction = transaction;
 
-  return await TicketModel.update(
+  const [, rows] = await TicketModel.update(
     {
       images: req.body?.images ?? [],
       videos: req.body?.videos ?? [],
@@ -228,9 +236,12 @@ const update = async (req, id, transaction) => {
       part_ids: req.body.part_ids,
       payment_status: req.body.payment_status,
       payment_amount: req.body.payment_amount,
+      resolved_at: req.body.resolved_at,
     },
-    options
+    options,
   );
+
+  return rows;
 };
 
 const get = async (req) => {
@@ -303,7 +314,7 @@ const get = async (req) => {
   const endDate = req.query.end_date || null;
   if (startDate && endDate) {
     whereConditions.push(
-      `(tk.created_at::date >= :startDate AND tk.created_at::date <= :endDate)`
+      `(tk.created_at::date >= :startDate AND tk.created_at::date <= :endDate)`,
     );
     queryParams.startDate = startDate;
     queryParams.endDate = endDate;
