@@ -4,174 +4,205 @@ import fs from "fs";
 import ejs from "ejs";
 import config from "../config/index.js";
 
-// Create transporter using Brevo SMTP
+// =========================
+// Create SMTP Transporter
+// =========================
 const transporter = nodemailer.createTransport({
   host: config.smtp_host,
-  port: config.smtp_port,
-  secure: false,
+  port: Number(config.smtp_port),
+  secure: Number(config.smtp_port) === 465,
   auth: {
     user: config.smtp_user,
     pass: config.smtp_password,
   },
+  logger: true,
+  debug: true,
 });
 
-// Function to send a simple email
-async function sendSimpleEmail(email) {
-  try {
-    const mailOptions = {
-      from: config.smtp_from_email,
-      to: email,
-      subject: "Hello from Brevo + Nodemailer",
-      text: "This is a plain text email sent via Brevo SMTP!",
-      html: "<p>This is an <b>HTML email</b> sent via Brevo SMTP!</p>",
-    };
-
-    const info = await transporter.sendMail(mailOptions);
-    console.log("Email sent successfully!");
-    console.log("Message ID:", info.messageId);
-    console.log("Response:", info.response);
-
-    return info;
-  } catch (error) {
-    console.error("Error sending email:", error);
-    // throw error;
+// =========================
+// Verify SMTP Connection
+// =========================
+transporter.verify((error, success) => {
+  if (error) {
+    console.error("❌ SMTP Verification Failed");
+    console.error(error);
+  } else {
+    console.log("✅ SMTP Server is ready.");
   }
-}
+});
 
-async function sendResetPasswordEmail(userEmail, token, role) {
+// =========================
+// Common Email Sender
+// =========================
+async function sendEmail({ to, subject, html, text }) {
   try {
-    const templatePath = path.join(
-      process.cwd(),
-      "views",
-      "forgot-password.ejs"
-    );
-    const templateString = fs.readFileSync(templatePath, "utf-8");
-    const resetLink = `${role === "dealer" ? config.dealerDashboardLink : role === "customer" ? config.customerDashboardLink : config.adminDashboardLink}/reset-password?t=${token}`;
-    const htmlContent = ejs.render(templateString, {
-      resetLink,
+    const info = await transporter.sendMail({
+      from: config.smtp_from_email,
+      to,
+      subject,
+      html,
+      text,
     });
 
-    const mailOptions = {
-      from: config.smtp_from_email,
-      to: userEmail,
-      subject: "Reset Your Password – Mac Auto India",
-      html: htmlContent,
-    };
+    console.log(`✅ Email sent to ${to}`);
+    console.log("Message ID:", info.messageId);
 
-    const info = await transporter.sendMail(mailOptions);
-    console.log("Password reset email sent successfully!");
-    return info;
+    return {
+      success: true,
+      info,
+    };
   } catch (error) {
-    console.error("Error sending password reset email:", error);
-    throw error;
+    console.error("======================================");
+    console.error("Email Sending Failed");
+    console.error("Code:", error.code);
+    console.error("Response Code:", error.responseCode);
+    console.error("Command:", error.command);
+    console.error("Response:", error.response);
+    console.error(error);
+    console.error("======================================");
+
+    let message = "Failed to send email.";
+
+    switch (error.code) {
+      case "EAUTH":
+        message = "SMTP authentication failed.";
+        break;
+
+      case "ECONNECTION":
+        message = "Unable to connect to SMTP server.";
+        break;
+
+      case "ETIMEDOUT":
+        message = "SMTP connection timed out.";
+        break;
+
+      case "ESOCKET":
+        message = "SMTP socket error.";
+        break;
+
+      default:
+        message = error.message;
+    }
+
+    throw new Error(message);
   }
 }
 
-export const sendOrderStatusUpdateEmail = async ({
+// =========================
+// Load EJS Template
+// =========================
+function renderTemplate(templateName, data = {}) {
+  const templatePath = path.join(process.cwd(), "views", `${templateName}.ejs`);
+
+  const template = fs.readFileSync(templatePath, "utf8");
+
+  return ejs.render(template, data);
+}
+
+// =========================
+// Simple Email
+// =========================
+async function sendSimpleEmail(email) {
+  return sendEmail({
+    to: email,
+    subject: "Hello from Brevo + Nodemailer",
+    text: "This is a plain text email sent via Brevo SMTP!",
+    html: "<p>This is an <b>HTML email</b> sent via Brevo SMTP!</p>",
+  });
+}
+
+// =========================
+// Reset Password
+// =========================
+async function sendResetPasswordEmail(userEmail, token, role) {
+  const resetLink = `${
+    role === "dealer"
+      ? config.dealerDashboardLink
+      : role === "customer"
+        ? config.customerDashboardLink
+        : config.adminDashboardLink
+  }/reset-password?t=${token}`;
+
+  const html = renderTemplate("forgot-password", {
+    resetLink,
+  });
+
+  return sendEmail({
+    to: userEmail,
+    subject: "Reset Your Password – Mac Auto India",
+    html,
+  });
+}
+
+// =========================
+// Order Status Update
+// =========================
+async function sendOrderStatusUpdateEmail({
   email,
   fullname,
   order_code,
   status,
-}) => {
-  try {
-    const templatePath = path.join(
-      process.cwd(),
-      "views",
-      "order-status-update.ejs"
-    );
-    const templateContent = fs.readFileSync(templatePath, "utf-8");
+}) {
+  const html = renderTemplate("order-status-update", {
+    fullname,
+    order_code,
+    status,
+  });
 
-    const html = ejs.render(templateContent, {
-      fullname,
-      order_code,
-      status,
-    });
-    const mailOptions = {
-      from: config.smtp_from_email,
-      to: email,
-      subject: "Your Order Status Has Been Updated",
-      html,
-    };
-    const info = await transporter.sendMail(mailOptions);
-    console.log("Order status change mail sent successfully!");
-    return info;
-  } catch (error) {
-    console.error("Error sending order status change email:", error);
-  }
-};
+  return sendEmail({
+    to: email,
+    subject: "Your Order Status Has Been Updated",
+    html,
+  });
+}
 
-export const sendCustomerCredentialsEmail = async ({
+// =========================
+// Order Created
+// =========================
+async function sendOrderCreatedEmail({ email, fullname, order_code, status }) {
+  const html = renderTemplate("order-create", {
+    fullname,
+    order_code,
+    status,
+  });
+
+  return sendEmail({
+    to: email,
+    subject: "Your Order Created Successfully",
+    html,
+  });
+}
+
+// =========================
+// Customer Credentials
+// =========================
+async function sendCustomerCredentialsEmail({
   email,
   fullname,
   username,
   password,
-}) => {
-  try {
-    // Load EJS template
-    const templatePath = path.join(
-      process.cwd(),
-      "views",
-      "customer-credentials.ejs"
-    );
+}) {
+  const html = renderTemplate("customer-credentials", {
+    fullname,
+    username,
+    password,
+  });
 
-    const templateContent = fs.readFileSync(templatePath, "utf-8");
+  return sendEmail({
+    to: email,
+    subject: "Welcome to Mack EV – Your Login Credentials",
+    html,
+  });
+}
 
-    // Render HTML
-    const html = ejs.render(templateContent, { fullname, username, password });
-
-    // Configure email
-    const mailOptions = {
-      from: config.smtp_from_email,
-      to: email,
-      subject: "Welcome to Mack EV – Your Login Credentials",
-      html,
-    };
-
-    // Send email
-    const info = await transporter.sendMail(mailOptions);
-
-    console.log(`Customer credentials email sent successfully to ${email}`);
-    return info;
-  } catch (error) {
-    console.error("Error sending customer credentials email:", error);
-    throw error; // propagate error to caller
-  }
-};
-
-export const sendOrderCreatedEmail = async ({
-  email,
-  fullname,
-  order_code,
-  status,
-}) => {
-  try {
-    const templatePath = path.join(process.cwd(), "views", "order-create.ejs");
-    const templateContent = fs.readFileSync(templatePath, "utf-8");
-
-    const html = ejs.render(templateContent, {
-      fullname,
-      order_code,
-      status,
-    });
-    const mailOptions = {
-      from: config.smtp_from_email,
-      to: email,
-      subject: "Your Order Created successfully.",
-      html,
-    };
-    const info = await transporter.sendMail(mailOptions);
-    console.log("Order create mail sent successfully!");
-    return info;
-  } catch (error) {
-    console.error("Error sending order create email:", error);
-  }
-};
-
+// =========================
+// Export
+// =========================
 export const mailer = {
-  transporter: transporter,
-  sendSimpleEmail: sendSimpleEmail,
-  sendResetPasswordEmail: sendResetPasswordEmail,
-  sendOrderStatusUpdateEmail: sendOrderStatusUpdateEmail,
-  sendOrderCreatedEmail: sendOrderCreatedEmail,
-  sendCustomerCredentialsEmail: sendCustomerCredentialsEmail,
+  transporter,
+  sendSimpleEmail,
+  sendResetPasswordEmail,
+  sendOrderStatusUpdateEmail,
+  sendOrderCreatedEmail,
+  sendCustomerCredentialsEmail,
 };
