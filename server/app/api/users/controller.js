@@ -38,7 +38,7 @@ const create = async (req, res) => {
           pan: req.body.pan,
           gst: req.body.gst,
         },
-        transaction
+        transaction,
       );
     }
 
@@ -52,28 +52,45 @@ const create = async (req, res) => {
           },
         },
         user.id,
-        transaction
+        transaction,
       );
       if (role === "dealer") {
         const dealer = await table.DealerModel.getByUserId(id);
         await table.CustomerDealersModel.create(
           { body: { dealer_id: dealer.id, customer_id: customer.id } },
-          transaction
+          transaction,
         );
       }
 
-      await mailer.sendCustomerCredentialsEmail({
-        email: validateData.email,
-        fullname: user.first_name + " " + user?.last_name ?? "",
-        username: user.username,
-        password: generatePassword(
-          validateData.first_name,
-          validateData.mobile_number
-        ),
-      });
+      // await mailer.sendCustomerCredentialsEmail({
+      //   email: validateData.email,
+      //   fullname: user.first_name + " " + user?.last_name ?? "",
+      //   username: user.username,
+      //   password: generatePassword(
+      //     validateData.first_name,
+      //     validateData.mobile_number
+      //   ),
+      // });
     }
 
     await transaction.commit();
+
+    if (validateData.role === "customer") {
+      try {
+        await mailer.sendCustomerCredentialsEmail({
+          email: validateData.email,
+          fullname: `${user.first_name} ${user.last_name || ""}`,
+          username: user.username,
+          password: generatePassword(
+            validateData.first_name,
+            validateData.mobile_number,
+          ),
+        });
+      } catch (err) {
+        console.error(err, "Failed to send customer credentials email");
+        // Don't throw
+      }
+    }
 
     res.send(user);
   } catch (error) {
@@ -109,7 +126,7 @@ const update = async (req, res) => {
           ...updatedAadhaarDocs,
         ];
         documentsToDelete.push(
-          ...getItemsToDelete(existingAadhaarDocs, updatedAadhaarDocs)
+          ...getItemsToDelete(existingAadhaarDocs, updatedAadhaarDocs),
         );
       }
 
@@ -119,7 +136,7 @@ const update = async (req, res) => {
       if (updatedPanDocs) {
         req.body.pan = [...(req.body?.pan ?? []), ...updatedPanDocs];
         documentsToDelete.push(
-          ...getItemsToDelete(existingPanDocs, updatedPanDocs)
+          ...getItemsToDelete(existingPanDocs, updatedPanDocs),
         );
       }
 
@@ -129,7 +146,7 @@ const update = async (req, res) => {
       if (updatedGstDocs) {
         req.body.gst = [...(req.body?.gst ?? []), ...updatedGstDocs];
         documentsToDelete.push(
-          ...getItemsToDelete(existingGstDocs, updatedGstDocs)
+          ...getItemsToDelete(existingGstDocs, updatedGstDocs),
         );
       }
 
@@ -139,7 +156,7 @@ const update = async (req, res) => {
       const data = await table.DealerModel.updateByUser(
         { body: { location, state, city, ...req.body } },
         user.id,
-        transaction
+        transaction,
       );
     }
 
@@ -153,7 +170,7 @@ const update = async (req, res) => {
           },
         },
         user.id,
-        transaction
+        transaction,
       );
     }
 
@@ -229,7 +246,7 @@ const updatePassword = async (req, res) => {
 
     const verify_old_password = await hash.verify(
       req.body.old_password,
-      record.password
+      record.password,
     );
 
     if (!verify_old_password) {
