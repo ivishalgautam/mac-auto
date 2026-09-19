@@ -64,7 +64,7 @@ export const columns = (setId, updateMutation, user, openModal) =>
         );
       },
     },
-    ["admin", "cre"].includes(user?.role) && {
+    ["admin", "cre", "manager"].includes(user?.role) && {
       accessorKey: "dealership_name",
       header: "Dealership",
       cell: ({ row }) => {
@@ -88,7 +88,7 @@ export const columns = (setId, updateMutation, user, openModal) =>
         return <div className="capitalize">{row.getValue("status")}</div>;
       },
     },
-    ["admin", "cre"].includes(user?.role) && {
+    ["admin", "cre", "manager"].includes(user?.role) && {
       accessorKey: "status",
       header: "Status",
       cell: ({ row }) => {
@@ -120,25 +120,25 @@ export const columns = (setId, updateMutation, user, openModal) =>
                 {orderStatuses.map((option) => {
                   const statusOrder = orderStatuses.map((o) => o.value);
                   const currentIndex = statusOrder.indexOf(status);
-                  const optionIndex = statusOrder.indexOf(option.value);
+                  const optionIndex = statusOrder.indexOf(option?.value);
 
                   const disabled =
                     optionIndex < currentIndex ||
                     ["cancel", "delivered"].includes(status);
 
-                  return (
+                  return option ? (
                     <SelectItem
-                      key={option.value}
-                      value={option.value}
+                      key={option?.value}
+                      value={option?.value}
                       className={`flex items-center gap-2 capitalize`}
                       disabled={disabled}
                     >
                       <span
-                        className={`inline-block h-2 w-2 rounded-full ${option.color}`}
+                        className={`inline-block h-2 w-2 rounded-full ${option?.color}`}
                       />
-                      {option.label}
+                      {option?.label}
                     </SelectItem>
-                  );
+                  ) : null;
                 })}
               </SelectContent>
             </Select>
