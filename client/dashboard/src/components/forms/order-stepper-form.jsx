@@ -689,7 +689,7 @@ export default function OrderStepperForm({ type, id }) {
           {step === 3 && <StepColor />}
           {step === 4 && <StepMessage />}
           {step === 5 && <StepOCNumber />}
-          {step === 6 && ["admin", "cre"].includes(user?.role) && (
+          {step === 6 && ["admin", "cre","manager"].includes(user?.role) && (
             <StepDealer />
           )}
         </CardContent>
